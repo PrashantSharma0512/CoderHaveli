@@ -1,0 +1,35 @@
+<!-- <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="black"/>
+  <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="120" font-weight="bold" fill="white" text-anchor="middle" alignment-baseline="middle">
+    CН
+  </text>
+</svg> -->
+
+
+
+
+
+<svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+
+  <rect width="48" height="48" fill="black"/>
+
+
+  <defs>
+    <linearGradient id="textGradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="white"/>
+      <stop offset="50%" stop-color="gray"/>
+      <stop offset="100%" stop-color="black"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Text -->
+  <text x="50%" y="55%" font-family="Arial, sans-serif" font-size="16" font-weight="bold"
+        fill="url(#textGradient)" text-anchor="middle" alignment-baseline="middle">
+    &lt;CH/&gt;
+  </text>
+</svg>
+
+
+
+
+
