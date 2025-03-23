@@ -64,14 +64,13 @@ const Header = () => {
           <ul className="space-y-4">
             {navItems.map((item) => (
               <li key={item.name}>
-                <button
-                  onClick={() => {
-                    onClose();
-                  }}
+                <Link
+                  to={item.slug}
+                  onClick={onClose}
                   className="w-full text-left px-4 py-3 rounded-md text-white flex items-center transition duration-200 ease-in-out text-xl"
                 >
                   {item.name}
-                </button>
+                </Link>
               </li>
             ))}
           </ul>
