@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import DevPhoto from '/DevPhoto.png';  // <-- Replace this with your actual image path
+import DevPhoto from '/dev_ghibli.png';  // <-- Replace this with your actual image path
 const AboutUs = () => {
   return (
     <div className="bg-gradient-to-r from-gray-950 to-zinc-400 text-white py-16 px-6 md:px-16">

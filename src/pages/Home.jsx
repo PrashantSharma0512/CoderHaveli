@@ -104,6 +104,7 @@ function Home() {
                                 imageUrl={course.image.url}
                                 price={course.price}
                                 duration={course.duration}
+                                category={course.category.name}
                             />
                         </div>
                     ))}
