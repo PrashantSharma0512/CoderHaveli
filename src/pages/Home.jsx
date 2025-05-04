@@ -15,13 +15,13 @@ import axios from 'axios';
 //     { image: "https://codeforgeek.com/wp-content/uploads/2024/06/Next.-js-Introduction-2-768x432.png", title: 'Next Js Domination', description: 'A powerful React framework for server-rendered and static web applications. It offers features like server-side rendering (SSR), static site generation (SSG), API routes, and optimized performance out of the box.' },
 
 // ];
-const courses = [
-    { src: "https://ionicframework.com/docs/icons/logo-react-icon.png", title: 'React Domination', price: '$599', },
-    { src: "https://th.bing.com/th/id/OIP.fjcsTxbLDrOcsERTcXlp0AAAAA?w=400&h=400&rs=1&pid=ImgDetMain", title: 'JavaScript Domination', price: '$599' },
-    { src: "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/nextjs-icon.png", title: 'Docker Domination', price: '$599' },
-    { src: "https://cdn3.iconfinder.com/data/icons/logos-and-brands-adobe/512/187_Js-1024.png", title: 'Next Js Domination', price: '$599' },
-    { src: "https://cdn3.iconfinder.com/data/icons/logos-and-brands-adobe/512/187_Js-1024.png", title: 'Next Js Domination', price: '$599' },
-]
+// const courses = [
+//     { src: "https://ionicframework.com/docs/icons/logo-react-icon.png", title: 'React Domination', price: '$599', },
+//     { src: "https://th.bing.com/th/id/OIP.fjcsTxbLDrOcsERTcXlp0AAAAA?w=400&h=400&rs=1&pid=ImgDetMain", title: 'JavaScript Domination', price: '$599' },
+//     { src: "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/nextjs-icon.png", title: 'Docker Domination', price: '$599' },
+//     { src: "https://cdn3.iconfinder.com/data/icons/logos-and-brands-adobe/512/187_Js-1024.png", title: 'Next Js Domination', price: '$599' },
+//     { src: "https://cdn3.iconfinder.com/data/icons/logos-and-brands-adobe/512/187_Js-1024.png", title: 'Next Js Domination', price: '$599' },
+// ]
 
 const faqs = [
     { question: "What is CoderHaveli?", answer: "CoderHaveli is an online platform that helps developers enhance their coding skills through structured courses, tutorials, and projects." },

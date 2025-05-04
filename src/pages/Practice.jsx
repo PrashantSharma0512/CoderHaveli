@@ -13,60 +13,64 @@ import { useDispatch, useSelector } from 'react-redux'
 import CodeDisplay from '../components/CodeDisplay';
 import { complex } from 'framer-motion';
 import Submission from '../components/Submission';
+import axios from 'axios';
 function Practice() {
   const [solved, setsolved] = useState(false)
   const dispatch = useDispatch()
+  const [problemList, setProblemList] = useState([])
 
-  const problemList = [
-    {
-      questionNo: 1,
-      questionName: 'Two Sum',
-      questionDesc: 'Given An Array of integer nums and an integer target return indices of the two numbers such that they add up to target.You may assume that each input would have exactly one solution,and you may not use the same element twice.You can return the answer in any order.',
-      example: [
-        {
-          ExmpNo: 1,
-          Input: 'nums = [2,7,11,15] , target = 9',
-          Output: '[0,1]',
-          explaination: 'Because nums[0] + nums[1] == 9, we run [0,1].'
-        },
-        {
-          ExmpNo: 2,
-          Input: 'nums = [3,2,4] , target = 6',
-          Output: '[1,2]',
-          explaination: 'Because nums[1] + nums[2] == 6, we run [1,2].'
-        },
+  // const problemList = [
+  //   {
+  //     quesId: 1,
+  //     quesName: 'Two Sum',
+  //     quesDesc: 'Given An Array of integer nums and an integer target return indices of the two numbers such that they add up to target.You may assume that each input would have exactly one solution,and you may not use the same element twice.You can return the answer in any order.',
+  //     problemExample: [
+  //       {
+  //         ExmpNo: 1,
+  //         input: 'nums = [2,7,11,15] , target = 9',
+  //         output: '[0,1]',
+  //         explaination: 'Because nums[0] + nums[1] == 9, we run [0,1].'
+  //       },
+  //       {
+  //         ExmpNo: 2,
+  //         input: 'nums = [3,2,4] , target = 6',
+  //         output: '[1,2]',
+  //         explaination: 'Because nums[1] + nums[2] == 6, we run [1,2].'
+  //       },
 
-      ],
-      constraints: [
-        '2 <= nums.length <= 104',
-        '-109 <= nums[i] <= 109',
-        '-109 <= target <= 109'
-      ],
-      questionStatus: 'easy'
-    },
-    {
-      questionNo: 2,
-      questionName: 'Three Sum ',
-      questionDesc: 'Given an array of integer nums and an integer target return indices of the three numbers such that they add up to target.You may assume that each input would have exactly one solution,and you may not use the same element twice.You can return the answer in any order.(Three Sum)',
-      example: {
-        ExmpNo: 1,
-        Input: 'nums = [2,7,11,15,4] , target = 13',
-        Output: '[0,1,4]',
-        explaination: 'Because nums[0] + nums[1] + nums[4] == 13, we run [0,1,4].'
+  //     ],
+  //     constraints: [
+  //       '2 <= nums.length <= 104',
+  //       '-109 <= nums[i] <= 109',
+  //       '-109 <= target <= 109'
+  //     ],
+  //     difficulty: 'easy'
+  //   },
+  //   {
+  //     quesId: 2,
+  //     quesName: 'Three Sum ',
+  //     quesDesc: 'Given an array of integer nums and an integer target return indices of the three numbers such that they add up to target.You may assume that each input would have exactly one solution,and you may not use the same element twice.You can return the answer in any order.(Three Sum)',
+  //     problemExample: {
+  //       ExmpNo: 1,
+  //       input: 'nums = [2,7,11,15,4] , target = 13',
+  //       output: '[0,1,4]',
+  //       explaination: 'Because nums[0] + nums[1] + nums[4] == 13, we run [0,1,4].'
 
-      },
-      constraints: [
-        '2 <= nums.length <= 104',
-        '-109 <= nums[i] <= 109',
-        '-109 <= target <= 109'
-      ],
-      questionStatus: 'medium'
-    },
-  ]
-  const faqs = [
-    { question: "Hint1", answer: "A really brute force way would be to search for all possible pairs of numbers but that would be too slow. Again, it's best to try out brute force solutions for just for completeness. It is from these brute force solutions that you can come up with optimizations." },
-    { question: "Hint2", answer: "So, if we fix one of the numbers, say x, we have to scan the entire array to find the next number y which is value - x where value is the input parameter. Can we change our array somehow so that this search becomes faster?" },
-    { question: "Hint3", answer: "The second train of thought is, without changing the array, can we use additional space somehow? Like maybe a hash map to speed up the search?" }
+  //     },
+  //     constraints: [
+  //       '2 <= nums.length <= 104',
+  //       '-109 <= nums[i] <= 109',
+  //       '-109 <= target <= 109'
+  //     ],
+  //     difficulty: 'medium'
+  //   },
+  // ]
+  const hints = [
+    "A really brute force way would be to search for all possible pairs of numbers but that would be too slow. Again, it's best to try out brute force solutions for just for completeness. It is from these brute force solutions that you can come up with optimizations.",
+
+    "So, if we fix one of the numbers, say x, we have to scan the entire array to find the next number y which is value - x where value is the input parameter. Can we change our array somehow so that this search becomes faster?",
+    
+    "The second train of thought is, without changing the array, can we use additional space somehow? Like maybe a hash map to speed up the search?"
   ];
   const previousSolutions = [
     { mode: 'python', code: 'def twoSum(self, nums: List[int], target: int) -> List[int]:\n    for i in range(len(nums)):\n        for j in range(i+1, len(nums)):\n            if nums[i] + nums[j] == target:\n                return [i, j]', status: 'Accepted' },
@@ -127,6 +131,27 @@ function Practice() {
     }
   ]
   useEffect(() => {
+    const fetchProblem = async () => {
+      try {
+        const response = await axios.get(
+          'http://localhost:3000/problem/67f403cb59311d79d06a9fac',
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        setProblemList(response.data)
+        // console.log('response data for the problem', response.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetchProblem();
+  }, []);
+  console.log('kfnksdnflknsdlknflksdlfnsdk',problemList);
+  
+  useEffect(() => {
     const solved = previousSolutions.some((solution) => solution.status === 'Accepted')
     if (solved) {
       setsolved(true)
@@ -154,15 +179,15 @@ function Practice() {
             <TabPanel className='space-y-8 overflow-y-auto h-[86.7vh] px-4 w-full font-light ' style={{ scrollbarWidth: 'thin', scrollbarColor: '#4B5563 #1A202C', scrollbarTrackColor: '#1A202C' }} >
               {/* question No ,Name , and Solve Status */}
               <ul className='flex justify-between'>
-                <li className='text-xl flex gap-3 font-bold '><h1>{problemList[0].questionNo}.</h1><h1>{problemList[0].questionName}</h1></li>
+                <li className='text-xl flex gap-3 font-bold '><h1>{problemList[0]?.quesId}.</h1><h1>{problemList[0]?.quesName}</h1></li>
                 <li className='text-lg text-slate-300 font-medium capitalize'>{solved ? <div className='flex items-center gap-2'><FiCheckCircle color='#40ff00' size={25} />solved</div> : ''}</li>
               </ul>
               {/* question status eg. easy, medium, hard &  hints*/}
               <div>
                 <ul className='flex gap-2 '>
                   <li>
-                    <p className={`px-5 py-0.5 flex  font-light ${problemList[0].questionStatus == 'easy' ? 'text-[#2FF806] bg-green-800/40' : problemList[0].questionStatus == 'medium' ? 'text-yellow-400 bg-yellow-600/40 ' : 'text-[#F80709] bg-red-800/40'} rounded-4xl  text-lg `}>
-                    {problemList[0].questionStatus}
+                    <p className={`px-5 py-0.5 flex  font-light ${problemList[0]?.difficulty == 'easy' ? 'text-[#2FF806] bg-green-800/40' : problemList[0]?.difficulty == 'medium' ? 'text-yellow-400 bg-yellow-600/40 ' : 'text-[#F80709] bg-red-800/40'} rounded-4xl  text-lg `}>
+                    {problemList[0]?.difficulty}
                     </p>
                   </li>
                   <li><a href={'#hint'} className='flex gap-1 items-center px-5 py-0.5 font-light rounded-4xl text-center text-lg bg-zinc-500/40'><HiOutlineLightBulb size={20} /> hints</a></li>
@@ -172,19 +197,19 @@ function Practice() {
               <div>
                 <p className='font-light'>
                   {
-                    problemList[0].questionDesc
+                    problemList[0]?.quesDesc
                   }
                 </p>
               </div>
               {/* Example section */}
               <div className='space-y-5'>
                 {
-                  problemList[0].example.map((exmp) => (
+                  problemList[0]?.problemExample?.map((exmp,index) => (
                     <div>
-                      <p className='text-lg'>Example {exmp.ExmpNo} :</p>
-                      <p>Input : {exmp.Input}</p>
-                      <p>Output : {exmp.Output}</p>
-                      <p>Explaination : {exmp.explaination}</p>
+                      <p className='text-lg'>Example {index + 1} :</p>
+                      <p>input : {exmp?.input}</p>
+                      <p>Output : {exmp?.output}</p>
+                      <p>Explaination : {exmp?.explaination}</p>
                     </div>
                   ))
                 }
@@ -193,9 +218,9 @@ function Practice() {
               <ol type=''>
                 <h1 className='text-lg'>Constraints : </h1>
                 {
-                  problemList[0].constraints.map((con) => (
+                  problemList[0]?.constraints?.map((constraint) => (
                     <li>
-                      ● {con}
+                      ● {constraint}
                     </li>
                   ))
                 }
@@ -203,18 +228,18 @@ function Practice() {
               {/* hints tabs */}
               <div id='hint' className='space-y-5 transition-all duration-700 ease-in-out'>
                 <Accordion allowToggle>
-                  {faqs.map((faq, index) => (
+                  {hints.map((hint, index) => (
                     <AccordionItem key={index} >
                       <h2>
                         <AccordionButton className="cursor-pointer">
                           <Box as="span" flex="1" textAlign="left" className="flex gap-1 items-center font-medium">
                             <RiLightbulbLine />
-                            {faq.question}
+Hint {index + 1}
                           </Box>
                           <AccordionIcon />
                         </AccordionButton>
                       </h2>
-                      <AccordionPanel pb={4}>{faq.answer}</AccordionPanel>
+                      <AccordionPanel pb={4}>{hint}</AccordionPanel>
                     </AccordionItem>
                   ))}
                 </Accordion>
@@ -325,18 +350,18 @@ export default Practice
 //     {
 //       questionNo: 1,
 //       questionName: 'Two Sum',
-//       questionDesc: 'Given An Array of integer nums and an integer target return indices of the two numbers such that they add up to target.You may assume that each input would have exactly one solution,and you may not use the same element twice.You can return the answer in any order.',
+//       quesDesc: 'Given An Array of integer nums and an integer target return indices of the two numbers such that they add up to target.You may assume that each input would have exactly one solution,and you may not use the same element twice.You can return the answer in any order.',
 //       example: [
 //         {
 //           ExmpNo: 1,
-//           Input: 'nums = [2,7,11,15] , target = 9',
-//           Output: '[0,1]',
+//           input: 'nums = [2,7,11,15] , target = 9',
+//           output: '[0,1]',
 //           explaination: 'Because nums[0] + nums[1] == 9, we run [0,1].'
 //         },
 //         {
 //           ExmpNo: 2,
-//           Input: 'nums = [3,2,4] , target = 6',
-//           Output: '[1,2]',
+//           input: 'nums = [3,2,4] , target = 6',
+//           output: '[1,2]',
 //           explaination: 'Because nums[1] + nums[2] == 6, we run [1,2].'
 //         },
 //       ],
@@ -345,16 +370,16 @@ export default Practice
 //         '-109 <= nums[i] <= 109',
 //         '-109 <= target <= 109'
 //       ],
-//       questionStatus: 'easy'
+//       difficulty: 'easy'
 //     },
 //     {
 //       questionNo: 2,
 //       questionName: 'Three Sum ',
-//       questionDesc: 'Given an array of integer nums and an integer target return indices of the three numbers such that they add up to target.You may assume that each input would have exactly one solution,and you may not use the same element twice.You can return the answer in any order.(Three Sum)',
+//       quesDesc: 'Given an array of integer nums and an integer target return indices of the three numbers such that they add up to target.You may assume that each input would have exactly one solution,and you may not use the same element twice.You can return the answer in any order.(Three Sum)',
 //       example: {
 //         ExmpNo: 1,
-//         Input: 'nums = [2,7,11,15,4] , target = 13',
-//         Output: '[0,1,4]',
+//         input: 'nums = [2,7,11,15,4] , target = 13',
+//         output: '[0,1,4]',
 //         explaination: 'Because nums[0] + nums[1] + nums[4] == 13, we run [0,1,4].'
 //       },
 //       constraints: [
@@ -362,7 +387,7 @@ export default Practice
 //         '-109 <= nums[i] <= 109',
 //         '-109 <= target <= 109'
 //       ],
-//       questionStatus: 'medium'
+//       difficulty: 'medium'
 //     },
 //   ]
   
@@ -519,13 +544,13 @@ export default Practice
 
 //               <Flex gap={3} mb={6}>
 //                 <Badge 
-//                   colorScheme={problemList[0].questionStatus === 'easy' ? 'green' : problemList[0].questionStatus === 'medium' ? 'yellow' : 'red'}
+//                   colorScheme={problemList[0].difficulty === 'easy' ? 'green' : problemList[0].difficulty === 'medium' ? 'yellow' : 'red'}
 //                   px={3}
 //                   py={1}
 //                   borderRadius="full"
 //                   textTransform="capitalize"
 //                 >
-//                   {problemList[0].questionStatus}
+//                   {problemList[0].difficulty}
 //                 </Badge>
 //                 <Link href="#hint" display="flex" alignItems="center" gap={1}>
 //                   <Icon as={HiOutlineLightBulb} /> Hints
@@ -533,7 +558,7 @@ export default Practice
 //               </Flex>
 
 //               <Text mb={6} lineHeight="tall">
-//                 {problemList[0].questionDesc}
+//                 {problemList[0].quesDesc}
 //               </Text>
 
 //               <Divider my={6} borderColor={dividerColor} />
@@ -548,8 +573,8 @@ export default Practice
 //                   mb={4}
 //                 >
 //                   <Text fontWeight="medium">Example {exmp.ExmpNo}:</Text>
-//                   <Text mt={2}><chakra.span fontWeight="medium">Input:</chakra.span> <Code>{exmp.Input}</Code></Text>
-//                   <Text><chakra.span fontWeight="medium">Output:</chakra.span> <Code>{exmp.Output}</Code></Text>
+//                   <Text mt={2}><chakra.span fontWeight="medium">input:</chakra.span> <Code>{exmp.input}</Code></Text>
+//                   <Text><chakra.span fontWeight="medium">output:</chakra.span> <Code>{exmp.output}</Code></Text>
 //                   <Text><chakra.span fontWeight="medium">Explanation:</chakra.span> {exmp.explaination}</Text>
 //                 </Box>
 //               ))}
