@@ -8,17 +8,22 @@ const coderHaveliSlice = createSlice({
       state.push(action.payload);
     },
     removeCode: (state, action) => {
-      return state.filter((code) => code.id !== action.payload);
+      return state.filter((code) => code.quesId !== action.payload.quesId);
     },
     updateCode: (state, action) => {
-      const { id, code } = action.payload;
-      const existingCode = state.find((item) => item.id === id);
-      if (existingCode) {
-        existingCode.code = code;
+      const index = state.findIndex((code) => code.quesId === action.payload.quesId);
+      if (index !== -1) {
+        state[index] = { ...state[index], ...action.payload };
+      }
+    },
+    updateSubmissionStatus: (state, action) => {
+      const index = state.findIndex((code) => code.quesId === action.payload.quesId);
+      if (index !== -1) {
+        state[index].status = action.payload.status;
       }
     },
   },
 });
 
-export const { addCode, removeCode, updateCode } = coderHaveliSlice.actions;
+export const { addCode, removeCode, updateCode, updateSubmissionStatus } = coderHaveliSlice.actions;
 export default coderHaveliSlice.reducer;
