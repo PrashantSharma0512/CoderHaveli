@@ -4,8 +4,8 @@ import { Search, SortAsc, Filter, Star, ChevronRight } from "lucide-react";
 import { Link } from "react-router";
 
 const questions = [
-  { id: 2094, title: "Finding 3-Digit Even Numbers", difficulty: "Easy", rate: 77.1, premium: false, tags: ["Array", "Math"] },
-  { id: 1, title: "Two Sum", difficulty: "Easy", rate: 55.5, premium: false, tags: ["Array", "Hash Table"] },
+  { id: '67f403cb59311d79d06a9fac', title: "Finding 3-Digit Even Numbers", difficulty: "Easy", rate: 77.1, premium: false, tags: ["Array", "Math"] },
+  { id: '67f403cb59311d79d06a9fad', title: "Two Sum", difficulty: "Easy", rate: 55.5, premium: false, tags: ["Array", "Hash Table"] },
   { id: 2, title: "Add Two Numbers", difficulty: "Medium", rate: 45.9, premium: true, tags: ["Linked List", "Math"] },
   { id: 3, title: "Longest Substring Without Repeating Characters", difficulty: "Medium", rate: 36.7, premium: false, tags: ["Hash Table", "String"] },
   { id: 4, title: "Median of Two Sorted Arrays", difficulty: "Hard", rate: 43.5, premium: false, tags: ["Array", "Binary Search"] },
@@ -112,7 +112,7 @@ export default function ProblemList() {
               key={q.id}
               className="group flex justify-between items-start p-3 rounded-xl transition-all duration-200 hover:shadow-lg border border-gray-700 hover:border-blue-500 cursor-pointer transform hover:-translate-y-1 w-[80%]"
               style={{ backgroundColor: "#1F2937" }}
-              to={'/practice'}
+              to={`/practice/${q.id}`}
 
             >
               <div className="flex-1 min-w-0">
