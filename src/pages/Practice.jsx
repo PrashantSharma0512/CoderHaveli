@@ -71,9 +71,11 @@ function Practice() {
           complexity: {
             Time_Complexity: '\\(O(n)\\)',
             Space_Complexity: '\\(O(n)\\)'
-          }
+          },
+          
         }
-      ]
+      ],
+      videoUrl : "https://www.youtube.com/embed/KLlXCFG5TnA?si=yP1G1Tbbbfdujhy9"
     }
   ];
 
@@ -196,7 +198,7 @@ function Practice() {
                     ))}
                   </ul>
                 </div>
-                {/* hints tabs */}  
+                {/* hints tabs */}
                 <div id='hint' className='space-y-5'>
                   <Accordion allowToggle>
                     {problemList[0]?.hints?.map((hint, index) => (
@@ -231,7 +233,7 @@ function Practice() {
                   <iframe
                     width="560"
                     height="315"
-                    src="https://www.youtube.com/embed/KLlXCFG5TnA?si=yP1G1Tbbbfdujhy9"
+                    src={editorialData[0]?.videoUrl}
                     title="YouTube video player"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

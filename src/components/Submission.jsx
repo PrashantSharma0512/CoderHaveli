@@ -8,13 +8,13 @@ const submission = [
         submisssion_date: new Date()
     },
     {
-        status: 'Accepted',
+        status: 'wrong answer',
         time_complexity: '1.9s',
         language: 'javascript',
         submisssion_date: new Date()
     },
     {
-        status: 'Accepted',
+        status: 'compilation error',
         time_complexity: '0.9s',
         language: 'C++',
         submisssion_date: new Date()
@@ -48,7 +48,7 @@ function Submission() {
                             <tr key={index} className="border border-gray-300 odd:bg-white even:bg-gray-100">
                                 {Object.values(data).map((value, i) => (
                                     <td key={i} className="px-4 py-2 border border-gray-300 bg-gray-900">
-                                        {value instanceof Date ? value.toLocaleString() : value==='Accepted' ? <span className="text-green-500">{value}</span> : <span className="text-gray-300">{value}</span>}  
+                                        {value instanceof Date ? value.toLocaleString() : value==='Accepted' ? <span className="text-green-500">{value} </span> : value==='wrong answer' || value==='compilation error' || value==='run time error'  ? <span className="text-red-600">{value}</span> : <span className="text-gray-300">{value}</span>}  
                                     </td>
                                 ))}
                             </tr>

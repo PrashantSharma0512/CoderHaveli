@@ -13,6 +13,7 @@ import Signin from './components/CredentialsPages/SignIn.jsx';
 import Signup from './components/CredentialsPages/Signup.jsx';
 import Loading from './components/Loading.jsx';
 import AboutUs from './pages/About.jsx';
+import ProblemList from './pages/ProblemList.jsx';
 const theme = extendTheme({
   styles: {
     global: {
@@ -35,6 +36,7 @@ createRoot(document.getElementById('root')).render(
             <Route path="/" element={<App />}>
               <Route index element={<Home />} />
               <Route path="/practice" element={<Practice />} />
+              <Route path="/practice-list" element={<ProblemList/>} />
               <Route path="about" element={<AboutUs />} />
               <Route path="loading" element={<Loading />} />
             </Route>
