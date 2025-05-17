@@ -10,12 +10,13 @@ const mathJaxConfig = {
 };
 function App() {
   const location = useLocation()
+  const hideFooter = /^\/problem\/[a-f0-9]{24}$/.test(location.pathname);
   return (
     <MathJaxContext config={mathJaxConfig} version={3} >
       <div style={{ scrollbarWidth: 'thin', scrollbarColor: '#4B5563 #1A202C', scrollbarTrackColor: '#1A202C' }}>
         <Header />
         <Outlet />
-        {location.pathname !== '/practice' && <Footer />}
+        {!hideFooter && <Footer />}
         <Toaster />
       </div>
     </MathJaxContext>

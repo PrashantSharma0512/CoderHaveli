@@ -1,143 +1,74 @@
-// import React from 'react'
+import React from "react";
+import { FiShoppingCart, FiStar, FiClock } from "react-icons/fi";
 
-// export default function Card({ imageUrl, title, price,category }) {
-//     return (
-//       <div className="w-full bg-white/30 border border-gray-500 rounded-lg backdrop-blur-md dark:bg-gray-800/40 dark:border-gray-700 shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 hover:border-2 hover:border-white">
-//         <a href="/">
-//           <img className="p-8 rounded-t-lg w-[350px] h-[300px]" src={imageUrl} />
-//         </a>
-//         <div className="px-5 pb-5">
-//           <a href="/">
-//             <h5 className="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
-//               {title}
-//             </h5>
-//             <h6 className="text-sm font-normal text-gray-500 dark:text-gray-300">
-//               {category}
-//             </h6>
-//           </a>
-//           <div className="flex items-center mt-2.5 mb-5">
-//             <svg
-//               className="w-4 h-4 text-yellow-300 mr-1"
-//               aria-hidden="true"
-//               xmlns="http://www.w3.org/2000/svg"
-//               fill="currentColor"
-//               viewBox="0 0 22 20"
-//             >
-//               <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z" />
-//             </svg>
-//             <svg
-//               className="w-4 h-4 text-yellow-300 mr-1"
-//               aria-hidden="true"
-//               xmlns="http://www.w3.org/2000/svg"
-//               fill="currentColor"
-//               viewBox="0 0 22 20"
-//             >
-//               <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z" />
-//             </svg>
-//             <svg
-//               className="w-4 h-4 text-yellow-300 mr-1"
-//               aria-hidden="true"
-//               xmlns="http://www.w3.org/2000/svg"
-//               fill="currentColor"
-//               viewBox="0 0 22 20"
-//             >
-//               <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z" />
-//             </svg>
-//             <svg
-//               className="w-4 h-4 text-yellow-300 mr-1"
-//               aria-hidden="true"
-//               xmlns="http://www.w3.org/2000/svg"
-//               fill="currentColor"
-//               viewBox="0 0 22 20"
-//             >
-//               <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z" />
-//             </svg>
-//             <svg
-//               className="w-4 h-4 text-gray-200 dark:text-gray-600"
-//               aria-hidden="true"
-//               xmlns="http://www.w3.org/2000/svg"
-//               fill="currentColor"
-//               viewBox="0 0 22 20"
-//             >
-//               <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z" />
-//             </svg>
-//             <span className="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800 ml-3">
-//               4.0
-//             </span>
-//           </div>
-//           <div className="flex items-center justify-between">
-//             <span className="text-3xl font-bold text-gray-900 dark:text-white">&#x20b9;{price}</span>
-//             <a
-//               href="/"
-//               className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-//             >
-//               Add to cart
-//             </a>
-//           </div>
-//         </div>
-//       </div>
-//     );
-//   }
-
-import React from 'react';
-
-export default function Card({ imageUrl, title, price, category }) {
+export default function Card({ imageUrl, title, price, category, duration, rating = 4.0 }) {
   return (
-    <div className="w-full max-w-sm bg-white/30 border border-gray-500 rounded-lg backdrop-blur-md dark:bg-gray-800/40 dark:border-gray-700 shadow-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] hover:border-2 hover:border-white">
-      <a href="/" className="block">
-        <img 
-          className="w-full h-auto p-4 md:p-6 rounded-t-lg object-contain aspect-square" 
-          src={imageUrl} 
+    <div className="w-full max-w-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+      {/* Product Image */}
+      <div className="relative bg-gray-100 dark:bg-gray-700">
+        <img
+          className="w-full h-48 object-contain p-6"
+          src={imageUrl}
           alt={title}
           loading="lazy"
         />
-      </a>
-      <div className="px-4 pb-4 md:px-5 md:pb-5">
-        <a href="/" className="block">
-          <h5 className="text-lg md:text-xl font-semibold tracking-tight text-gray-900 dark:text-white line-clamp-2">
-            {title}
-          </h5>
-          <h6 className="text-xs md:text-sm font-normal text-gray-500 dark:text-gray-300 mt-1">
+        {/* Category Badge */}
+        {category && (
+          <span className="absolute top-3 left-3 bg-amber-500 dark:bg-indigo-600 text-white text-xs font-semibold px-2.5 py-1 rounded-full">
             {category}
-          </h6>
-        </a>
-        <div className="flex items-center mt-2 mb-3 md:mt-2.5 md:mb-5">
-          {/* Stars rating */}
-          {[...Array(4)].map((_, i) => (
-            <svg
-              key={`full-${i}`}
-              className="w-3 h-3 md:w-4 md:h-4 text-yellow-300 mr-1"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="currentColor"
-              viewBox="0 0 22 20"
-            >
-              <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z" />
-            </svg>
-          ))}
-          <svg
-            className="w-3 h-3 md:w-4 md:h-4 text-gray-200 dark:text-gray-600 mr-1"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
-            viewBox="0 0 22 20"
-          >
-            <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z" />
-          </svg>
-          <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-1.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800 ml-2">
-            4.0
+          </span>
+        )}
+        {/* Duration Badge */}
+        {duration && (
+          <span className="absolute top-3 right-3 flex items-center bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 text-xs font-medium px-2.5 py-1 rounded-full">
+            <FiClock className="mr-1" size={12} />
+            {duration}
+          </span>
+        )}
+      </div>
+
+      {/* Product Info */}
+      <div className="p-5">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2 mb-1">
+            {title}
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{category}</p>
+        </div>
+
+        {/* Rating */}
+        <div className="flex items-center mb-4">
+          <div className="flex">
+            {[...Array(5)].map((_, i) => (
+              <FiStar
+                key={i}
+                className={`w-4 h-4 ${i < Math.floor(rating) ? 
+                  'text-amber-400 fill-amber-400' : 
+                  'text-gray-300 dark:text-gray-600'}`}
+              />
+            ))}
+          </div>
+          <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded dark:bg-blue-900 dark:text-blue-200 ml-2">
+            {rating.toFixed(1)}
           </span>
         </div>
+
+        {/* Price and CTA */}
         <div className="flex items-center justify-between">
-          <span className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
-            &#x20b9;{price}
-          </span>
-          <a
-            href="/"
-            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-xs md:text-sm px-3 py-2 md:px-5 md:py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-          >
-            Add to cart
-          </a>
+          <div>
+            <span className="text-xl font-bold text-gray-900 dark:text-white">
+              ₹{price.toLocaleString()}
+            </span>
+            {price.original && (
+              <span className="text-sm text-gray-500 dark:text-gray-400 line-through ml-2">
+                ₹{price.original.toLocaleString()}
+              </span>
+            )}
+          </div>
+          <button className="flex items-center justify-center text-white bg-amber-500 hover:bg-amber-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 font-medium rounded-lg px-4 py-2 text-sm transition-colors duration-200">
+            <FiShoppingCart className="mr-2" size={16} />
+            Add to Cart
+          </button>
         </div>
       </div>
     </div>

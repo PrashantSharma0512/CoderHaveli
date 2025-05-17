@@ -1,92 +1,139 @@
-import React from 'react'
-import Search from '../Search'
+import React from 'react';
+import Search from '../Search';
 import { IoMdNotificationsOutline } from "react-icons/io";
-import { RiAccountCircleLine } from "react-icons/ri";
+import { RiAccountCircleLine, RiMenu3Fill } from "react-icons/ri";
 import { Drawer, DrawerBody, DrawerContent, DrawerHeader, useDisclosure } from '@chakra-ui/react';
-import { RiMenu3Fill } from "react-icons/ri";
 import { Link } from 'react-router';
+import ThemeToggle from '../theme/themeToggler';
 const Header = () => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  
   const navItems = [
-    {
-      name: 'Tutorial',
-      slug: '/tutorail',
-      active: true,
-    },
-    {
-      name: 'Practice',
-      slug: '/practice',
-    },
-    {
-      name: 'Contest',
-      slug: '/contest',
-    },
-
+    { name: 'Home', slug: '/' },
+    { name: 'Tutorial', slug: '/tutorial' },
+    { name: 'Practice', slug: '/practice' },
+    { name: 'Contest', slug: '/contest' },
   ];
-  const { isOpen, onOpen, onClose } = useDisclosure()
+
   return (
     <>
-      <nav className='flex justify-between items-center bg-gray-900 px-2 py-2 drop-shadow-xl shadow-white'>
-        <div className='max-md:hidden'>
-          <ul className="flex justify-center items-center gap-6 pl-10">
-            <li className="text-white text-lg transition-colors hover:text-blue-400">
-              <Link to="/">Home</Link>
-            </li>
-            <li className="text-white text-lg transition-colors hover:text-blue-400">
-              <Link to="/tutorial">Tutorial</Link>
-            </li>
-            <li className="text-white text-lg transition-colors hover:text-blue-400">
-              <Link to="/practice-list">Practice</Link>
-            </li>
-            <li className="text-white text-lg transition-colors hover:text-blue-400">
-              <Link to="/contest">Contest</Link>
-            </li>
-          </ul>
-
-        </div>
-        <center className='text-4xl text-white max-md:flex max-md:justify-center'><Link to={'/'}>CoderHaveli</Link></center>
-        <div className='max-md:hidden'>
-          <ul className='flex items-center justify-evenly gap-6 pr-4'>
-            <li><Search /></li>
-            <li className='cursor-pointer'><button className='cursor-pointer'><IoMdNotificationsOutline size={30} color='white' /></button></li>
-            <li><button className='cursor-pointer'><RiAccountCircleLine size={35} color='white' /></button></li>
-          </ul>
-        </div>
-        <div onClick={onOpen} className='min-md:hidden'><RiMenu3Fill size={35} color='white' /></div>
-      </nav>
-
-      {/* Drawer Component */}
-      <Drawer placement="left" onClose={onClose} isOpen={isOpen}>
-        {/* <DrawerOverlay /> */}
-        <DrawerContent className="bg-gray-900 shadow-lg transition-all transform duration-100 ease-linear w-screen">
-          <DrawerHeader className="text-white text-4xl bg-gray-900 py-4 text-center">
+      <header className="sticky top-0 z-50 bg-white shadow-md dark:bg-gray-900 transition-colors duration-300 dark:border-b dark:border-white">
+        <nav className="container mx-auto px-4 py-3 flex justify-between items-center">
+          {/* Logo - Centered on mobile */}
+          <Link 
+            to="/" 
+            className="text-3xl font-bold text-amber-600 dark:text-indigo-400 max-md:mx-auto"
+            aria-label="CoderHaveli Home"
+          >
+            
             CoderHaveli
-          </DrawerHeader>
-          <DrawerBody className="bg-gray-950 h-full p-4 relative flex flex-col items-center ">
-            <ul className="space-y-4">
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            <ul className="flex space-x-6">
               {navItems.map((item) => (
                 <li key={item.name}>
                   <Link
                     to={item.slug}
-                    onClick={onClose}
-                    className="w-full text-left px-4 py-3 rounded-md text-white flex items-center transition duration-200 ease-in-out text-xl"
+                    className="text-gray-700 dark:text-gray-200 hover:text-amber-600 dark:hover:text-indigo-400 text-lg font-medium transition-colors duration-200"
+                    activeClassName="text-amber-600 dark:text-indigo-400 font-semibold"
                   >
                     {item.name}
                   </Link>
                 </li>
               ))}
             </ul>
-            <button
-              onClick={onClose}
-              className="absolute mt-4 w-1/2 py-2 text-white bg-red-500 hover:bg-red-600 rounded-md transition duration-500 ease-in-out bottom-1"
+          </div>
+
+          {/* Desktop Right Side Items */}
+          <div className="hidden md:flex items-center space-x-6">
+            <div className="relative">
+              <Search />
+            </div>
+            <button 
+              className="text-gray-700 dark:text-gray-200 hover:text-amber-600 dark:hover:text-indigo-400 transition-colors duration-200"
+              aria-label="Notifications"
             >
-              Close
+              <IoMdNotificationsOutline size={26} />
             </button>
+            <button 
+              className="text-gray-700 dark:text-gray-200 hover:text-amber-600 dark:hover:text-indigo-400 transition-colors duration-200"
+              aria-label="Account"
+            >
+              <RiAccountCircleLine size={30} />
+            </button>
+            <ThemeToggle/>  
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button 
+            onClick={onOpen}
+            className="md:hidden text-gray-700 dark:text-gray-200 focus:outline-none"
+            aria-label="Open menu"
+          >
+            <RiMenu3Fill size={28} />
+          </button>
+        </nav>
+      </header>
+
+      {/* Mobile Drawer */}
+      <Drawer placement="left" onClose={onClose} isOpen={isOpen} size="xs">
+        <DrawerContent className="bg-white dark:bg-gray-900">
+          <DrawerHeader className="border-b border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center">
+              <span className="text-2xl font-bold text-amber-600 dark:text-indigo-400">CoderHaveli</span>
+              <button 
+                onClick={onClose}
+                className="text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400"
+                aria-label="Close menu"
+              >
+                ✕
+              </button>
+            </div>
+          </DrawerHeader>
+          
+          <DrawerBody className="p-4">
+            <div className="mb-4">
+              <Search />
+            </div>
+            
+            <ul className="space-y-3">
+              {navItems.map((item) => (
+                <li key={item.name}>
+                  <Link
+                    to={item.slug}
+                    onClick={onClose}
+                    className="block px-4 py-3 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-amber-50 dark:hover:bg-gray-800 text-lg font-medium transition-colors duration-200"
+                    activeClassName="bg-amber-100 dark:bg-gray-800 text-amber-600 dark:text-indigo-400"
+                  >
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            
+            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex space-x-4">
+              <button 
+                className="flex items-center justify-center w-full py-2 px-4 rounded-lg bg-amber-100 dark:bg-gray-800 text-amber-600 dark:text-indigo-400 hover:bg-amber-200 dark:hover:bg-gray-700 transition-colors duration-200"
+                aria-label="Notifications"
+              >
+                <IoMdNotificationsOutline size={22} className="mr-2" />
+                Notifications
+              </button>
+              <button 
+                className="flex items-center justify-center w-full py-2 px-4 rounded-lg bg-amber-100 dark:bg-gray-800 text-amber-600 dark:text-indigo-400 hover:bg-amber-200 dark:hover:bg-gray-700 transition-colors duration-200"
+                aria-label="Account"
+              >
+                <RiAccountCircleLine size={22} className="mr-2" />
+                Account
+              </button>
+            </div>
           </DrawerBody>
         </DrawerContent>
       </Drawer>
-
     </>
-  )
-}
+  );
+};
 
-export default Header
+export default Header; 

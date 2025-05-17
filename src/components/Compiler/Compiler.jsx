@@ -8,6 +8,10 @@ import { GrTest } from "react-icons/gr";
 import { HiOutlineCode } from "react-icons/hi";
 import { FiSave } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
+import { Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react";
+import { useDispatch, useSelector } from "react-redux";
+import { updateCode } from "../../store/slice";
+
 // Theme imports
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/theme-dracula";
@@ -27,13 +31,9 @@ import "ace-builds/src-noconflict/mode-python";
 import "ace-builds/src-noconflict/mode-c_cpp";
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/mode-rust";
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react";
-import { useDispatch, useSelector } from "react-redux";
-import { updateCode } from "../../store/slice";
 
 function Compiler() {
-
-  // these field comes from backend
+  // Language options
   const options = [
     { name: "JavaScript", value: "javascript" },
     { name: "Python", value: "python" },
@@ -42,6 +42,7 @@ function Compiler() {
     { name: "Rust", value: "rust" },
   ];
 
+  // Editor themes
   const aceThemes = [
     { name: "monokai", type: "dark" },
     { name: "dracula", type: "dark" },
@@ -55,57 +56,44 @@ function Compiler() {
     { name: "clouds", type: "light" },
     { name: "terminal", type: "dark" },
   ];
-  const testcases = [
-    {
-      id: 1,
-      input: "1 2",
-      output: "3",
-    },
-    {
-      id: 2,
-      input: "2 3",
-      output: "5",
-    },
-    {
-      id: 3,
-      input: "3 4",
-      output: "7",
-    },
 
-  ]
+  // Test cases
+  const [testcases, setTestcases] = useState([
+    { id: 1, input: "1 2", output: "3" },
+    { id: 2, input: "2 3", output: "5" },
+    { id: 3, input: "3 4", output: "7" },
+  ]);
+
   const dispatch = useDispatch();
-  const { code: storedCode = "print('hello world')", mode: storedMode = "python" } =
+  const { code: storedCode = "console.log('hello javascript')", mode: storedMode = "javascript" } =
     useSelector((state) => state.compiler) || {};
 
-
-
-  // const extractedMode = typeof firstCodeEntry.mode === "string" ? firstCodeEntry.mode : "python";
   const [selectedLang, setSelectedLang] = useState(storedMode);
   const [selectedFont, setSelectedFont] = useState(18);
   const [selectedTheme, setSelectedTheme] = useState("monokai");
   const [code, setCode] = useState(storedCode);
   const [output, setOutput] = useState("");
-  const [Wrap, setWrap] = useState(false);
-  const fontSizes = [12, 14, 16, 18, 20, 22, 24, 26, 28, 30];
-  const [testcase, setTestcase] = useState(testcases);
+  const [wrapEnabled, setWrapEnabled] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
   const [editTest, setEditTest] = useState({ input: "", output: "" });
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [isFullScreen, setIsFullScreen] = useState(false);
+
+  const fontSizes = [12, 14, 16, 18, 20, 22, 24, 26, 28, 30];
+
   useEffect(() => {
     setCode(storedCode);
     setSelectedLang(storedMode);
   }, [storedCode, storedMode]);
-  // Function to enable edit mode
+
   const handleEdit = (index) => {
     setEditIndex(index);
-    setEditTest(testcase[index]);
+    setEditTest(testcases[index]);
   };
 
-  // Function to update a test case
   const handleUpdate = () => {
     if (editTest.input.trim() && editTest.output.trim()) {
-      setTestcase((prev) =>
+      setTestcases(prev =>
         prev.map((test, i) => (i === editIndex ? editTest : test))
       );
       setEditIndex(null);
@@ -113,74 +101,92 @@ function Compiler() {
     }
   };
 
-  // Function to delete a test case
   const handleDelete = (id) => {
-    setTestcase((prevTestcases) => prevTestcases.filter((test) => test.id !== id));
+    setTestcases(prev => prev.filter(test => test.id !== id));
   };
 
   return (
-    <div className={"flex flex-col items-center justify-center w-full bg-gray-950 text-white"}>
-      
-        <div className="flex gap-2 justify-between w-full px-4 text-black'">
-          <ul className="flex gap-4 justify-between items-center">
-            <li><HiOutlineCode size={25} /></li>
-            <li>
-              <select
-                value={selectedLang}
-                onChange={(e) => setSelectedLang(e.target.value)}
-                className="p-2 outline-none cursor-pointer"
+    <div className="flex flex-col w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+      {/* Editor Header */}
+      <div className="flex justify-between items-center p-2 bg-gray-100 dark:bg-gray-800 ">
+        <div className="flex items-center gap-4">
+          <HiOutlineCode size={24} className="text-amber-600 dark:text-indigo-400" />
+          
+          {/* Language Selector */}
+          <select
+            value={selectedLang}
+            onChange={(e) => setSelectedLang(e.target.value)}
+            className="p-1.5 rounded-md bg-white dark:bg-gray-700  text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-indigo-500"
+          >
+            {options.map((option) => (
+              <option 
+                key={option.value} 
+                value={option.value}
+                className="bg-white dark:bg-gray-800"
               >
-                {options.map((option) => (
-                  <option key={option.value} value={option.value} className="bg-gray-800 cursor-pointer">
-                    {option.name}
-                  </option>
-                ))}
-              </select>
-            </li>
-            <li className="max-md:hidden">
-              <select
-                value={selectedTheme}
-                onChange={(e) => setSelectedTheme(e.target.value)}
-                className="p-2 outline-none capitalize cursor-pointer"
+                {option.name}
+              </option>
+            ))}
+          </select>
+          
+          {/* Theme Selector */}
+          <select
+            value={selectedTheme}
+            onChange={(e) => setSelectedTheme(e.target.value)}
+            className="p-1.5 rounded-md bg-white dark:bg-gray-700  text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-indigo-500 hidden md:block"
+          >
+            {aceThemes.map((t) => (
+              <option 
+                key={t.name} 
+                value={t.name}
+                className="bg-white dark:bg-gray-800"
               >
-                {aceThemes.map((t) => (
-                  <option key={t.name} value={t.name} className="bg-gray-800 capitalize cursor-pointer">
-                    {t.name} ({t.type})
-                  </option>
-                ))}
-              </select>
-            </li>
-            <li className="max-md:hidden">
-              <select
-                value={selectedFont}
-                onChange={(e) => setSelectedFont(Number(e.target.value))}
-                className="p-2 outline-none font-bold cursor-pointer"
+                {t.name} ({t.type})
+              </option>
+            ))}
+          </select>
+          
+          {/* Font Size Selector */}
+          <select
+            value={selectedFont}
+            onChange={(e) => setSelectedFont(Number(e.target.value))}
+            className="p-1.5 rounded-md bg-white dark:bg-gray-700  text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-indigo-500 hidden md:block"
+          >
+            {fontSizes.map((size) => (
+              <option 
+                key={size} 
+                value={size}
+                className="bg-white dark:bg-gray-800"
               >
-                {fontSizes.map((size) => (
-                  <option key={size} value={size} className="bg-gray-800 px-6 cursor-pointer">
-                    {size}
-                  </option>
-                ))}
-              </select>
-            </li>
-          </ul>
-          <ul className="flex gap-4">
-            <li>
-              <button className="cursor-pointer" onClick={() => setWrap(!Wrap)}>
-                <CgFormatLeft size={30} />
-              </button>
-            </li>
-            <li>
-              <button className={`cursor-pointer`}
-                onClick={() => setIsFullScreen(!isFullScreen)}
-              >
-                <LuFullscreen size={30} />
-              </button>
-            </li>
-          </ul>
+                {size}px
+              </option>
+            ))}
+          </select>
         </div>
+        
+        <div className="flex gap-3">
+          {/* Word Wrap Toggle */}
+          <button 
+            onClick={() => setWrapEnabled(!wrapEnabled)}
+            className="p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            aria-label={wrapEnabled ? "Disable word wrap" : "Enable word wrap"}
+          >
+            <CgFormatLeft size={20} className="text-gray-700 dark:text-gray-300" />
+          </button>
+          
+          {/* Fullscreen Toggle */}
+          <button 
+            onClick={() => setIsFullScreen(!isFullScreen)}
+            className="p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            aria-label={isFullScreen ? "Exit fullscreen" : "Enter fullscreen"}
+          >
+            <LuFullscreen size={20} className="text-gray-700 dark:text-gray-300" />
+          </button>
+        </div>
+      </div>
 
-        {/* Code Editor */}
+      {/* Code Editor */}
+      <div className="flex-1">
         <AceEditor
           mode={selectedLang}
           theme={selectedTheme}
@@ -191,8 +197,8 @@ function Compiler() {
           }}
           fontSize={selectedFont}
           width="100%"
-          height="45vh"
-          wrapEnabled={Wrap}
+          height={isFullScreen ? "80vh" : "45vh"}
+          wrapEnabled={wrapEnabled}
           setOptions={{
             enableBasicAutocompletion: true,
             enableLiveAutocompletion: true,
@@ -200,114 +206,141 @@ function Compiler() {
             highlightActiveLine: true,
             highlightGutterLine: true,
           }}
+          className=""
         />
+      </div>
 
-      {/* Buttons */}
-      <div className="flex gap-4 justify-end w-full items-center py-1.5 pr-4">
-        <button className="px-4 py-1 bg-gray-700 text-white rounded-lg cursor-pointer"
+      {/* Action Buttons */}
+      <div className="flex justify-end gap-4 p-3 bg-gray-100 dark:bg-gray-800">
+        <button 
           onClick={() => setSelectedTabIndex(1)}
+          className="px-4 py-2 bg-green-500 text-white hover:bg-green-300 dark:bg-green-500 dark:hover:bg-gray-600  dark:text-gray-200 rounded-md transition-colors"
         >
           Run
         </button>
-        <button className="px-4 py-1 text-white bg-green-600 rounded-lg cursor-pointer"
+        <button 
           onClick={() => setSelectedTabIndex(1)}
+          className="px-4 py-2 bg-amber-500 hover:bg-amber-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white rounded-md transition-colors"
         >
           Submit
         </button>
       </div>
 
       {/* Output Panel */}
-      <div className="p-3 bg-gray-900 text-white w-full rounded h-[36.1vh]">
-        {/* <h3 className="font-bold">Output:</h3> */}
-        <div>
-          <Tabs className="gap-3" index={selectedTabIndex} onChange={(index) => setSelectedTabIndex(index)}>
-            <TabList>
-              <Tab _selected={{ color: 'white', textColor: 'green.300' }} className="cursor-pointer"><GrTest values="testcase" /> &nbsp;TestCase</Tab>
-              <Tab _selected={{ color: 'white', textColor: 'green.300' }} className="cursor-pointer"> <HiOutlineCode size={20} values="result" />&nbsp; Result</Tab>
-              {/* <Tab>Three</Tab> */}
-            </TabList>
-            {/* <hr /> */}
-            <TabPanels>
-              <TabPanel className="space-y-4 flex" values="testcase">
-                <div className="p-2 w-full">
-                  {/* Test Case List */}
-                  <div className="space-y-2 flex justify-start gap-4 max-md:overflow-y-scroll">
-                    <AnimatePresence>
-                      {testcase.map((test, index) => (
-                        <motion.div
-                          key={test.id} // ✅ Using unique ID instead of index
-                          initial={{ opacity: 0, scale: 0.8, y: 10 }} // Enter animation
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.8, y: -10 }} // Exit animation
-                          transition={{ duration: 0.3 }}
-                          className="flex items-start justify-between gap-4 p-4 border bg-gray-800 rounded-lg shadow-lg w-[26vh] h-[18vh]"
-                        >
-                          {editIndex === index ? (
-                            <div className="w-full text-white">
-                              <input
-                                type="text"
-                                value={editTest.input}
-                                placeholder="Input"
-                                onChange={(e) =>
-                                  setEditTest({ ...editTest, input: e.target.value })
-                                }
-                                className="border p-1 rounded-md w-full mb-1 outline-none"
-                              />
-                              <input
-                                type="text"
-                                placeholder="Output"
-                                value={editTest.output}
-                                onChange={(e) =>
-                                  setEditTest({ ...editTest, output: e.target.value })
-                                }
-                                className="border p-1 rounded-md w-full outline-none"
-                              />
+      <div className="bg-white dark:bg-gray-900 p-4 ">
+        <Tabs index={selectedTabIndex} onChange={(index) => setSelectedTabIndex(index)}>
+          <TabList className=" ">
+            <Tab 
+              _selected={{ 
+                color: 'amber.600 dark:indigo.400',
+                borderBottom: '2px solid',
+                borderColor: 'amber.600 dark:indigo.400'
+              }}
+              className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400"
+            >
+              <GrTest /> Test Cases
+            </Tab>
+            <Tab 
+              _selected={{ 
+                color: 'amber.600 dark:indigo.400',
+                borderBottom: '2px solid',
+                borderColor: 'amber.600 dark:indigo.400'
+              }}
+              className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400"
+            >
+              <HiOutlineCode /> Results
+            </Tab>
+          </TabList>
+
+          <TabPanels>
+            {/* Test Cases Tab */}
+            <TabPanel className="p-2">
+              <div className="flex gap-4 overflow-x-auto pb-2">
+                <AnimatePresence>
+                  {testcases.map((test, index) => (
+                    <motion.div
+                      key={test.id}
+                      initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.8, y: -10 }}
+                      transition={{ duration: 0.3 }}
+                      className="flex-shrink-0 w-64 bg-zinc-100 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 shadow-md"
+                    >
+                      {editIndex === index ? (
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={editTest.input}
+                            placeholder="Input"
+                            onChange={(e) => setEditTest({ ...editTest, input: e.target.value })}
+                            className="w-full p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
+                          />
+                          <input
+                            type="text"
+                            value={editTest.output}
+                            placeholder="Output"
+                            onChange={(e) => setEditTest({ ...editTest, output: e.target.value })}
+                            className="w-full p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
+                          />
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => setEditIndex(null)}
+                              className="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 rounded"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={handleUpdate}
+                              className="px-3 py-1 text-sm bg-amber-500 dark:bg-indigo-600 text-white rounded flex items-center gap-1"
+                            >
+                              <FiSave size={14} /> Save
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <h4 className="font-medium text-gray-800 dark:text-gray-200">Input:</h4>
+                              <p className="text-gray-600 dark:text-gray-400">{test.input}</p>
+                            </div>
+                            <div className="flex gap-1">
                               <button
-                                onClick={handleUpdate}
-                                className="mt-1 py-1 rounded-lg transition cursor-pointer hover:scale-110 "
+                                onClick={() => handleEdit(index)}
+                                className="p-1 text-gray-500 hover:text-amber-600 dark:hover:text-indigo-400"
                               >
-                                <FiSave size={25} />
+                                <GrFormEdit size={18} />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(test.id)}
+                                className="p-1 text-gray-500 hover:text-red-500"
+                              >
+                                <MdDelete size={18} />
                               </button>
                             </div>
-                          ) : (
-                            <div>
-                              <h3 className="font-semibold text-white">Input:</h3>
-                              <p className="text-gray-600">{test.input}</p>
-                              <h3 className="font-semibold text-white">Output:</h3>
-                              <p className="text-gray-600">{test.output}</p>
-                            </div>
-                          )}
-                          <div className="flex gap-1">
-                            {editIndex === index ? null : (
-                              <>
-                                <button
-                                  onClick={() => handleEdit(index)}
-                                  className="p-2 text-white rounded-lg hover:scale-125 transition cursor-pointer"
-                                >
-                                  <GrFormEdit size={25} />
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(test.id)} // ✅ Delete by ID
-                                  className="p-2 text-white rounded-lg hover:scale-125 transition cursor-pointer"
-                                >
-                                  <MdDelete size={20} />
-                                </button>
-                              </>
-                            )}
                           </div>
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              </TabPanel>
-              <TabPanel>
-                <p>two!</p>
-              </TabPanel>
+                          <h4 className="font-medium text-gray-800 dark:text-gray-200">Output:</h4>
+                          <p className="text-gray-600 dark:text-gray-400">{test.output}</p>
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            </TabPanel>
 
-            </TabPanels>
-          </Tabs>
-        </div>
+            {/* Results Tab */}
+            <TabPanel>
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 min-h-32">
+                {output ? (
+                  <pre className="text-gray-800 dark:text-gray-200">{output}</pre>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">Run your code to see results</p>
+                )}
+              </div>
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
       </div>
     </div>
   );

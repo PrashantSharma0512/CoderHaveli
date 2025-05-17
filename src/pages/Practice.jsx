@@ -1,4 +1,3 @@
-
 import React, { Fragment, useEffect, useState } from 'react';
 import Compiler from '../components/Compiler/Compiler';
 import {
@@ -12,7 +11,8 @@ import {
   TabList,
   TabPanel,
   TabPanels,
-  Tabs
+  Tabs,
+  useToast
 } from '@chakra-ui/react';
 import { TiDocumentText } from "react-icons/ti";
 import { MdOndemandVideo } from "react-icons/md";
@@ -21,7 +21,7 @@ import { TfiCommentAlt } from "react-icons/tfi";
 import { HiOutlineLightBulb } from "react-icons/hi";
 import { FiCheckCircle } from "react-icons/fi";
 import { RiLightbulbLine } from "react-icons/ri";
-import { addCode, updateCode } from '../store/slice';
+
 import { useDispatch, useSelector } from 'react-redux';
 import CodeDisplay from '../components/CodeDisplay';
 import Submission from '../components/Submission';
@@ -29,14 +29,20 @@ import axios from 'axios';
 import { MathJaxContext, MathJax } from 'better-react-mathjax';
 import { useParams } from 'react-router';
 import Loading from '../components/Loading';
+// import ErrorBoundary from '../components/ErrorBoundary';
 
+import { FaTag } from 'react-icons/fa6';
+import { addCode, updateCode } from '../store/slice';
 function Practice() {
   const [solved, setSolved] = useState(false);
-  const dispatch = useDispatch();
   const [problemList, setProblemList] = useState([]);
-  const slug = useParams()
+  const [editorialData, setEditorialData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const slug = useParams();
   const id = slug['*']
-  const [loading, setLoading] = useState(false)
+  const dispatch = useDispatch();
+  const toast = useToast();
 
   const previousSolutions = [
     {
@@ -46,258 +52,241 @@ function Practice() {
     },
   ];
 
-  const editorialData = [
-    {
-      quesID: 1,
-      approach: [
-        {
-          approachDesc: 'The brute force approach is simple. Loop through each element \\(x\\) and find if there is another value that equals to \\(target - x\\). This approach would take \\(O(n^2)\\) time and \\(O(1)\\) space.',
-          approachType: 'Brute Force',
-          code: {
-            python: 'def twoSum(self, nums: List[int], target: int) -> List[int]:\n    for i in range(len(nums)):\n        for j in range(i+1, len(nums)):\n            if nums[i] + nums[j] == target:\n                return [i, j]',
-            javascript: 'var twoSum = function(nums, target) {\n    const map = new Map();\n    for (let i = 0; i < nums.length; i++) {\n        const complement = target - nums[i];\n        if (map.has(complement)) {\n            return [map.get(complement), i];\n        }\n        map.set(nums[i], i);\n    }\n};',
-            java: 'class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        Map<Integer, Integer> map = new HashMap<>();\n        for (int i = 0; i < nums.length; i++) {\n            int complement = target - nums[i];\n            if (map.containsKey(complement)) {\n                return new int[] { map.get(complement), i };\n            }\n            map.put(nums[i], i);\n        }\n        throw new IllegalArgumentException("No two sum solution");\n    }\n}',
-            cpp: 'class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        unordered_map<int, int> map;\n        for (int i = 0; i < nums.size(); i++) {\n            int complement = target - nums[i];\n            if (map.find(complement) != map.end()) {\n                return { map[complement], i };\n            }\n            map[nums[i]] = i;\n        }\n        throw invalid_argument("No two sum solution");\n    }\n};'
-          },
-          complexity: {
-            Time_Complexity: '\\(O(n^2)\\)',
-            Space_Complexity: '\\(O(1)\\)'
-          }
-        },
-        {
-          approachDesc: 'To improve on the brute force solution, we use a hash map to store the value and its index while iterating through the array. This reduces lookup time to \\(O(1)\\).',
-          approachType: 'Optimized',
-          code: {
-            python: 'var twoSum = function(nums, target) {\n    const map = new Map();\n    for (let i = 0; i < nums.length; i++) {\n        const complement = target - nums[i];\n        if (map.has(complement)) {\n            return [map.get(complement), i];\n        }\n        map.set(nums[i], i);\n    }\n};',
-            javascript: 'var twoSum = function(nums, target) {\n    const map = new Map();\n    for (let i = 0; i < nums.length; i++) {\n        const complement = target - nums[i];\n        if (map.has(complement)) {\n            return [map.get(complement), i];\n        }\n        map.set(nums[i], i);\n    }\n};',
-            java: 'class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        Map<Integer, Integer> map = new HashMap<>();\n        for (int i = 0; i < nums.length; i++) {\n            int complement = target - nums[i];\n            if (map.containsKey(complement)) {\n                return new int[] { map.get(complement), i };\n            }\n            map.put(nums[i], i);\n        }\n        throw new IllegalArgumentException("No two sum solution");\n    }\n}',
-            cpp: 'class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        unordered_map<int, int> map;\n        for (int i = 0; i < nums.size(); i++) {\n            int complement = target - nums[i];\n            if (map.find(complement) != map.end()) {\n                return { map[complement], i };\n            }\n            map[nums[i]] = i;\n        }\n        throw invalid_argument("No two sum solution");\n    }\n};'
-          },
-          complexity: {
-            Time_Complexity: '\\(O(n)\\)',
-            Space_Complexity: '\\(O(n)\\)'
-          },
-
-        }
-      ],
-      videoUrl: "https://www.youtube.com/embed/KLlXCFG5TnA?si=yP1G1Tbbbfdujhy9"
-    }
-  ];
-
   useEffect(() => {
-    const fetchProblem = async () => {
+    const fetchProblemData = async () => {
       try {
-        setLoading(true)
-        const response = await axios.get(
-          `http://localhost:3000/problem/${id}`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-        console.log('Response:', response.data);
-        setLoading(false)
-        setProblemList(response.data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
+        setLoading(true);
+        const [problemRes, editorialRes] = await Promise.all([
+          axios.get(`http://localhost:3000/problem/${id}`),
+          axios.get(`http://localhost:3000/problem/get-editorial/${id}`)
+        ]);
+        
+        setProblemList(problemRes.data);
+        setEditorialData(editorialRes.data.sort((a, b) => a.order - b.order));
+      } catch (err) {
+        setError(err);
+        toast({
+          title: 'Error loading problem',
+          description: err.message,
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      } finally {
+        setLoading(false);
       }
     };
-    fetchProblem();
-  }, []);
+
+    fetchProblemData();
+  }, [id, toast]);
 
   useEffect(() => {
-    const solved = previousSolutions.some((solution) => solution.status === 'Accepted');
-    if (solved) {
-      setSolved(true);
-      dispatch(updateCode({ id: 1, code: previousSolutions[0].code, mode: previousSolutions[0].mode }));
-    } else {
-      dispatch(addCode({ id: 1, code: 'print(hello world!)', mode: 'python' }));
-    }
-  }, []);
+    const isSolved = previousSolutions.some(s => s.status === 'Accepted');
+    setSolved(isSolved);
+    dispatch(isSolved ? 
+      updateCode({ id: 1, code: previousSolutions[0].code, mode: previousSolutions[0].mode }) :
+      addCode({ id: 1, code: 'print(hello world!)', mode: 'python' })
+    );
+  }, [dispatch]);
+
+  if (loading) return <Loading />;
+
+  const problem = problemList[0] || {};
+  const sortedEditorial = editorialData;
 
   return (
-    <Fragment>
-      {
-        loading ? <Loading/> :
-          <MathJaxContext>
-            <div className='flex w-full max-md:flex-col max-md:w-full'>
-              <div className='w-2/5 max-md:w-full bg-gray-950 text-white'>
-                <Tabs className="gap-3" variant={'unstyled'}>
-                  <TabList className='min-md:space-x-6 overflow-x-scroll justify-center'
-                    style={{ scrollbarWidth: 'none', scrollbarColor: '#4B5563 #1A202C', scrollbarTrackColor: '#1A202C' }}>
-                    <Tab _selected={{ color: 'blue.500', fontWeight: '600' }} className="cursor-pointer">
-                      <TiDocumentText size={25} />Description
-                    </Tab>
-                    <Tab _selected={{ color: 'blue.500', fontWeight: '600' }} className="cursor-pointer flex gap-1">
-                      <MdOndemandVideo size={20} /> Editorial
-                    </Tab>
-                    <Tab _selected={{ color: 'blue.500', fontWeight: '600' }} className='cursor-pointer flex gap-1'>
-                      <RxCountdownTimer size={20} />Submissions
-                    </Tab>
-                    <Tab _selected={{ color: 'blue.500', fontWeight: '600' }} className='cursor-pointer flex gap-1'>
-                      <TfiCommentAlt size={20} />Comments
-                    </Tab>
-                  </TabList>
-                  <hr />
-                  <TabPanels>
-                    {/* Description Tab */}
-                    <TabPanel className='space-y-8 overflow-y-auto h-[86.7vh] px-4 w-full font-light'>
-                      {/* question No ,Name , and Solve Status */}
-                      <ul className='flex justify-between'>
-                        <li className='text-xl flex gap-3 font-bold'>
-                          <MathJax>{`\\(${problemList[0]?.quesId}.\\)`}</MathJax>
-                          <MathJax>{problemList[0]?.quesName}</MathJax>
-                        </li>
-                        <li className='text-lg text-slate-300 font-medium capitalize'>
-                          {solved ? (
-                            <div className='flex items-center gap-2'>
-                              <FiCheckCircle color='#40ff00' size={25} />solved
+    <MathJaxContext>
+      <div className='flex flex-col md:flex-row w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100'>
+        {/* Problem Description Panel */}
+        <div className='w-full md:w-2/5 overflow-hidden border-r border-gray-200 dark:border-gray-700'>
+          <Tabs variant='unstyled' isLazy>
+            <TabList className='sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700'>
+              {[
+                { icon: <TiDocumentText size={20} />, label: 'Description' },
+                { icon: <MdOndemandVideo size={20} />, label: 'Editorial' },
+                { icon: <RxCountdownTimer size={20} />, label: 'Submissions' },
+                { icon: <TfiCommentAlt size={20} />, label: 'Comments' }
+              ].map((tab, index) => (
+                <Tab
+                  key={index}
+                  _selected={{ 
+                    color: 'amber.600 dark:indigo.400',
+                    borderBottom: '2px solid',
+                    borderColor: 'amber.600 dark:indigo.400'
+                  }}
+                  className='flex items-center gap-2 py-4 px-6 text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400 transition-colors'
+                >
+                  {tab.icon}
+                  {tab.label}
+                </Tab>
+              ))}
+            </TabList>
+
+            <TabPanels className='h-[calc(100vh-56px)] overflow-y-auto'>
+              {/* Description Tab */}
+              <TabPanel className='p-6 space-y-6'>
+                <div className='flex justify-between items-center'>
+                  <h1 className='text-2xl font-bold flex items-center gap-2'>
+                    <MathJax>{`\\(${problem.quesId}.\\)`}</MathJax>
+                    <MathJax>{problem.quesName}</MathJax>
+                  </h1>
+                  {solved && (
+                    <span className='flex items-center gap-2 text-green-500 dark:text-green-400'>
+                      <FiCheckCircle size={20} />
+                      Solved
+                    </span>
+                  )}
+                </div>
+
+                <div className='flex flex-wrap gap-2'>
+                  <span className={`px-4 py-1 rounded-full text-sm font-medium ${
+                    problem.difficulty === 'easy' ? 
+                    'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                    problem.difficulty === 'medium' ? 
+                    'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' :
+                    'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                  }`}>
+                    {problem.difficulty}
+                  </span>
+                  <button className='flex items-center gap-2 px-4 py-1 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors text-gray-800 dark:text-gray-200'>
+                    <HiOutlineLightBulb size={16} className='text-amber-600 dark:text-indigo-400' />
+                    Hints
+                  </button>
+                  <button className='flex items-center gap-2 px-4 py-1 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors text-gray-800 dark:text-gray-200'>
+                    <FaTag size={16} className='text-amber-600 dark:text-indigo-400' />
+                    Topics
+                  </button>
+                </div>
+
+                <div className='prose prose-gray dark:prose-invert max-w-none'>
+                  <MathJax dynamic>{problem.quesDesc}</MathJax>
+                </div>
+
+                {problem.problemExample?.map((exmp, i) => (
+                  <div key={i} className='bg-zinc-100 dark:bg-gray-800 p-4 rounded-lg'>
+                    <h3 className='text-lg font-medium mb-2'>Example {i + 1}</h3>
+                    <div className='space-y-2'>
+                      <p><span className='font-semibold'>Input:</span> <MathJax inline>{`\\(${exmp.input}\\)`}</MathJax></p>
+                      <p><span className='font-semibold'>Output:</span> <MathJax inline>{`\\(${exmp.output}\\)`}</MathJax></p>
+                      {exmp.explaination && (
+                        <p><span className='font-semibold'>Explanation:</span> <MathJax inline>{`\\(${exmp.explaination}\\)`}</MathJax></p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {problem.constraints?.length > 0 && (
+                  <div>
+                    <h3 className='text-lg font-medium mb-2'>Constraints</h3>
+                    <ul className='list-disc pl-5 space-y-1'>
+                      {problem.constraints.map((c, i) => (
+                        <li key={i}><MathJax>{`\\(${c}\\)`}</MathJax></li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {problem.tags?.length > 0 && (
+                  <div>
+                    <h3 className='text-lg font-medium mb-2'>Topics</h3>
+                    <div className='flex flex-wrap gap-2'>
+                      {problem.tags.map((tag, i) => (
+                        <span key={i} className='px-3 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'>
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {problem.hints?.length > 0 && (
+                  <div>
+                    <h3 className='text-lg font-medium mb-2'>Hints</h3>
+                    <Accordion allowToggle>
+                      {problem.hints.map((hint, i) => (
+                        <AccordionItem key={i} border='none' className='mb-2'>
+                          <AccordionButton className='flex justify-between items-center p-3 bg-zinc-100 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg transition-colors'>
+                            <div className='flex items-center gap-2 text-gray-800 dark:text-gray-200'>
+                              <RiLightbulbLine size={18} className='text-amber-600 dark:text-indigo-400' />
+                              <span>Hint {i + 1}</span>
                             </div>
-                          ) : ''}
-                        </li>
-                      </ul>
-                      {/* question status eg. easy, medium, hard &  hints*/}
+                            <AccordionIcon className='text-gray-500 dark:text-gray-400' />
+                          </AccordionButton>
+                          <AccordionPanel pb={4} className='bg-gray-50 dark:bg-gray-800 rounded-b-lg mt-1 p-4'>
+                            <MathJax>{hint}</MathJax>
+                          </AccordionPanel>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </div>
+                )}
+              </TabPanel>
+
+              {/* Editorial Tab */}
+              <TabPanel className='p-6 space-y-6'>
+                <h2 className='text-2xl font-bold text-gray-800 dark:text-gray-100'>Editorial</h2>
+                
+                {sortedEditorial[0]?.videoUrl && (
+                  <div className='aspect-w-16 aspect-h-9'>
+                    <iframe
+                      className='w-full rounded-lg shadow-md'
+                      height='400'
+                      src={sortedEditorial[0].videoUrl}
+                      title='Solution Video'
+                      allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+                      allowFullScreen
+                    />
+                  </div>
+                )}
+
+                {sortedEditorial.map((approach, i) => (
+                  <div key={approach._id} className='bg-zinc-100 dark:bg-gray-800 p-4 rounded-lg space-y-4 shadow-sm'>
+                    <h3 className='text-xl font-semibold text-gray-800 dark:text-gray-100'>
+                      Approach {i + 1}: {approach.approachType}
+                    </h3>
+                    <p className='text-gray-600 dark:text-gray-300'>{approach.approachDesc}</p>
+                    
+                    <CodeDisplay 
+                      code={approach.code} 
+                      language={approach.language || 'python'}
+                    />
+                    
+                    <div className='grid grid-cols-2 gap-4'>
                       <div>
-                        <ul className='flex gap-2'>
-                          <li>
-                            <p className={`px-5 py-0.5 flex font-light ${problemList[0]?.difficulty == 'easy' ? 'text-[#2FF806] bg-green-800/40' : problemList[0]?.difficulty == 'medium' ? 'text-yellow-400 bg-yellow-600/40' : 'text-[#F80709] bg-red-800/40'} rounded-4xl text-lg`}>
-                              {problemList[0]?.difficulty}
-                            </p>
-                          </li>
-                          <li>
-                            <a href={'#hint'} className='flex gap-1 items-center px-5 py-0.5 font-light rounded-4xl text-center text-lg bg-zinc-500/40'>
-                              <HiOutlineLightBulb size={20} /> hints
-                            </a>
-                          </li>
-                        </ul>
+                        <h4 className='font-medium text-gray-700 dark:text-gray-300'>Time Complexity:</h4>
+                        <MathJax className='text-gray-600 dark:text-gray-400'>{approach.time_complexity}</MathJax>
                       </div>
-                      {/* problem description */}
-                      <MathJax dynamic>{problemList[0]?.quesDesc}</MathJax>
-                      {/* Example section */}
-                      <div className='space-y-5'>
-                        {problemList[0]?.problemExample?.map((exmp, index) => (
-                          <div key={index}>
-                            <p className='text-lg'>Example :  {index + 1}</p>
-                            <div className="space-y-2">
-                              <div>
-                                <span className="font-medium">Input: </span>
-                                <MathJax inline>{`\\(${exmp?.input || ''}\\)`}</MathJax>
-                              </div>
-                              <div>
-                                <span className="font-medium">Output: </span>
-                                <MathJax inline>{`\\(${exmp?.output || ''}\\)`}</MathJax>
-                              </div>
-                              <div>
-                                <span className="font-medium">Explanation: </span>
-                                <MathJax inline>{`\\(${exmp?.explaination || ''}\\)`}</MathJax>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      {/* constraints */}
                       <div>
-                        <h1 className='text-lg'>Constraints:</h1>
-                        <ul>
-                          {problemList[0]?.constraints?.map((constraint, idx) => (
-                            <li key={idx}>
-                              <MathJax>{`\\(\\bullet\\) ${constraint}`}</MathJax>
-                            </li>
-                          ))}
-                        </ul>
+                        <h4 className='font-medium text-gray-700 dark:text-gray-300'>Space Complexity:</h4>
+                        <MathJax className='text-gray-600 dark:text-gray-400'>{approach.space_complexity}</MathJax>
                       </div>
-                      {/* hints tabs */}
-                      <div id='hint' className='space-y-5'>
-                        <Accordion allowToggle>
-                          {problemList[0]?.hints?.map((hint, index) => (
-                            <AccordionItem key={index}>
-                              <h2>
-                                <AccordionButton>
-                                  <Box as="span" flex="1" textAlign="left" className="flex gap-1 items-center font-medium">
-                                    <RiLightbulbLine />
-                                    Hint {index + 1}
-                                  </Box>
-                                  <AccordionIcon />
-                                </AccordionButton>
-                              </h2>
-                              <AccordionPanel pb={4}>
-                                <MathJax>{hint}</MathJax>
-                              </AccordionPanel>
-                            </AccordionItem>
-                          ))}
-                        </Accordion>
-                      </div>
+                    </div>
+                  </div>
+                ))}
+              </TabPanel>
 
-                      <div className="text-center text-gray-500">
-                        <p>&copy; {new Date().getFullYear()} CoderHaveli.com All rights reserved.</p>
-                      </div>
-                    </TabPanel>
+              {/* Submissions Tab */}
+              <TabPanel>
+                <Submission />
+              </TabPanel>
 
-                    {/* Editorial Tab */}
-                    <TabPanel className='overflow-y-scroll h-[86.7vh] px-4 w-full font-light'>
-                      <center className='text-3xl'>Editorial</center>
-                      <br />
-                      <div className='flex justify-center max-w-[100%]'>
-                        <iframe
-                          width="560"
-                          height="315"
-                          src={editorialData[0]?.videoUrl}
-                          title="YouTube video player"
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen>
-                        </iframe>
-                      </div>
-                      <br />
-                      <div className='text-lg'>
-                        {editorialData?.map((data) => (
-                          <div key={data.quesID} className="space-y-5">
-                            {data.approach?.map((approach, approachIndex) => (
-                              <div key={approachIndex} className="space-y-2">
-                                <h1 className="font-semibold">
-                                  <MathJax>{`Approach ${approachIndex + 1}: \\(${approach.approachType}\\)`}</MathJax>
-                                </h1>
-                                <MathJax>{approach.approachDesc}</MathJax>
-                                <CodeDisplay code={approach.code} />
-                                <MathJax>
-                                  {`\\[
-                              \\begin{aligned}
-                              &\\text{Time Complexity: } ${approach.complexity.Time_Complexity} \\\\
-                              &\\text{Space Complexity: } ${approach.complexity.Space_Complexity}
-                              \\end{aligned}
-                            \\]`}
-                                </MathJax>
-                              </div>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-                    </TabPanel>
+              {/* Comments Tab */}
+              <TabPanel>
+                <div className='p-6'>
+                  <h2 className='text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4'>Comments</h2>
+                  <p className='text-gray-500 dark:text-gray-400'>Coming soon...</p>
+                </div>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+        </div>
 
-                    {/* Submission Tab */}
-                    <TabPanel>
-                      <Submission />
-                    </TabPanel>
-
-                    {/* Comments Tab */}
-                    <TabPanel>
-                      <p>Comments section will be implemented here</p>
-                    </TabPanel>
-                  </TabPanels>
-                </Tabs>
-              </div>
-
-              <div className='w-3/5 max-md:w-full'>
-                <Compiler />
-              </div>
-            </div>
-          </MathJaxContext>
-      }
-
-    </Fragment>
-
-
+        {/* Compiler Panel */}
+        <div className='w-full md:w-3/5 border-l border-gray-200 dark:border-gray-700'>
+          <Compiler />
+        </div>
+      </div>
+    </MathJaxContext>
   );
 }
 

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { FaQuoteLeft } from 'react-icons/fa';
 
@@ -16,15 +17,18 @@ export default function TestimonialSection() {
     };
 
     return (
-        <section className='flex flex-col items-center gap-8 py-10 bg-transparent text-white '>
+        <section className='flex flex-col items-center gap-8 py-16 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-200 transition-colors duration-300'>
             <h2 className='text-3xl font-semibold'>What Our Users Say</h2>
-            <div className='bg-gray-700 p-6 rounded-lg shadow-lg w-[90%] md:w-[50%] text-center bg-gradient-to-r from-zinc-500 to-zinc-900'>
-                <FaQuoteLeft className='text-blue-400 text-3xl mx-auto mb-4' />
+            <div className='bg-white dark:bg-gray-700 p-8 rounded-xl shadow-lg w-[90%] md:w-[60%] text-center border border-gray-200 dark:border-gray-600 transition-all duration-300 hover:shadow-xl'>
+                <FaQuoteLeft className='text-amber-500 dark:text-indigo-400 text-3xl mx-auto mb-4' />
                 <p className='text-lg italic'>"{testimonials[currentIndex].feedback}"</p>
-                <h4 className='mt-4 font-bold'>{testimonials[currentIndex].name}</h4>
-                <p className='text-sm text-gray-400'>{testimonials[currentIndex].role}</p>
+                <h4 className='mt-6 font-bold text-amber-600 dark:text-indigo-400'>{testimonials[currentIndex].name}</h4>
+                <p className='text-sm text-gray-500 dark:text-gray-400'>{testimonials[currentIndex].role}</p>
             </div>
-            <button onClick={nextTestimonial} className='text-zinc-800 bg-white px-3 py-3 rounded font-semibold hover:bg-zinc-300 transition cursor-pointer'>
+            <button 
+                onClick={nextTestimonial} 
+                className='text-white bg-amber-600 hover:bg-amber-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 px-6 py-3 rounded-lg font-semibold transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg'
+            >
                 Next Testimonial
             </button>
         </section>
