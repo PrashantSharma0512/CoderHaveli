@@ -7,7 +7,7 @@ import { Link } from 'react-router';
 import ThemeToggle from '../theme/themeToggler';
 const Header = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  
+
   const navItems = [
     { name: 'Home', slug: '/' },
     { name: 'Tutorial', slug: '/tutorial' },
@@ -20,15 +20,15 @@ const Header = () => {
       <header className="sticky top-0 z-50 bg-white shadow-md dark:bg-gray-900 transition-colors duration-300 dark:border-b dark:border-white">
         <nav className="container mx-auto px-4 py-3 flex justify-between items-center">
           {/* Logo - Centered on mobile */}
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="text-3xl font-bold text-amber-600 dark:text-indigo-400 max-md:mx-auto"
             aria-label="CoderHaveli Home"
           >
-            
+
             CoderHaveli
           </Link>
-
+          <ThemeToggle />
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <ul className="flex space-x-6">
@@ -51,23 +51,23 @@ const Header = () => {
             <div className="relative">
               <Search />
             </div>
-            <button 
+            <button
               className="text-gray-700 dark:text-gray-200 hover:text-amber-600 dark:hover:text-indigo-400 transition-colors duration-200"
               aria-label="Notifications"
             >
               <IoMdNotificationsOutline size={26} />
             </button>
-            <button 
+            <button
               className="text-gray-700 dark:text-gray-200 hover:text-amber-600 dark:hover:text-indigo-400 transition-colors duration-200"
               aria-label="Account"
             >
               <RiAccountCircleLine size={30} />
             </button>
-            <ThemeToggle/>  
+
           </div>
 
           {/* Mobile Menu Button */}
-          <button 
+          <button
             onClick={onOpen}
             className="md:hidden text-gray-700 dark:text-gray-200 focus:outline-none"
             aria-label="Open menu"
@@ -83,7 +83,7 @@ const Header = () => {
           <DrawerHeader className="border-b border-gray-200 dark:border-gray-700">
             <div className="flex justify-between items-center">
               <span className="text-2xl font-bold text-amber-600 dark:text-indigo-400">CoderHaveli</span>
-              <button 
+              <button
                 onClick={onClose}
                 className="text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400"
                 aria-label="Close menu"
@@ -92,12 +92,12 @@ const Header = () => {
               </button>
             </div>
           </DrawerHeader>
-          
+
           <DrawerBody className="p-4">
             <div className="mb-4">
               <Search />
             </div>
-            
+
             <ul className="space-y-3">
               {navItems.map((item) => (
                 <li key={item.name}>
@@ -112,16 +112,16 @@ const Header = () => {
                 </li>
               ))}
             </ul>
-            
+
             <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex space-x-4">
-              <button 
+              <button
                 className="flex items-center justify-center w-full py-2 px-4 rounded-lg bg-amber-100 dark:bg-gray-800 text-amber-600 dark:text-indigo-400 hover:bg-amber-200 dark:hover:bg-gray-700 transition-colors duration-200"
                 aria-label="Notifications"
               >
                 <IoMdNotificationsOutline size={22} className="mr-2" />
                 Notifications
               </button>
-              <button 
+              <button
                 className="flex items-center justify-center w-full py-2 px-4 rounded-lg bg-amber-100 dark:bg-gray-800 text-amber-600 dark:text-indigo-400 hover:bg-amber-200 dark:hover:bg-gray-700 transition-colors duration-200"
                 aria-label="Account"
               >
