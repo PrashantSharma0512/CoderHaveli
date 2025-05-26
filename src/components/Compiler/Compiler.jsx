@@ -32,7 +32,7 @@ import "ace-builds/src-noconflict/mode-c_cpp";
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/mode-rust";
 
-function Compiler() {
+function Compiler({testcase}) {
   // Language options
   const options = [
     { name: "JavaScript", value: "javascript" },
@@ -58,11 +58,7 @@ function Compiler() {
   ];
 
   // Test cases
-  const [testcases, setTestcases] = useState([
-    { id: 1, input: "1 2", output: "3" },
-    { id: 2, input: "2 3", output: "5" },
-    { id: 3, input: "3 4", output: "7" },
-  ]);
+  const [testcases, setTestcases] = useState(testcase);
 
   const dispatch = useDispatch();
   const { code: storedCode = "console.log('hello javascript')", mode: storedMode = "javascript" } =

@@ -39,6 +39,7 @@ function Practice() {
   const [editorialData, setEditorialData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [testcases, setTestcases] = useState([])
   const slug = useParams();
   const id = slug['*']
   const dispatch = useDispatch();
@@ -63,6 +64,9 @@ function Practice() {
         
         setProblemList(problemRes.data);
         setEditorialData(editorialRes.data.sort((a, b) => a.order - b.order));
+        console.log('prashant sharma ',problemRes?.data[0]?.problemExample);
+        
+        setTestcases(problemRes?.data[0]?.problemExample)
       } catch (err) {
         setError(err);
         toast({
@@ -148,7 +152,7 @@ function Practice() {
                   }`}>
                     {problem.difficulty}
                   </span>
-                  <button className='flex items-center gap-2 px-4 py-1 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors text-gray-800 dark:text-gray-200'>
+                  <button className='flex items-center gap-2 cursor-pointer px-4 py-1 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors text-gray-800 dark:text-gray-200' >
                     <HiOutlineLightBulb size={16} className='text-amber-600 dark:text-indigo-400' />
                     Hints
                   </button>
@@ -185,7 +189,6 @@ function Practice() {
                     </ul>
                   </div>
                 )}
-
                 {problem.tags?.length > 0 && (
                   <div>
                     <h3 className='text-lg font-medium mb-2'>Topics</h3>
@@ -201,7 +204,7 @@ function Practice() {
 
                 {problem.hints?.length > 0 && (
                   <div>
-                    <h3 className='text-lg font-medium mb-2'>Hints</h3>
+                    <h3 className='text-lg font-medium mb-2' id='hint'>Hints</h3>
                     <Accordion allowToggle>
                       {problem.hints.map((hint, i) => (
                         <AccordionItem key={i} border='none' className='mb-2'>
@@ -283,7 +286,7 @@ function Practice() {
 
         {/* Compiler Panel */}
         <div className='w-full md:w-3/5 border-l border-gray-200 dark:border-gray-700'>
-          <Compiler />
+          <Compiler testcase={testcases}/>
         </div>
       </div>
     </MathJaxContext>
