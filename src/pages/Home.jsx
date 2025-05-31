@@ -29,11 +29,7 @@ function Home() {
         const fetchData = async () => {
             try {
                 const [coursesResponse, carouselResponse, cardResponse] = await Promise.all([
-                    axiosInstance.get('/api/get-courses', {
-                        headers: {
-                            'Content-Type': 'application/json',
-                        }
-                    }),
+                    axiosInstance.get('/api/get-courses'),
                     axiosInstance.get('/api/get-carousel'),
                     axiosInstance.get('/api/get-card-data')
                 ]);
