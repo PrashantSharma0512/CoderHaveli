@@ -11,7 +11,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://coderhaveli-com.onrender.com', // Replace with your backend server URL
+        target: 'https://coderhaveli-com.onrender.com', 
         changeOrigin: true,
         secure: false,
         ws:true,
