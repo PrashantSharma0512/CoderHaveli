@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router';
-
+import axiosInstance from '../helper/axiosInstance';
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '', role: 'student' });
   const [message, setMessage] = useState('');
@@ -16,7 +16,7 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await axios.post('/auth/login', form);
+      const res = await axiosInstance.post('/auth/login', form);
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('role', res.data.role);
       setMessage('Login successful');

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router';
+import axiosInstance from '../helper/axiosInstance';
 
 const Register = () => {
   const [form, setForm] = useState({ 
@@ -22,7 +23,7 @@ const Register = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await axios.post('/auth/register', form);
+      const res = await axiosInstance.post('/auth/register', form);
       setMessage(res.data.message);
       // Redirect to login after successful registration
       setTimeout(() => navigate('/login'), 2000);

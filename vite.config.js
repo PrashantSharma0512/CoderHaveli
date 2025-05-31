@@ -8,16 +8,16 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'https://coderhaveli-com.onrender.com', 
-        changeOrigin: true,
-        secure: false,
-        ws:true,
-        // rewrite: (path) => path.replace(/^\/api/, ''),
-      }
-    }
-  }
+  // server: {
+  //   proxy: {
+  //     '/api': {
+  //       target: 'https://coderhaveli-com.onrender.com', 
+  //       changeOrigin: true,
+  //       secure: false,
+  //       ws:true,
+  //       // rewrite: (path) => path.replace(/^\/api/, ''),
+  //     }
+  //   }
+  // }
 })
  

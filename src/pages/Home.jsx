@@ -5,7 +5,8 @@ import Card from '../components/Cards';
 import CourseCard from '../components/CourseCards';
 import TestimonialSection from '../components/Testomonial';
 import FAQSection from '../components/FAQ';
-import axios from 'axios';
+import axiosInstance from '../components/helper/axiosInstance';
+
 
 
 const faqs = [
@@ -28,13 +29,13 @@ function Home() {
         const fetchData = async () => {
             try {
                 const [coursesResponse, carouselResponse, cardResponse] = await Promise.all([
-                    axios.get('/api/get-courses', {
+                    axiosInstance.get('/api/get-courses', {
                         headers: {
                             'Content-Type': 'application/json',
                         }
                     }),
-                    axios.get('/api/get-carousel'),
-                    axios.get('/api/get-card-data')
+                    axiosInstance.get('/api/get-carousel'),
+                    axiosInstance.get('/api/get-card-data')
                 ]);
 
                 setCarouselImages(carouselResponse.data.map(item => item.url));

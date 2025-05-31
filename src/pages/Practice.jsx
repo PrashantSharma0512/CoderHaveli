@@ -33,6 +33,7 @@ import Loading from '../components/Loading';
 
 import { FaTag } from 'react-icons/fa6';
 import { addCode, updateCode } from '../store/slice';
+import axiosInstance from '../components/helper/axiosInstance';
 function Practice() {
   const [solved, setSolved] = useState(false);
   const [problemList, setProblemList] = useState([]);
@@ -58,8 +59,8 @@ function Practice() {
       try {
         setLoading(true);
         const [problemRes, editorialRes] = await Promise.all([
-          axios.get(`/api/problem/${id}`),
-          axios.get(`/api/problem/get-editorial/${id}`)
+          axiosInstance.get(`/api/problem/${id}`),
+          axiosInstance.get(`/api/problem/get-editorial/${id}`)
         ]);
         
         setProblemList(problemRes.data);

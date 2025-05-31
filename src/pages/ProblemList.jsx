@@ -4,6 +4,7 @@ import { Search, SortAsc, Filter, ChevronRight } from "lucide-react";
 import { Link } from "react-router";
 import axios from "axios";
 import Loading from "../components/Loading";
+import axiosInstance from "../components/helper/axiosInstance";
 
 export default function ProblemList() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -15,7 +16,7 @@ export default function ProblemList() {
   useEffect(() => {
     const fetchAllProblem = async () => {
       try {
-        const response = await axios.get('/api/problem');
+        const response = await axiosInstance.get('/api/problem');
         setQuestions(response.data);
       } catch (error) {
         console.error(error);
