@@ -14,6 +14,8 @@ import Signup from './components/CredentialsPages/Signup.jsx';
 import Loading from './components/Loading.jsx';
 import AboutUs from './pages/About.jsx';
 import ProblemList from './pages/ProblemList.jsx';
+import Login from './components/auth/Login.jsx';
+import Register from './components/auth/Register.jsx';
 const theme = extendTheme({
   styles: {
     global: {
@@ -34,6 +36,8 @@ createRoot(document.getElementById('root')).render(
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<App />}>
+              <Route path='/login' element={<Login />} />
+              <Route path='/register' element={<Register />} />
               <Route index element={<Home />} />
               <Route path="/problem/*" element={<Practice />} />
               <Route path="/practice" element={<ProblemList/>} />

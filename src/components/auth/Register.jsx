@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 const Register = () => {
   const [form, setForm] = useState({ 
@@ -22,7 +22,7 @@ const Register = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await axios.post('http://localhost:5000/register', form);
+      const res = await axios.post('/auth/register', form);
       setMessage(res.data.message);
       // Redirect to login after successful registration
       setTimeout(() => navigate('/login'), 2000);
@@ -117,7 +117,7 @@ const Register = () => {
                 </p>
               </div>
 
-              <div>
+              {/* <div>
                 <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
                   I am a
                 </label>
@@ -131,7 +131,7 @@ const Register = () => {
                   <option value="student">Student</option>
                   <option value="teacher">Teacher</option>
                 </select>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex items-center">

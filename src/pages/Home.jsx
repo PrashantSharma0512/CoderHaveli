@@ -28,9 +28,13 @@ function Home() {
         const fetchData = async () => {
             try {
                 const [coursesResponse, carouselResponse, cardResponse] = await Promise.all([
-                    axios.get('http://localhost:3000/api/get-courses'),
-                    axios.get('http://localhost:3000/api/get-carousel'),
-                    axios.get('http://localhost:3000/api/get-card-data')
+                    axios.get('/api/get-courses', {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    }),
+                    axios.get('/api/get-carousel'),
+                    axios.get('/api/get-card-data')
                 ]);
 
                 setCarouselImages(carouselResponse.data.map(item => item.url));
@@ -47,7 +51,7 @@ function Home() {
     return (
         <div className='bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300 min-h-screen'>
             {/* <ThemeToggle /> */}
-            
+
             <div className='w-full py-8'>
                 <Carousel IMAGES={carouselImages} />
             </div>
@@ -66,8 +70,8 @@ function Home() {
                 </div>
                 {visibleCount < cards.length && (
                     <center>
-                        <button 
-                            onClick={showMore} 
+                        <button
+                            onClick={showMore}
                             className='text-white bg-amber-600 hover:bg-amber-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 px-6 py-3 rounded-lg font-semibold transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg'
                         >
                             View More
@@ -97,8 +101,8 @@ function Home() {
                 </div>
                 {visibleCourseCount < coursesData.length && (
                     <center>
-                        <button 
-                            onClick={showMoreCourse} 
+                        <button
+                            onClick={showMoreCourse}
                             className='text-white bg-amber-600 hover:bg-amber-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 px-6 py-3 rounded-lg font-semibold transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg'
                         >
                             View More

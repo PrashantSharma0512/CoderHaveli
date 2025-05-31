@@ -31,7 +31,7 @@ npm start
 ```
 
 ## Usage
-1. Open the project in your browser at `http://localhost:3000`
+1. Open the project in your browser at ``
 2. Explore coding tutorials and courses.
 3. Read user testimonials and FAQs.
 4. Learn and enhance your coding skills!

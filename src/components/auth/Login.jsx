@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '', role: 'student' });
@@ -16,7 +16,7 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await axios.post('http://localhost:5000/login', form);
+      const res = await axios.post('/auth/login', form);
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('role', res.data.role);
       setMessage('Login successful');
@@ -77,7 +77,7 @@ const Login = () => {
                 />
               </div>
               
-              <div>
+              {/* <div>
                 <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
                   I am a
                 </label>
@@ -91,7 +91,7 @@ const Login = () => {
                   <option value="student">Student</option>
                   <option value="teacher">Teacher</option>
                 </select>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex items-center justify-between">

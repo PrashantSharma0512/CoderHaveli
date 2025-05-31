@@ -15,7 +15,7 @@ export default function ProblemList() {
   useEffect(() => {
     const fetchAllProblem = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/problem/');
+        const response = await axios.get('/api/problem');
         setQuestions(response.data);
       } catch (error) {
         console.error(error);
