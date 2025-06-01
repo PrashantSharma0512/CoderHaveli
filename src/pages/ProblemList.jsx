@@ -21,7 +21,7 @@ export default function ProblemList() {
       } catch (error) {
         console.error(error);
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     };
     fetchAllProblem();
