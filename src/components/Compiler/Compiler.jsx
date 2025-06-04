@@ -31,8 +31,9 @@ import "ace-builds/src-noconflict/mode-python";
 import "ace-builds/src-noconflict/mode-c_cpp";
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/mode-rust";
+import axiosInstance from "../helper/axiosInstance";
 
-function Compiler({testcase}) {
+function Compiler({ testcase ,quesId }) {
   // Language options
   const options = [
     { name: "JavaScript", value: "javascript" },
@@ -58,7 +59,10 @@ function Compiler({testcase}) {
   ];
 
   // Test cases
-  const [testcases, setTestcases] = useState(testcase);
+  const [testcases, setTestcases] = useState(
+    testcase.map((tc, index) => ({ ...tc, id: index }))
+  );
+
 
   const dispatch = useDispatch();
   const { code: storedCode = "console.log('hello javascript')", mode: storedMode = "javascript" } =
@@ -100,14 +104,42 @@ function Compiler({testcase}) {
   const handleDelete = (id) => {
     setTestcases(prev => prev.filter(test => test.id !== id));
   };
+  useEffect(() => {
+    try {
+      const res = axiosInstance.post("/api/run", {
+        quesId: quesId,
+        lang: selectedLang,
+        code: code,
+        testcases: testcases.map(test => ({
+          input: test.input,
+          output: test.output
+        }))
+      })
+        .then((response) => {
+          const { data } = response;
+          if (data && data.results) {
+            const results = data.results.map((result, index) => ({
+              ...testcases[index],
+              output: result.output,
+              status: result.status,
+              isCorrect: result.isCorrect
+            }));
+            setTestcases(results);
+            setOutput(JSON.stringify(results, null, 2));
+          }
+        })
+    } catch (error) {
+      console.log(error);
 
+    }
+  }, [testcases]);
   return (
     <div className="flex flex-col w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
       {/* Editor Header */}
       <div className="flex justify-between items-center p-2 bg-gray-100 dark:bg-gray-800 ">
         <div className="flex items-center gap-4">
           <HiOutlineCode size={24} className="text-amber-600 dark:text-indigo-400" />
-          
+
           {/* Language Selector */}
           <select
             value={selectedLang}
@@ -115,8 +147,8 @@ function Compiler({testcase}) {
             className="p-1.5 rounded-md bg-white dark:bg-gray-700  text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-indigo-500"
           >
             {options.map((option) => (
-              <option 
-                key={option.value} 
+              <option
+                key={option.value}
                 value={option.value}
                 className="bg-white dark:bg-gray-800"
               >
@@ -124,7 +156,7 @@ function Compiler({testcase}) {
               </option>
             ))}
           </select>
-          
+
           {/* Theme Selector */}
           <select
             value={selectedTheme}
@@ -132,8 +164,8 @@ function Compiler({testcase}) {
             className="p-1.5 rounded-md bg-white dark:bg-gray-700  text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-indigo-500 hidden md:block"
           >
             {aceThemes.map((t) => (
-              <option 
-                key={t.name} 
+              <option
+                key={t.name}
                 value={t.name}
                 className="bg-white dark:bg-gray-800"
               >
@@ -141,7 +173,7 @@ function Compiler({testcase}) {
               </option>
             ))}
           </select>
-          
+
           {/* Font Size Selector */}
           <select
             value={selectedFont}
@@ -149,8 +181,8 @@ function Compiler({testcase}) {
             className="p-1.5 rounded-md bg-white dark:bg-gray-700  text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-indigo-500 hidden md:block"
           >
             {fontSizes.map((size) => (
-              <option 
-                key={size} 
+              <option
+                key={size}
                 value={size}
                 className="bg-white dark:bg-gray-800"
               >
@@ -159,19 +191,19 @@ function Compiler({testcase}) {
             ))}
           </select>
         </div>
-        
+
         <div className="flex gap-3">
           {/* Word Wrap Toggle */}
-          <button 
+          <button
             onClick={() => setWrapEnabled(!wrapEnabled)}
             className="p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             aria-label={wrapEnabled ? "Disable word wrap" : "Enable word wrap"}
           >
             <CgFormatLeft size={20} className="text-gray-700 dark:text-gray-300" />
           </button>
-          
+
           {/* Fullscreen Toggle */}
-          <button 
+          <button
             onClick={() => setIsFullScreen(!isFullScreen)}
             className="p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             aria-label={isFullScreen ? "Exit fullscreen" : "Enter fullscreen"}
@@ -208,13 +240,13 @@ function Compiler({testcase}) {
 
       {/* Action Buttons */}
       <div className="flex justify-end gap-4 p-3 bg-gray-100 dark:bg-gray-800">
-        <button 
+        <button
           onClick={() => setSelectedTabIndex(1)}
           className="px-4 py-2 bg-green-500 text-white hover:bg-green-300 dark:bg-green-500 dark:hover:bg-gray-600  dark:text-gray-200 rounded-md transition-colors"
         >
           Run
         </button>
-        <button 
+        <button
           onClick={() => setSelectedTabIndex(1)}
           className="px-4 py-2 bg-amber-500 hover:bg-amber-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white rounded-md transition-colors"
         >
@@ -226,8 +258,8 @@ function Compiler({testcase}) {
       <div className="bg-white dark:bg-gray-900 p-4 ">
         <Tabs index={selectedTabIndex} onChange={(index) => setSelectedTabIndex(index)}>
           <TabList className=" ">
-            <Tab 
-              _selected={{ 
+            <Tab
+              _selected={{
                 color: 'amber.600 dark:indigo.400',
                 borderBottom: '2px solid',
                 borderColor: 'amber.600 dark:indigo.400'
@@ -236,8 +268,8 @@ function Compiler({testcase}) {
             >
               <GrTest /> Test Cases
             </Tab>
-            <Tab 
-              _selected={{ 
+            <Tab
+              _selected={{
                 color: 'amber.600 dark:indigo.400',
                 borderBottom: '2px solid',
                 borderColor: 'amber.600 dark:indigo.400'

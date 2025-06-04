@@ -64,10 +64,9 @@ function Practice() {
         ]);
         
         setProblemList(problemRes.data);
-        setEditorialData(editorialRes.data.sort((a, b) => a.order - b.order));
-        console.log('prashant sharma ',problemRes?.data[0]?.problemExample);
-        
+        setEditorialData(editorialRes.data.sort((a, b) => a.order - b.order));        
         setTestcases(problemRes?.data[0]?.problemExample)
+        console.log(testcases,'prashanrrhd');
       } catch (err) {
         setError(err);
         toast({
@@ -101,7 +100,7 @@ function Practice() {
 
   return (
     <MathJaxContext>
-      <div className='flex flex-col md:flex-row w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100'>
+      <div className='flex flex-col md:flex-row w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 overflow-hidden'>
         {/* Problem Description Panel */}
         <div className='w-full md:w-2/5 overflow-hidden border-r border-gray-200 dark:border-gray-700'>
           <Tabs variant='unstyled' isLazy>
@@ -287,7 +286,7 @@ function Practice() {
 
         {/* Compiler Panel */}
         <div className='w-full md:w-3/5 border-l border-gray-200 dark:border-gray-700'>
-          <Compiler testcase={testcases}/>
+          <Compiler testcase={testcases} quesId={problem.quesId} />
         </div>
       </div>
     </MathJaxContext>
