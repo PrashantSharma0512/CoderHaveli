@@ -32,8 +32,9 @@ import "ace-builds/src-noconflict/mode-c_cpp";
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/mode-rust";
 import axiosInstance from "../helper/axiosInstance";
+import { CheckCircleIcon, XCircleIcon } from "lucide-react";
 
-function Compiler({ testcase ,quesId }) {
+function Compiler({ testcase, quesId }) {
   // Language options
   const options = [
     { name: "JavaScript", value: "javascript" },
@@ -104,9 +105,10 @@ function Compiler({ testcase ,quesId }) {
   const handleDelete = (id) => {
     setTestcases(prev => prev.filter(test => test.id !== id));
   };
-  useEffect(() => {
+  const handleRun = async () => {
     try {
-      const res = axiosInstance.post("/api/run", {
+      setSelectedTabIndex(1)
+      const response = await axiosInstance.post("/api/problem/run", {
         quesId: quesId,
         lang: selectedLang,
         code: code,
@@ -115,24 +117,14 @@ function Compiler({ testcase ,quesId }) {
           output: test.output
         }))
       })
-        .then((response) => {
-          const { data } = response;
-          if (data && data.results) {
-            const results = data.results.map((result, index) => ({
-              ...testcases[index],
-              output: result.output,
-              status: result.status,
-              isCorrect: result.isCorrect
-            }));
-            setTestcases(results);
-            setOutput(JSON.stringify(results, null, 2));
-          }
-        })
+      setOutput(response.data)
+      console.log(response, " chacha ji ");
     } catch (error) {
       console.log(error);
-
     }
-  }, [testcases]);
+  }
+  console.log(output, "cjad");
+
   return (
     <div className="flex flex-col w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
       {/* Editor Header */}
@@ -241,7 +233,7 @@ function Compiler({ testcase ,quesId }) {
       {/* Action Buttons */}
       <div className="flex justify-end gap-4 p-3 bg-gray-100 dark:bg-gray-800">
         <button
-          onClick={() => setSelectedTabIndex(1)}
+          onClick={handleRun}
           className="px-4 py-2 bg-green-500 text-white hover:bg-green-300 dark:bg-green-500 dark:hover:bg-gray-600  dark:text-gray-200 rounded-md transition-colors"
         >
           Run
@@ -359,11 +351,31 @@ function Compiler({ testcase ,quesId }) {
 
             {/* Results Tab */}
             <TabPanel>
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 min-h-32">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 min-h-32 transition-colors duration-200">
                 {output ? (
-                  <pre className="text-gray-800 dark:text-gray-200">{output}</pre>
+                  <div className="space-y-2">
+                    <div className={`flex items-center gap-2 ${output.isFullyPassed ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                      {output.isFullyPassed ? (
+                        <>
+                          <CheckCircleIcon className="h-5 w-5" />
+                          <span className="font-medium">Accepted</span>
+                        </>
+                      ) : (
+                        <>
+                          <XCircleIcon className="h-5 w-5" />
+                          <span className="font-medium">Wrong Answer</span>
+                        </>
+                      )}
+                    </div>
+
+                    <div className="text-sm text-gray-600 dark:text-gray-300">
+                      {output.passedTestCases} of {output.totalTestCases} test cases passed
+                    </div>
+                  </div>
                 ) : (
-                  <p className="text-gray-500 dark:text-gray-400">Run your code to see results</p>
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-gray-500 dark:text-gray-400 italic">Run your code to see results</p>
+                  </div>
                 )}
               </div>
             </TabPanel>
