@@ -351,34 +351,46 @@ function Compiler({ testcase, quesId }) {
 
             {/* Results Tab */}
             <TabPanel>
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 min-h-32 transition-colors duration-200">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-6 min-h-32 shadow-md transition-all duration-300">
                 {output ? (
-                  <div className="space-y-2">
-                    <div className={`flex items-center gap-2 ${output.isFullyPassed ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  <div className="space-y-4">
+                    {/* Status Badge */}
+                    <div
+                      className={`flex items-center gap-3 px-4 py-2 rounded-full text-sm font-semibold w-fit transition-colors duration-300
+            ${output.isFullyPassed
+                          ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                          : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
+                        }`}
+                    >
                       {output.isFullyPassed ? (
                         <>
                           <CheckCircleIcon className="h-5 w-5" />
-                          <span className="font-medium">Accepted</span>
+                          Accepted
                         </>
                       ) : (
                         <>
                           <XCircleIcon className="h-5 w-5" />
-                          <span className="font-medium">Wrong Answer</span>
+                          Wrong Answer
                         </>
                       )}
                     </div>
 
-                    <div className="text-sm text-gray-600 dark:text-gray-300">
-                      {output.passedTestCases} of {output.totalTestCases} test cases passed
+                    {/* Testcase Summary */}
+                    <div className="text-sm text-gray-700 dark:text-gray-300">
+                      <span className="font-medium text-base">
+                        {output.passedTestCases} / {output.totalTestCases}
+                      </span>{' '}
+                      test cases passed
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <p className="text-gray-500 dark:text-gray-400 italic">Run your code to see results</p>
+                  <div className="flex items-center justify-center h-24 text-gray-500 dark:text-gray-400 italic">
+                    Run your code to see results
                   </div>
                 )}
               </div>
             </TabPanel>
+
           </TabPanels>
         </Tabs>
       </div>
