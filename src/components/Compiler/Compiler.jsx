@@ -123,7 +123,20 @@ function Compiler({ testcase, quesId }) {
       console.log(error);
     }
   }
-  console.log(output, "cjad");
+  const handleSubmit = async () => {
+    try {
+      setSelectedTabIndex(1)
+      const response = await axiosInstance.post("/api/problem/submit", {
+        quesId: quesId,
+        lang: selectedLang,
+        code: code,
+      })
+      setOutput(response.data)
+      console.log(response, " chacha ji ");
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   return (
     <div className="flex flex-col w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
@@ -239,7 +252,7 @@ function Compiler({ testcase, quesId }) {
           Run
         </button>
         <button
-          onClick={() => setSelectedTabIndex(1)}
+          onClick={handleSubmit}
           className="px-4 py-2 bg-amber-500 hover:bg-amber-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white rounded-md transition-colors"
         >
           Submit
