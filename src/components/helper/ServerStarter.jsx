@@ -30,7 +30,7 @@ function ServerStarter() {
             onClick={startServer}
             title="Wake up Compiler Server"
             disabled={loading}
-            className={`fixed top-1 right-3 z-50 p-3 rounded-full text-white shadow-lg transition-all duration-300
+            className={`fixed bottom-20 right-6 z-50 p-3 rounded-full text-white shadow-lg transition-all duration-300
                 ${started ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
                 dark:bg-indigo-500 dark:hover:bg-indigo-600
                 ${loading ? 'opacity-60 cursor-not-allowed' : ''}
