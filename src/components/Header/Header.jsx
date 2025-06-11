@@ -5,6 +5,7 @@ import { RiAccountCircleLine, RiMenu3Fill } from "react-icons/ri";
 import { Drawer, DrawerBody, DrawerContent, DrawerHeader, useDisclosure } from '@chakra-ui/react';
 import { Link } from 'react-router';
 import ThemeToggle from '../theme/themeToggler';
+import ServerStarter from '../helper/ServerStarter';
 const Header = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -30,6 +31,9 @@ const Header = () => {
           </Link>
           {/* theme toggler */}
           <ThemeToggle />
+
+          {/* Server Restarter */}
+          <ServerStarter />
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <ul className="flex space-x-6">

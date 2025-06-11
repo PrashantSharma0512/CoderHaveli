@@ -79,7 +79,7 @@ function Compiler({ testcase, quesId }) {
   const [editTest, setEditTest] = useState({ input: "", output: "" });
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [isFullScreen, setIsFullScreen] = useState(false);
-
+  const [loading, setLoading] = useState(false)
   const fontSizes = [12, 14, 16, 18, 20, 22, 24, 26, 28, 30];
 
   useEffect(() => {
@@ -107,6 +107,7 @@ function Compiler({ testcase, quesId }) {
   };
   const handleRun = async () => {
     try {
+      setLoading(true)
       setSelectedTabIndex(1)
       const response = await axiosInstance.post("/api/problem/run", {
         quesId: quesId,
@@ -118,6 +119,7 @@ function Compiler({ testcase, quesId }) {
         }))
       })
       setOutput(response.data)
+      setLoading(false)
       console.log(response, " chacha ji ");
     } catch (error) {
       console.log(error);
@@ -366,48 +368,76 @@ function Compiler({ testcase, quesId }) {
             <TabPanel>
               <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-6 min-h-32 shadow-md transition-all duration-300">
                 {output ? (
-                  <div className="space-y-4">
-                    {/* Status Badge */}
-                    <div
-                      className={`flex items-center gap-3 px-4 py-2 rounded-full text-sm font-semibold w-fit transition-colors duration-300
-            ${output.isFullyPassed
-                          ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                          : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
-                        }`}
-                    >
-                      {output.isFullyPassed ? (
-                        <>
-                          <CheckCircleIcon className="h-5 w-5" />
-                          Accepted
-                        </>
-                      ) : (
-                        <>
-                          <XCircleIcon className="h-5 w-5" />
-                          Wrong Answer
-                        </>
-                      )}
+                  loading ? (
+                    <div className="flex flex-col items-center justify-center h-32 space-y-3 text-indigo-600 dark:text-indigo-400">
+                      <svg
+                        className="animate-spin h-8 w-8 text-current"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                        ></path>
+                      </svg>
+                      <p className="text-sm font-medium">Executing your code, please wait...</p>
                     </div>
 
-                    {/* Testcase Summary */}
-                    <div className="text-sm text-gray-700 dark:text-gray-300">
-                      <span className="font-medium text-base">
-                        {output.passedTestCases} / {output.totalTestCases}
-                      </span>{' '}
-                      test cases passed
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Status Badge */}
+                      <div
+                        className={`flex items-center gap-3 px-4 py-2 rounded-full text-sm font-semibold w-fit transition-colors duration-300
+          ${output.isFullyPassed
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                            : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
+                          }`}
+                      >
+                        {output.isFullyPassed ? (
+                          <>
+                            <CheckCircleIcon className="h-5 w-5" />
+                            Accepted
+                          </>
+                        ) : (
+                          <>
+                            <XCircleIcon className="h-5 w-5" />
+                            Wrong Answer
+                          </>
+                        )}
+                      </div>
+
+                      {/* Testcase Summary */}
+                      <div className="text-sm text-gray-700 dark:text-gray-300">
+                        <span className="font-medium text-base">
+                          {output.passedTestCases} / {output.totalTestCases}
+                        </span>{' '}
+                        test cases passed
+                      </div>
                     </div>
-                  </div>
+                  )
                 ) : (
                   <div className="flex items-center justify-center h-24 text-gray-500 dark:text-gray-400 italic">
                     Run your code to see results
                   </div>
                 )}
+
               </div>
             </TabPanel>
 
           </TabPanels>
         </Tabs>
       </div>
-    </div>
+    </div >
   );
 }
 
