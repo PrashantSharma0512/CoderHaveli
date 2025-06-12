@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Carousel from '../components/Carousel';
-import Card from '../components/Cards';
+import TutorialCard from '../components/TutorialCard';
 import CourseCard from '../components/CourseCards';
 import TestimonialSection from '../components/Testomonial';
 import FAQSection from '../components/FAQ';
@@ -92,7 +92,7 @@ function Home() {
                     ) : (
                         cards.slice(0, visibleCount).map((card, index) => (
                             <div key={index} className='w-full sm:w-[45%] md:w-[300px] text-center'>
-                                <Card {...card} />
+                                <TutorialCard {...card} />
                             </div>
                         ))
                     )}

@@ -29,11 +29,10 @@ import axios from 'axios';
 import { MathJaxContext, MathJax } from 'better-react-mathjax';
 import { useParams } from 'react-router';
 import Loading from '../components/Loading';
-// import ErrorBoundary from '../components/ErrorBoundary';
-
 import { FaTag } from 'react-icons/fa6';
 import { addCode, updateCode } from '../store/slice';
 import axiosInstance from '../components/helper/axiosInstance';
+
 function Practice() {
   const [solved, setSolved] = useState(false);
   const [problemList, setProblemList] = useState([]);
@@ -62,11 +61,10 @@ function Practice() {
           axiosInstance.get(`/api/problem/${id}`),
           axiosInstance.get(`/api/problem/get-editorial/${id}`)
         ]);
-        
+
         setProblemList(problemRes.data);
-        setEditorialData(editorialRes.data.sort((a, b) => a.order - b.order));        
+        setEditorialData(editorialRes.data.sort((a, b) => a.order - b.order));
         setTestcases(problemRes?.data[0]?.problemExample)
-        console.log(testcases,'prashanrrhd');
       } catch (err) {
         setError(err);
         toast({
@@ -87,7 +85,7 @@ function Practice() {
   useEffect(() => {
     const isSolved = previousSolutions.some(s => s.status === 'Accepted');
     setSolved(isSolved);
-    dispatch(isSolved ? 
+    dispatch(isSolved ?
       updateCode({ id: 1, code: previousSolutions[0].code, mode: previousSolutions[0].mode }) :
       addCode({ id: 1, code: 'print(hello world!)', mode: 'python' })
     );
@@ -98,8 +96,35 @@ function Practice() {
   const problem = problemList[0] || {};
   const sortedEditorial = editorialData;
 
+  // Function to safely render MathJax content
+  const renderMathJax = (content) => {
+    if (!content) return null;
+    return <MathJax>{content}</MathJax>;
+  };
+
+  // Function to render inline MathJax content
+  const renderInlineMathJax = (content) => {
+    if (!content) return null;
+    return <MathJax inline>{`\\(${content}\\)`}</MathJax>;
+  };
+
   return (
-    <MathJaxContext>
+    <MathJaxContext
+      config={{
+        loader: { load: ["[tex]/html"] },
+        tex: {
+          packages: { "[+]": ["html"] },
+          inlineMath: [["$", "$"], ["\\(", "\\)"]],
+          displayMath: [["$$", "$$"], ["\\[", "\\]"]],
+          processEscapes: true,
+          processEnvironments: true
+        },
+        options: {
+          ignoreHtmlClass: ".*|",
+          processHtmlClass: "arithmatex"
+        }
+      }}
+    >
       <div className='flex flex-col md:flex-row w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 overflow-hidden'>
         {/* Problem Description Panel */}
         <div className='w-full md:w-2/5 overflow-hidden border-r border-gray-200 dark:border-gray-700'>
@@ -113,7 +138,7 @@ function Practice() {
               ].map((tab, index) => (
                 <Tab
                   key={index}
-                  _selected={{ 
+                  _selected={{
                     color: 'amber.600 dark:indigo.400',
                     borderBottom: '2px solid',
                     borderColor: 'amber.600 dark:indigo.400'
@@ -131,8 +156,8 @@ function Practice() {
               <TabPanel className='p-6 space-y-6'>
                 <div className='flex justify-between items-center'>
                   <h1 className='text-2xl font-bold flex items-center gap-2'>
-                    <MathJax>{`\\(${problem.quesId}.\\)`}</MathJax>
-                    <MathJax>{problem.quesName}</MathJax>
+                    {renderInlineMathJax(`${problem.quesId}.`)}
+                    {problem.quesName}
                   </h1>
                   {solved && (
                     <span className='flex items-center gap-2 text-green-500 dark:text-green-400'>
@@ -143,13 +168,12 @@ function Practice() {
                 </div>
 
                 <div className='flex flex-wrap gap-2'>
-                  <span className={`px-4 py-1 rounded-full text-sm font-medium ${
-                    problem.difficulty === 'easy' ? 
+                  <span className={`px-4 py-1 rounded-full text-sm font-medium ${problem.difficulty === 'easy' ?
                     'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                    problem.difficulty === 'medium' ? 
-                    'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' :
-                    'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                  }`}>
+                    problem.difficulty === 'medium' ?
+                      'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' :
+                      'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    }`}>
                     {problem.difficulty}
                   </span>
                   <button className='flex items-center gap-2 cursor-pointer px-4 py-1 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors text-gray-800 dark:text-gray-200' >
@@ -163,17 +187,22 @@ function Practice() {
                 </div>
 
                 <div className='prose prose-gray dark:prose-invert max-w-none'>
-                  <MathJax dynamic>{problem.quesDesc}</MathJax>
+                  {renderMathJax(problem.quesDesc)}
                 </div>
 
                 {problem.problemExample?.map((exmp, i) => (
                   <div key={i} className='bg-zinc-100 dark:bg-gray-800 p-4 rounded-lg'>
                     <h3 className='text-lg font-medium mb-2'>Example {i + 1}</h3>
                     <div className='space-y-2'>
-                      <p><span className='font-semibold'>Input:</span> <MathJax inline>{`\\(${exmp.input}\\)`}</MathJax></p>
-                      <p><span className='font-semibold'>Output:</span> <MathJax inline>{`\\(${exmp.output}\\)`}</MathJax></p>
+                      <p><span className='font-semibold arithmatex'>Input:</span> {exmp.input}</p>
+                      <p><span className='font-semibold arithmatex'>Output:</span> {exmp.output}</p>
                       {exmp.explaination && (
-                        <p><span className='font-semibold'>Explanation:</span> <MathJax inline>{`\\(${exmp.explaination}\\)`}</MathJax></p>
+                        <p>
+                          <span className='font-semibold'>Explanation:</span>
+                          <span className='arithmatex'>
+                            {exmp.explaination}
+                          </span>
+                        </p>
                       )}
                     </div>
                   </div>
@@ -184,7 +213,7 @@ function Practice() {
                     <h3 className='text-lg font-medium mb-2'>Constraints</h3>
                     <ul className='list-disc pl-5 space-y-1'>
                       {problem.constraints.map((c, i) => (
-                        <li key={i}><MathJax>{`\\(${c}\\)`}</MathJax></li>
+                        <li className='arthimatex' key={i}>{c}</li>
                       ))}
                     </ul>
                   </div>
@@ -216,7 +245,7 @@ function Practice() {
                             <AccordionIcon className='text-gray-500 dark:text-gray-400' />
                           </AccordionButton>
                           <AccordionPanel pb={4} className='bg-gray-50 dark:bg-gray-800 rounded-b-lg mt-1 p-4'>
-                            <MathJax>{hint}</MathJax>
+                            {renderMathJax(hint)}
                           </AccordionPanel>
                         </AccordionItem>
                       ))}
@@ -228,7 +257,7 @@ function Practice() {
               {/* Editorial Tab */}
               <TabPanel className='p-6 space-y-6'>
                 <h2 className='text-2xl font-bold text-gray-800 dark:text-gray-100'>Editorial</h2>
-                
+
                 {sortedEditorial[0]?.videoUrl && (
                   <div className='aspect-w-16 aspect-h-9'>
                     <iframe
@@ -248,20 +277,24 @@ function Practice() {
                       Approach {i + 1}: {approach.approachType}
                     </h3>
                     <p className='text-gray-600 dark:text-gray-300'>{approach.approachDesc}</p>
-                    
-                    <CodeDisplay 
-                      code={approach.code} 
+
+                    <CodeDisplay
+                      code={approach.code}
                       language={approach.language || 'python'}
                     />
-                    
+
                     <div className='grid grid-cols-2 gap-4'>
                       <div>
                         <h4 className='font-medium text-gray-700 dark:text-gray-300'>Time Complexity:</h4>
-                        <MathJax className='text-gray-600 dark:text-gray-400'>{approach.time_complexity}</MathJax>
+                        <div className='text-gray-600 dark:text-gray-400'>
+                          {renderInlineMathJax(approach.time_complexity)}
+                        </div>
                       </div>
                       <div>
                         <h4 className='font-medium text-gray-700 dark:text-gray-300'>Space Complexity:</h4>
-                        <MathJax className='text-gray-600 dark:text-gray-400'>{approach.space_complexity}</MathJax>
+                        <div className='text-gray-600 dark:text-gray-400'>
+                          {renderInlineMathJax(approach.space_complexity)}
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -1,7 +1,7 @@
 import React from "react";
 import { FiExternalLink } from "react-icons/fi";
 
-const CourseCard = ({ title, description, image, url, duration , category }) => {
+const TutorialCard = ({ title, description, image, url, duration , category }) => {
   
   return (
     <div className="relative border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-white dark:bg-gray-800 group cursor-pointer w-full max-w-[320px] min-h-[420px] flex flex-col">
@@ -58,4 +58,4 @@ const CourseCard = ({ title, description, image, url, duration , category }) => 
   );
 };
 
-export default CourseCard;
+export default TutorialCard;

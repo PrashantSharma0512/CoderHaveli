@@ -1,7 +1,7 @@
 import React from "react";
 import { FiShoppingCart, FiStar, FiClock } from "react-icons/fi";
 
-export default function Card({ imageUrl, title, price, category, duration, rating = 4.0 }) {
+export default function CourseCard({ imageUrl, title, price, category, duration, rating = 4.0 }) {
   return (
     <div className="w-full max-w-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
       {/* Product Image */}
