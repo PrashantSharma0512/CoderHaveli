@@ -108,14 +108,6 @@ function Compiler({ testcase, quesId }) {
     />
   )
 
-  const OverlayTwo = () => (
-    <ModalOverlay
-      bg='none'
-      backdropFilter='auto'
-      backdropInvert='80%'
-      backdropBlur='2px'
-    />
-  )
 
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [overlay, setOverlay] = React.useState(<OverlayOne />)
@@ -135,6 +127,7 @@ function Compiler({ testcase, quesId }) {
           output: test.output
         }))
       })
+      setLoading(false)
       setOutput(response.data)
       console.log(response, " chacha ji ");
     } catch (error) {
