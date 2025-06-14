@@ -8,10 +8,10 @@ import { GrTest } from "react-icons/gr";
 import { HiOutlineCode } from "react-icons/hi";
 import { FiSave } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
-import { Box, Button, CircularProgress, CircularProgressLabel, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useDisclosure } from "@chakra-ui/react";
+import { Box, Button, CircularProgress, CircularProgressLabel, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useColorModeValue, useDisclosure } from "@chakra-ui/react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateCode } from "../../store/slice";
-
+import Confettii from "react-confetti"
 // Theme imports
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/theme-dracula";
@@ -155,6 +155,12 @@ function Compiler({ testcase, quesId }) {
       setLoading(false);
     }
   }
+  const confettiColors = useColorModeValue(
+    // Light mode colors
+    ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722'],
+    // Dark mode colors (brighter versions)
+    ['#ff8a80', '#ff80ab', '#ea80fc', '#b388ff', '#8c9eff', '#82b1ff', '#80d8ff', '#84ffff', '#a7ffeb', '#b9f6ca', '#ccff90', '#f4ff81', '#ffff8d', '#ffe57f', '#ffd180', '#ff9e80']
+  );
 
   return (
     <>
@@ -451,7 +457,7 @@ function Compiler({ testcase, quesId }) {
           </Tabs>
         </div>
       </div >
-      <Modal isCentered isOpen={isOpen} onClose={onClose} size="xl">
+      {/* <Modal isCentered isOpen={isOpen} onClose={onClose} size="xl">
         {overlay}
         <ModalContent>
           <ModalHeader>Submission Result</ModalHeader>
@@ -463,6 +469,100 @@ function Compiler({ testcase, quesId }) {
                   display="flex"
                   alignItems="center"
                   gap="3"
+                  px="4"
+                  py="2"
+                  borderRadius="full"
+                  bg={output.isFullyPassed ? 'green.100' : 'red.100'}
+                  color={output.isFullyPassed ? 'green.700' : 'red.700'}
+                  w="fit-content"
+                  mb="4"
+                >
+                  {output.isFullyPassed ? (
+                    <>
+                      <CheckCircleIcon className="h-5 w-5" />
+                      <Text fontWeight="semibold">Accepted</Text>
+                    </>
+                  ) : (
+                    <>
+                      <XCircleIcon className="h-5 w-5" />
+                      <Text fontWeight="semibold">Wrong Answer</Text>
+                    </>
+                  )}
+                </Box>
+
+                <Box display="flex" alignItems="center" gap="4" mb="4">
+                  <CircularProgress
+                    value={(output.passedTestCases / output.totalTestCases) * 100}
+                    color={output.isFullyPassed ? 'green.500' : 'red.500'}
+                    size="80px"
+                  >
+                    <CircularProgressLabel>
+                      {output.passedTestCases}/{output.totalTestCases}
+                    </CircularProgressLabel>
+                  </CircularProgress>
+                  <Text>
+                    {output.passedTestCases} out of {output.totalTestCases} test cases passed
+                  </Text>
+                </Box>
+
+                {output.failedTestCases && output.failedTestCases.length > 0 && (
+                  <Box>
+                    <Text fontWeight="bold" mb="2">Failed Test Cases:</Text>
+                    {output.failedTestCases.map((testCase, index) => (
+                      <Box key={index} mb="3" p="3" bg="gray.100" borderRadius="md">
+                        <Text><strong>Input:</strong> {testCase.input}</Text>
+                        <Text><strong>Expected:</strong> {testCase.expectedOutput}</Text>
+                        <Text><strong>Actual:</strong> {testCase.actualOutput}</Text>
+                      </Box>
+                    ))}
+                  </Box>
+                )}
+              </Box>
+            ) : (
+              <Box display="flex" justifyContent="center" py="8">
+                <CircularProgress isIndeterminate color="blue.500" />
+              </Box>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" onClick={onClose}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal> */}
+      <Modal isCentered isOpen={isOpen} onClose={onClose} size="xl">
+        {overlay}
+        <ModalContent>
+          {output?.isFullyPassed && (
+            <Confettii
+              width={window.innerWidth}
+              height={window.innerHeight}
+              recycle={false}
+              numberOfPieces={300}
+              gravity={0.15}
+              colors={confettiColors}
+              opacity={0.8}
+              tweenDuration={5000}
+              confettiSource={{
+                x: window.innerWidth / 4,
+                y: window.innerHeight /3,
+                w: 10,
+                h: 10
+              }}
+              initialVelocityX={5}
+              initialVelocityY={10}
+            />
+          )}
+          <ModalHeader>Submission Result</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {output ? (
+              <Box>
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  gap="1"
                   px="4"
                   py="2"
                   borderRadius="full"
