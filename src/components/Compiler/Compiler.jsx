@@ -8,7 +8,7 @@ import { GrTest } from "react-icons/gr";
 import { HiOutlineCode } from "react-icons/hi";
 import { FiSave } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
-import { Box, Button, CircularProgress, CircularProgressLabel, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useColorModeValue, useDisclosure } from "@chakra-ui/react";
+import { Box, Button, CircularProgress, CircularProgressLabel, Code, Flex, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Progress, Spinner, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useColorModeValue, useDisclosure } from "@chakra-ui/react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateCode } from "../../store/slice";
 import Confettii from "react-confetti"
@@ -32,8 +32,11 @@ import "ace-builds/src-noconflict/mode-c_cpp";
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/mode-rust";
 import axiosInstance from "../helper/axiosInstance";
-import { CheckCircleIcon, XCircleIcon } from "lucide-react";
-
+import { CheckCircleIcon, StarIcon, XCircleIcon } from "lucide-react";
+import {
+  MdCelebration as CelebrationIcon,
+  MdWarning as ExclamationIcon
+} from 'react-icons/md';
 function Compiler({ testcase, quesId }) {
   // Language options
   const options = [
@@ -457,170 +460,240 @@ function Compiler({ testcase, quesId }) {
           </Tabs>
         </div>
       </div >
-      {/* <Modal isCentered isOpen={isOpen} onClose={onClose} size="xl">
+      <Modal
+        isCentered
+        isOpen={isOpen}
+        onClose={onClose}
+        size={{ base: "full", md: "xl" }} // Full screen on mobile, xl on desktop
+        motionPreset="slideInBottom" // Better for mobile
+        scrollBehavior="inside"
+      >
         {overlay}
-        <ModalContent>
-          <ModalHeader>Submission Result</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            {output ? (
-              <Box>
-                <Box
-                  display="flex"
-                  alignItems="center"
-                  gap="3"
-                  px="4"
-                  py="2"
-                  borderRadius="full"
-                  bg={output.isFullyPassed ? 'green.100' : 'red.100'}
-                  color={output.isFullyPassed ? 'green.700' : 'red.700'}
-                  w="fit-content"
-                  mb="4"
-                >
-                  {output.isFullyPassed ? (
-                    <>
-                      <CheckCircleIcon className="h-5 w-5" />
-                      <Text fontWeight="semibold">Accepted</Text>
-                    </>
-                  ) : (
-                    <>
-                      <XCircleIcon className="h-5 w-5" />
-                      <Text fontWeight="semibold">Wrong Answer</Text>
-                    </>
-                  )}
-                </Box>
-
-                <Box display="flex" alignItems="center" gap="4" mb="4">
-                  <CircularProgress
-                    value={(output.passedTestCases / output.totalTestCases) * 100}
-                    color={output.isFullyPassed ? 'green.500' : 'red.500'}
-                    size="80px"
-                  >
-                    <CircularProgressLabel>
-                      {output.passedTestCases}/{output.totalTestCases}
-                    </CircularProgressLabel>
-                  </CircularProgress>
-                  <Text>
-                    {output.passedTestCases} out of {output.totalTestCases} test cases passed
-                  </Text>
-                </Box>
-
-                {output.failedTestCases && output.failedTestCases.length > 0 && (
-                  <Box>
-                    <Text fontWeight="bold" mb="2">Failed Test Cases:</Text>
-                    {output.failedTestCases.map((testCase, index) => (
-                      <Box key={index} mb="3" p="3" bg="gray.100" borderRadius="md">
-                        <Text><strong>Input:</strong> {testCase.input}</Text>
-                        <Text><strong>Expected:</strong> {testCase.expectedOutput}</Text>
-                        <Text><strong>Actual:</strong> {testCase.actualOutput}</Text>
-                      </Box>
-                    ))}
-                  </Box>
-                )}
-              </Box>
-            ) : (
-              <Box display="flex" justifyContent="center" py="8">
-                <CircularProgress isIndeterminate color="blue.500" />
-              </Box>
-            )}
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme="blue" onClick={onClose}>
-              Close
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal> */}
-      <Modal isCentered isOpen={isOpen} onClose={onClose} size="xl">
-        {overlay}
-        <ModalContent>
+        <ModalContent
+          bg="white"
+          borderRadius={{ base: 0, md: "xl" }} // No border radius on mobile
+          boxShadow={{ base: "none", md: "xl" }}
+          minH={{ base: "100vh", md: "auto" }} // Full height on mobile
+          maxH={{ base: "100vh", md: "90vh" }}
+        >
           {output?.isFullyPassed && (
             <Confettii
               width={window.innerWidth}
               height={window.innerHeight}
               recycle={false}
-              numberOfPieces={300}
+              numberOfPieces={600} // Slightly fewer for mobile performance
               gravity={0.15}
-              colors={confettiColors}
+              colors={['#FFC700', '#FF0000', '#2E3191', '#41BBC7']}
               opacity={0.8}
               tweenDuration={5000}
               confettiSource={{
                 x: window.innerWidth / 4,
-                y: window.innerHeight /3,
+                y: window.innerHeight / 3,
                 w: 10,
-                h: 10
+                h: 5
               }}
-              initialVelocityX={5}
-              initialVelocityY={10}
+              initialVelocityX={10}
+              initialVelocityY={15}
             />
           )}
-          <ModalHeader>Submission Result</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
+
+          <ModalHeader
+            bg={output?.isFullyPassed ? 'green.50' : 'red.50'}
+            borderBottomWidth="1px"
+            borderColor={output?.isFullyPassed ? 'green.100' : 'red.100'}
+            py={3}
+            px={4}
+          >
+            <Flex align="center">
+              <Box
+                mr={3}
+                p={1.5}
+                rounded="full"
+                bg={output?.isFullyPassed ? 'green.100' : 'red.100'}
+                color={output?.isFullyPassed ? 'green.600' : 'red.600'}
+              >
+                {output?.isFullyPassed ? (
+                  <CheckCircleIcon className="h-5 w-5" />
+                ) : (
+                  <XCircleIcon className="h-5 w-5" />
+                )}
+              </Box>
+              <Box>
+                <Text fontSize="lg" fontWeight="bold">Submission Result</Text>
+                <Text fontSize="xs" color="gray.500" noOfLines={1}>
+                  {output ? (output.isFullyPassed ? "All tests passed!" : "Some tests failed") : "Processing..."}
+                </Text>
+              </Box>
+            </Flex>
+          </ModalHeader>
+
+          <ModalCloseButton
+            size="md"
+            top={3}
+            right={3}
+            _hover={{ bg: 'gray.100' }}
+          />
+
+          <ModalBody py={4} px={4}>
             {output ? (
               <Box>
-                <Box
-                  display="flex"
-                  alignItems="center"
-                  gap="1"
-                  px="4"
-                  py="2"
-                  borderRadius="full"
-                  bg={output.isFullyPassed ? 'green.100' : 'red.100'}
-                  color={output.isFullyPassed ? 'green.700' : 'red.700'}
-                  w="fit-content"
-                  mb="4"
+                {/* Progress Section - Stacked on mobile */}
+                <Flex
+                  direction={{ base: 'column', md: 'row' }}
+                  align="center"
+                  justify="space-between"
+                  mb={6}
+                  gap={4}
                 >
-                  {output.isFullyPassed ? (
-                    <>
-                      <CheckCircleIcon className="h-5 w-5" />
-                      <Text fontWeight="semibold">Accepted</Text>
-                    </>
-                  ) : (
-                    <>
-                      <XCircleIcon className="h-5 w-5" />
-                      <Text fontWeight="semibold">Wrong Answer</Text>
-                    </>
-                  )}
-                </Box>
+                  <Box position="relative">
+                    <CircularProgress
+                      value={(output.passedTestCases / output.totalTestCases) * 100}
+                      color={output.isFullyPassed ? 'green.400' : 'red.400'}
+                      size={{ base: "90px", md: "120px" }}
+                      thickness="8px"
+                      trackColor="gray.100"
+                      capIsRound
+                    >
+                      <CircularProgressLabel>
+                        <Box textAlign="center">
+                          <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold">
+                            {output.passedTestCases}/{output.totalTestCases}
+                          </Text>
+                          <Text fontSize="2xs" color="gray.500">PASSED</Text>
+                        </Box>
+                      </CircularProgressLabel>
+                    </CircularProgress>
+                  </Box>
 
-                <Box display="flex" alignItems="center" gap="4" mb="4">
-                  <CircularProgress
-                    value={(output.passedTestCases / output.totalTestCases) * 100}
-                    color={output.isFullyPassed ? 'green.500' : 'red.500'}
-                    size="80px"
-                  >
-                    <CircularProgressLabel>
-                      {output.passedTestCases}/{output.totalTestCases}
-                    </CircularProgressLabel>
-                  </CircularProgress>
-                  <Text>
-                    {output.passedTestCases} out of {output.totalTestCases} test cases passed
-                  </Text>
-                </Box>
+                  <Box flex={1} w="full">
+                    <Text fontSize={{ base: "md", md: "lg" }} mb={2}>
+                      {output.isFullyPassed ? "🎉 All tests passed!" : `Passed ${output.passedTestCases}/${output.totalTestCases}`}
+                    </Text>
 
+                    <Progress
+                      value={(output.passedTestCases / output.totalTestCases) * 100}
+                      size="sm"
+                      colorScheme={output.isFullyPassed ? 'green' : 'red'}
+                      borderRadius="full"
+                      mb={1}
+                    />
+
+                    <Flex justify="space-between" fontSize="xs" color="gray.600">
+                      <Text>Progress</Text>
+                      <Text fontWeight="medium">
+                        {Math.round((output.passedTestCases / output.totalTestCases) * 100)}%
+                      </Text>
+                    </Flex>
+                  </Box>
+                </Flex>
+
+                {/* Failed Test Cases - Simplified for mobile */}
                 {output.failedTestCases && output.failedTestCases.length > 0 && (
-                  <Box>
-                    <Text fontWeight="bold" mb="2">Failed Test Cases:</Text>
-                    {output.failedTestCases.map((testCase, index) => (
-                      <Box key={index} mb="3" p="3" bg="gray.100" borderRadius="md">
-                        <Text><strong>Input:</strong> {testCase.input}</Text>
-                        <Text><strong>Expected:</strong> {testCase.expectedOutput}</Text>
-                        <Text><strong>Actual:</strong> {testCase.actualOutput}</Text>
-                      </Box>
-                    ))}
+                  <Box
+                    borderTopWidth="1px"
+                    borderColor="gray.100"
+                    pt={4}
+                  >
+                    <Text fontSize="sm" fontWeight="bold" mb={3}>
+                      ❌ Failed Test Cases
+                    </Text>
+
+                    <Box
+                      maxH={{ base: "200px", md: "300px" }}
+                      overflowY="auto"
+                      pr={1}
+                      className="custom-scrollbar"
+                    >
+                      {output.failedTestCases.map((testCase, index) => (
+                        <Box
+                          key={index}
+                          mb={3}
+                          p={3}
+                          bg="gray.50"
+                          borderRadius="md"
+                          borderLeftWidth="3px"
+                          borderColor="red.400"
+                        >
+                          <VStack align="stretch" spacing={2}>
+                            <Box>
+                              <Text fontSize="xs" color="gray.500" mb={1}>Input:</Text>
+                              <Code
+                                p={2}
+                                fontSize="xs"
+                                borderRadius="md"
+                                bg="white"
+                                display="block"
+                                whiteSpace="pre-wrap"
+                                overflowX="auto"
+                              >
+                                {testCase.input}
+                              </Code>
+                            </Box>
+
+                            <Box>
+                              <Text fontSize="xs" color="gray.500" mb={1}>Expected:</Text>
+                              <Code
+                                p={2}
+                                fontSize="xs"
+                                borderRadius="md"
+                                bg="green.50"
+                                color="green.700"
+                                display="block"
+                                whiteSpace="pre-wrap"
+                              >
+                                {testCase.expectedOutput}
+                              </Code>
+                            </Box>
+
+                            <Box>
+                              <Text fontSize="xs" color="gray.500" mb={1}>Actual:</Text>
+                              <Code
+                                p={2}
+                                fontSize="xs"
+                                borderRadius="md"
+                                bg="red.50"
+                                color="red.700"
+                                display="block"
+                                whiteSpace="pre-wrap"
+                              >
+                                {testCase.actualOutput}
+                              </Code>
+                            </Box>
+                          </VStack>
+                        </Box>
+                      ))}
+                    </Box>
                   </Box>
                 )}
               </Box>
             ) : (
-              <Box display="flex" justifyContent="center" py="8">
-                <CircularProgress isIndeterminate color="blue.500" />
-              </Box>
+              <Flex direction="column" align="center" justify="center" py={8}>
+                <Spinner
+                  size="lg"
+                  color="blue.500"
+                  thickness="3px"
+                  speed="0.65s"
+                  mb={3}
+                />
+                <Text fontSize="md" color="gray.600">Evaluating solution...</Text>
+              </Flex>
             )}
           </ModalBody>
-          <ModalFooter>
-            <Button colorScheme="blue" onClick={onClose}>
-              Close
+
+          <ModalFooter
+            borderTopWidth="1px"
+            borderColor="gray.100"
+            py={3}
+            px={4}
+          >
+            <Button
+              colorScheme={output?.isFullyPassed ? 'green' : 'blue'}
+              size="md"
+              onClick={onClose}
+              width="full" // Full width on mobile
+              rightIcon={output?.isFullyPassed ? <CelebrationIcon className="h-4 w-4" /> : null}
+            >
+              {output?.isFullyPassed ? "Done" : "Close"}
             </Button>
           </ModalFooter>
         </ModalContent>
