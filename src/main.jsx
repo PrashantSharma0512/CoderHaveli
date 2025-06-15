@@ -4,19 +4,27 @@ import './index.css';
 import App from './App.jsx';
 import { BrowserRouter, Route, Routes } from "react-router";
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
+import { Provider } from 'react-redux';
+import { store } from './store/store.js';
+
+// Pages
 import Home from './pages/Home.jsx';
 import Practice from './pages/Practice.jsx';
-import { Provider } from 'react-redux';
-import { store } from './store/store.js'
-import NotFound from './components/404.jsx';
-import Signin from './components/CredentialsPages/SignIn.jsx';
-import Signup from './components/CredentialsPages/Signup.jsx';
-import Loading from './components/Loading.jsx';
 import AboutUs from './pages/About.jsx';
 import ProblemList from './pages/ProblemList.jsx';
+import TutorialPage from './pages/TutorialPage.jsx';
+
+// Auth
 import Login from './components/auth/Login.jsx';
 import Register from './components/auth/Register.jsx';
-import TutorialPage from './pages/TutorialPage.jsx';
+import AuthLayout from './components/auth/Authlayout.jsx';
+
+// Misc
+import NotFound from './components/404.jsx';
+import Loading from './components/Loading.jsx';
+import PublicRoute from './components/auth/PublicLayout.jsx';
+import ProfilePage from './pages/ProfilePage.jsx';
+
 const theme = extendTheme({
   styles: {
     global: {
@@ -36,21 +44,27 @@ createRoot(document.getElementById('root')).render(
       <ChakraProvider theme={theme} resetCSS={false}>
         <BrowserRouter>
           <Routes>
+
+            {/* Public Auth Pages (Independent views) */}
+            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+
+            {/* All Pages Inside App Layout */}
             <Route path="/" element={<App />}>
-              <Route path='/login' element={<Login />} />
-              <Route path='/register' element={<Register />} />
               <Route index element={<Home />} />
-              <Route path="/problem/*" element={<Practice />} />
-              <Route path="/practice" element={<ProblemList/>} />
-              <Route path="/tutorial" element={<TutorialPage/>} />
-              <Route path="about" element={<AboutUs />} />
-              <Route path="loading" element={<Loading />} />
+              <Route path="problem/*" element={<AuthLayout><Practice /></AuthLayout>} />
+              <Route path="practice" element={<AuthLayout><ProblemList /></AuthLayout>} />
+              <Route path="tutorial" element={<AuthLayout><TutorialPage /></AuthLayout>} />
+              <Route path="about" element={<AuthLayout><AboutUs /></AuthLayout>} />
+              <Route path="profile" element={<AuthLayout><ProfilePage /></AuthLayout>} />
             </Route>
+
+            {/* 404 Fallback */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+
       </ChakraProvider>
     </StrictMode>
   </Provider>
-
 );

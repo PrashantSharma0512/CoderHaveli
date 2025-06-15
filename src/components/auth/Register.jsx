@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router';
 import axiosInstance from '../helper/axiosInstance';
+import { FaUser, FaEnvelope, FaPhone, FaLock, FaSpinner, FaArrowRight, FaPenAlt } from 'react-icons/fa';
 
 const Register = () => {
   const [form, setForm] = useState({ 
@@ -9,7 +10,7 @@ const Register = () => {
     email: '', 
     phone: '', 
     password: '', 
-    role: 'student' 
+    role: 'user' 
   });
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -23,9 +24,8 @@ const Register = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await axiosInstance.post('/auth/register', form);
+      const res = await axiosInstance.post('/api/auth/register', form);
       setMessage(res.data.message);
-      // Redirect to login after successful registration
       setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
       setMessage(err.response?.data?.message || 'Registration failed');
@@ -35,26 +35,34 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-700 p-6 text-center">
-            <h1 className="text-3xl font-bold text-white">Create Account</h1>
-            <p className="text-indigo-100 mt-2">Join us today</p>
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 transform transition-all hover:shadow-xl">
+          {/* Header with golden accent */}
+          <div className="bg-white p-8 text-center border-b border-amber-200 relative">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 to-amber-600"></div>
+            <div className="bg-amber-100 p-3 rounded-full inline-flex items-center justify-center mb-4 border border-amber-200">
+              <FaPenAlt className="text-2xl text-amber-600" />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Create Account</h1>
+            <p className="text-gray-600 font-medium">Join Coder Haveli today</p>
           </div>
           
           <form onSubmit={handleSubmit} className="p-8 space-y-5">
             {message && (
-              <div className={`p-3 rounded-md ${message.includes('success') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              <div className={`p-4 rounded-lg ${message.includes('success') ? 
+                'bg-amber-50 text-amber-800 border border-amber-200' : 
+                'bg-red-50 text-red-800 border border-red-200'}`}>
                 {message}
               </div>
             )}
 
-            <div className="grid gap-4">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Full Name
-                </label>
+            <div className="grid gap-5">
+              {/* Name Input */}
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaUser className="text-gray-400" />
+                </div>
                 <input
                   id="name"
                   name="name"
@@ -63,14 +71,15 @@ const Register = () => {
                   value={form.name}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition duration-200"
+                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-100 transition duration-200 bg-white"
                 />
               </div>
 
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address
-                </label>
+              {/* Email Input */}
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaEnvelope className="text-gray-400" />
+                </div>
                 <input
                   id="email"
                   name="email"
@@ -79,14 +88,15 @@ const Register = () => {
                   value={form.email}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition duration-200"
+                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-100 transition duration-200 bg-white"
                 />
               </div>
 
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number
-                </label>
+              {/* Phone Input */}
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaPhone className="text-gray-400" />
+                </div>
                 <input
                   id="phone"
                   name="phone"
@@ -95,14 +105,15 @@ const Register = () => {
                   value={form.phone}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition duration-200"
+                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-100 transition duration-200 bg-white"
                 />
               </div>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
+              {/* Password Input */}
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaLock className="text-gray-400" />
+                </div>
                 <input
                   id="password"
                   name="password"
@@ -111,67 +122,60 @@ const Register = () => {
                   value={form.password}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition duration-200"
+                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-100 transition duration-200 bg-white"
                 />
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-gray-500">
                   At least 8 characters with numbers and symbols
                 </p>
               </div>
+            </div>
 
-              {/* <div>
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-                  I am a
+            {/* Terms Checkbox */}
+            <div className="flex items-start">
+              <div className="flex items-center h-5">
+                <input
+                  id="terms"
+                  name="terms"
+                  type="checkbox"
+                  required
+                  className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
+                />
+              </div>
+              <div className="ml-3 text-sm">
+                <label htmlFor="terms" className="text-gray-700">
+                  I agree to the <a href="#" className="text-amber-600 hover:text-amber-500 font-medium">Terms and Conditions</a>
                 </label>
-                <select
-                  id="role"
-                  name="role"
-                  value={form.role}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition duration-200 appearance-none bg-white"
-                >
-                  <option value="student">Student</option>
-                  <option value="teacher">Teacher</option>
-                </select>
-              </div> */}
+              </div>
             </div>
 
-            <div className="flex items-center">
-              <input
-                id="terms"
-                name="terms"
-                type="checkbox"
-                required
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-              />
-              <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
-                I agree to the <a href="#" className="text-indigo-600 hover:text-indigo-500">Terms and Conditions</a>
-              </label>
-            </div>
-
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200 ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
+              className={`w-full flex justify-center items-center py-3 px-6 rounded-lg shadow-sm text-lg font-semibold text-white 
+                bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 
+                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-300 transition-all duration-300 
+                ${isLoading ? 'opacity-80 cursor-not-allowed' : 'hover:shadow-md'}`}
             >
               {isLoading ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Creating account...
+                  <FaSpinner className="animate-spin mr-3" />
+                  Creating Account...
                 </>
               ) : (
-                'Register'
+                <>
+                  Register Now <FaArrowRight className="ml-3" />
+                </>
               )}
             </button>
           </form>
 
-          <div className="px-8 pb-6 text-center">
+          {/* Footer */}
+          <div className="px-8 pb-8 text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{' '}
-              <a href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Sign in
+              <a href="/login" className="font-medium text-amber-600 hover:text-amber-500 inline-flex items-center">
+                Sign In <FaArrowRight className="ml-1 text-sm" />
               </a>
             </p>
           </div>

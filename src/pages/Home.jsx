@@ -5,6 +5,7 @@ import CourseCard from '../components/CourseCards';
 import TestimonialSection from '../components/Testomonial';
 import FAQSection from '../components/FAQ';
 import axiosInstance from '../components/helper/axiosInstance';
+import { useSelector } from 'react-redux';
 
 const faqs = [
     { question: "What is CoderHaveli?", answer: "CoderHaveli is an online platform that helps developers enhance their coding skills through structured courses, tutorials, and projects." },
@@ -49,7 +50,9 @@ function Home() {
     const [carouselImages, setCarouselImages] = useState([]);
     const [cards, setCards] = useState([]);
     const [loading, setLoading] = useState(true);
-
+    const isAuthenticatedd = useSelector((state) => state?.login?.isAuthenticated);
+    const role = useSelector((state) => state.login.role);
+    console.log("Authentication", isAuthenticatedd, role);
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -81,8 +84,13 @@ function Home() {
 
             <section className='flex flex-col gap-10 p-10 max-md:p-2'>
                 <center className='text-3xl font-semibold text-gray-800 dark:text-gray-100 uppercase'>Tutorials</center>
-                <center className='text-3xl font-semibold text-gray-800 dark:text-gray-100 uppercase'>
-                    Unlock Your <span className='text-amber-600 dark:text-indigo-400'>Potential:</span> The Ultimate Learning Journey Awaits!
+                <center className="text-2xl md:text-3xl lg:text-4xl font-semibold text-gray-800 dark:text-gray-100 uppercase px-4 leading-snug">
+                    <div className="inline-block">
+                        Unlock Your{' '}
+                        <span className="text-amber-600 dark:text-indigo-400">Potential:</span>{' '}
+                        <span className="block sm:inline">The Ultimate</span>{' '}
+                        <span className="block sm:inline">Learning Journey Awaits!</span>
+                    </div>
                 </center>
                 <div className='flex flex-wrap justify-center gap-6 px-14 py-2'>
                     {loading ? (
@@ -111,8 +119,11 @@ function Home() {
 
             <section className='flex flex-col gap-8 p-10 max-md:p-2 bg-gray-50 dark:bg-gray-800 rounded-xl mx-4 my-8 shadow-sm'>
                 <center className='text-3xl font-semibold text-gray-800 dark:text-gray-100 uppercase'>Courses</center>
-                <center className='text-4xl text-gray-800 dark:text-gray-100'>
-                    Step Into <span className='text-amber-600 dark:text-indigo-400'>Success:</span> Your Complete Guide to Mastery!
+                <center className="text-2xl sm:text-3xl md:text-4xl text-gray-800 dark:text-gray-100 px-4 font-semibold">
+                    Step Into <br className="block sm:hidden" />
+                    <span className="text-amber-600 dark:text-indigo-400">Success:</span> <br className="md:hidden" />
+                    Your Complete Guide <br className="sm:hidden" />
+                    to Mastery!
                 </center>
                 <div className='flex flex-wrap justify-center gap-6 px-14 py-2'>
                     {loading ? (

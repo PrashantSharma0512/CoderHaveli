@@ -10,7 +10,7 @@ import { FiSave } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { Box, Button, CircularProgress, CircularProgressLabel, Code, Flex, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Progress, Spinner, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useColorModeValue, useDisclosure } from "@chakra-ui/react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateCode } from "../../store/slice";
+import { updateCode } from "../../store/slice/slice";
 import Confettii from "react-confetti"
 // Theme imports
 import "ace-builds/src-noconflict/theme-monokai";

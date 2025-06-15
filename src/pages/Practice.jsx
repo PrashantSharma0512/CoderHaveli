@@ -30,7 +30,7 @@ import { MathJaxContext, MathJax } from 'better-react-mathjax';
 import { useParams } from 'react-router';
 import Loading from '../components/Loading';
 import { FaTag } from 'react-icons/fa6';
-import { addCode, updateCode } from '../store/slice';
+import { addCode, updateCode } from '../store/slice/slice';
 import axiosInstance from '../components/helper/axiosInstance';
 
 function Practice() {
