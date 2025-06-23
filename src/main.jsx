@@ -5,7 +5,7 @@ import App from './App.jsx';
 import { BrowserRouter, Route, Routes } from "react-router";
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 import { Provider } from 'react-redux';
-import { store } from './store/store.js';
+import  store  from './store/store.js';
 
 // Pages
 import Home from './pages/Home.jsx';

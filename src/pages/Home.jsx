@@ -52,7 +52,7 @@ function Home() {
     const [loading, setLoading] = useState(true);
     const isAuthenticatedd = useSelector((state) => state?.login?.isAuthenticated);
     const role = useSelector((state) => state.login.role);
-    console.log("Authentication", isAuthenticatedd, role);
+    console.log("Authentication", isAuthenticatedd, role , useSelector((state) => state.login));
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -60,7 +60,7 @@ function Home() {
                 const [coursesResponse, carouselResponse, cardResponse] = await Promise.all([
                     axiosInstance.get('/api/get-courses'),
                     axiosInstance.get('/api/get-carousel'),
-                    axiosInstance.get('/api/get-card-data')
+                    axiosInstance.get('/api/get-tutorial')
                 ]);
 
                 setCarouselImages(carouselResponse.data.map(item => item.url));

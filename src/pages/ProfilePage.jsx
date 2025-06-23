@@ -4,37 +4,76 @@ import { RiAccountCircleLine, RiCameraFill } from 'react-icons/ri';
 import { FaSave, FaEdit } from 'react-icons/fa';
 import { Link } from 'react-router';
 import toast from 'react-hot-toast';
+import axiosInstance from '../components/helper/axiosInstance';
+import { useSelector } from 'react-redux';
 
 const ProfilePage = () => {
-  // Mock user data - replace with actual data from your auth context/API
   const [user, setUser] = useState({
-    name: 'John Doe',
-    email: 'john@example.com',
-    username: 'johndoe123',
-    bio: 'Frontend Developer | Open Source Contributor',
-    phone: '+1 234 567 890',
+    name: '',
+    email: '',
+    username: '',
+    bio: '',
+    phone: '',
     avatar: null,
-    registrationDate: '2023-01-15'
+    registrationDate: ''
   });
 
   const [isEditing, setIsEditing] = useState(false);
   const [previewAvatar, setPreviewAvatar] = useState(null);
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
-    defaultValues: user
-  });
-
+  const [isLoading, setIsLoading] = useState(true);
+  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const { userId } = useSelector((state) => state?.login)
   // Load user data on component mount
   useEffect(() => {
-    // In a real app, you would fetch this from your API/context
-    reset(user);
-  }, [user, reset]);
+    const fetchUserData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axiosInstance.get(`/api/get-profile?id=${userId}`);
+        console.log(response);
+        
+        setUser(response.data?.user);
+        reset(response.data);
+      } catch (error) {
+        toast.error('Failed to fetch profile data');
+        console.error('Error fetching profile:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const onSubmit = (data) => {
-    // Handle form submission
-    console.log('Updated data:', data);
-    setUser(prev => ({ ...prev, ...data }));
-    setIsEditing(false);
-    toast.success('Profile updated successfully!');
+    fetchUserData();
+  }, [reset]);
+
+  const onSubmit = async (data) => {
+    try {
+      const formData = new FormData();
+
+      // Append all fields to formData
+      Object.keys(data).forEach(key => {
+        if (key !== 'avatar') {
+          formData.append(key, data[key]);
+        }
+      });
+
+      // If there's a new avatar, append it
+      if (previewAvatar && data.avatar?.[0]) {
+        formData.append('avatar', data.avatar[0]);
+      }
+
+      const response = await axiosInstance.put('/api/update-profile', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      setUser(response.data);
+      setPreviewAvatar(null);
+      setIsEditing(false);
+      toast.success('Profile updated successfully!');
+    } catch (error) {
+      toast.error('Failed to update profile');
+      console.error('Error updating profile:', error);
+    }
   };
 
   const handleAvatarChange = (e) => {
@@ -45,7 +84,6 @@ const ProfilePage = () => {
         setPreviewAvatar(reader.result);
       };
       reader.readAsDataURL(file);
-      // In a real app, you would upload this to your server
     }
   };
 
@@ -55,13 +93,21 @@ const ProfilePage = () => {
     setPreviewAvatar(null);
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-amber-600 dark:text-indigo-400 text-lg">Loading profile...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Profile Settings</h1>
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="text-amber-600 dark:text-indigo-400 hover:underline"
           >
             Back to Dashboard
@@ -108,7 +154,7 @@ const ProfilePage = () => {
                   <div className="relative">
                     {previewAvatar || user.avatar ? (
                       <img
-                        src={previewAvatar || user.avatar}
+                        src={user.avatar || avatar}
                         alt="Profile"
                         className="w-32 h-32 rounded-full object-cover border-4 border-amber-100 dark:border-gray-600"
                       />
@@ -121,6 +167,7 @@ const ProfilePage = () => {
                           type="file"
                           id="avatar-upload"
                           accept="image/*"
+                          {...register('avatar')}
                           onChange={handleAvatarChange}
                           className="hidden"
                         />
@@ -170,7 +217,7 @@ const ProfilePage = () => {
                       {isEditing ? (
                         <>
                           <input
-                            {...register('username', { 
+                            {...register('username', {
                               required: 'Username is required',
                               minLength: {
                                 value: 4,
@@ -248,11 +295,11 @@ const ProfilePage = () => {
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Member since</p>
                     <p className="text-sm text-gray-900 dark:text-white">
-                      {new Date(user.registrationDate).toLocaleDateString('en-US', {
+                      {user.registrationDate ? new Date(user.registrationDate).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
-                      })}
+                      }) : 'N/A'}
                     </p>
                   </div>
                   <div>

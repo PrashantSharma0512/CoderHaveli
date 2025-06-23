@@ -40,8 +40,8 @@ const Login = () => {
             <div className="bg-amber-100 p-3 rounded-full inline-flex items-center justify-center mb-4 border border-amber-200">
               <FaCrown className="text-2xl text-amber-600" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Nexo Vision</h1>
-            <p className="text-gray-600 font-medium">Premium Campus Portal</p>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Coder Haveli</h1>
+            <p className="text-gray-600 font-medium">Premium Coding Portal</p>
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
