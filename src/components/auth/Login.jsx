@@ -5,11 +5,12 @@ import { FaSignInAlt, FaUserPlus, FaLock, FaEnvelope, FaSpinner, FaCrown } from 
 import { checkLogin } from '../../store/slice/authSlice';
 
 const Login = () => {
-  const [form, setForm] = useState({ email: '', password: '', role: 'student' });
+  const [form, setForm] = useState({ email: '', password: '', role: 'student', rememberMe: false });
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [rememberMe, setRememberMe] = useState(false)
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -46,8 +47,8 @@ const Login = () => {
 
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
             {message && (
-              <div className={`p-4 rounded-lg ${message.includes('success') ? 
-                'bg-amber-50 text-amber-800 border border-amber-200' : 
+              <div className={`p-4 rounded-lg ${message.includes('success') ?
+                'bg-amber-50 text-amber-800 border border-amber-200' :
                 'bg-red-50 text-red-800 border border-red-200'}`}>
                 {message}
               </div>
@@ -96,6 +97,10 @@ const Login = () => {
                     name="remember-me"
                     type="checkbox"
                     className="h-5 w-5 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
+                    onChange={(e) => {
+                      setRememberMe(e.target.checked);
+                      setForm(prev => ({ ...prev, rememberMe: e.target.checked }));
+                    }}
                   />
                   <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
                     Remember me
@@ -137,8 +142,8 @@ const Login = () => {
           <div className="px-8 pb-8 text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}
-              <a 
-                href="/register" 
+              <a
+                href="/register"
                 className="font-medium text-amber-600 hover:text-amber-500 transition-colors flex items-center justify-center"
               >
                 <FaUserPlus className="mr-2" />
