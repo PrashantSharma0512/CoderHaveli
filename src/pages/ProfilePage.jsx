@@ -295,7 +295,7 @@ const ProfilePage = () => {
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Member since</p>
                     <p className="text-sm text-gray-900 dark:text-white">
-                      {user.registrationDate ? new Date(user.registrationDate).toLocaleDateString('en-US', {
+                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'

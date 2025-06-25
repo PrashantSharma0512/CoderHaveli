@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Search from '../Search';
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { RiAccountCircleLine, RiMenu3Fill } from "react-icons/ri";
@@ -9,6 +9,7 @@ import ServerStarter from '../helper/ServerStarter';
 import Logout from '../auth/Logout';
 import { FaUser, FaSignOutAlt } from "react-icons/fa";
 import { useSelector } from 'react-redux';
+import axiosInstance from '../helper/axiosInstance';
 
 const Header = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -19,7 +20,7 @@ const Header = () => {
   const [user, setUser] = useState({
     name: "John Doe",
     email: "john@example.com",
-    avatar: "https://randomuser.me/api/portraits/men/1.jpg" // null if no avatar
+    avatar: "https://randomuser.me/api/portraits/men/20.jpg" // null if no avatar
   });
 
   const navItems = [
@@ -32,6 +33,20 @@ const Header = () => {
   const toggleAccountMenu = () => {
     setShowAccountMenu(!showAccountMenu);
   };
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      console.log(userId);
+      
+      const response = await axiosInstance.get(`/api/get-profile?id=${userId}`)
+      console.log(response,"response");
+      
+      setUser(response.data.user)
+    }
+    fetchUser()
+  }, [userId])
+  console.log("user",user);
+  
   return (
     <>
       <header className="sticky top-0 z-50 bg-white shadow-md dark:bg-gray-900 transition-colors duration-300 dark:border-b dark:border-white">
@@ -99,23 +114,60 @@ const Header = () => {
 
                   {/* Account Dropdown Menu */}
                   {showAccountMenu && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl z-50 border border-gray-100 dark:border-gray-700 overflow-hidden transition-all duration-200 origin-top-right">
+                      {/* User Profile Section */}
                       {user && (
-                        <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+                        <div className="px-4 py-3 bg-gradient-to-r from-amber-50/50 to-amber-100/30 dark:from-gray-700 dark:to-gray-800 border-b border-gray-100 dark:border-gray-700">
+                          <div className="flex items-center">
+                            {user.avatar ? (
+                              <img
+                                src={user.avatar}
+                                alt={user.name}
+                                className="w-9 h-9 rounded-full object-cover mr-3 border-2 border-amber-200 dark:border-gray-600"
+                              />
+                            ) : (
+                              <div className="w-9 h-9 rounded-full bg-amber-100 dark:bg-gray-700 flex items-center justify-center mr-3 border-2 border-amber-200 dark:border-gray-600">
+                                <RiAccountCircleLine className="text-amber-500 dark:text-gray-400 text-xl" />
+                              </div>
+                            )}
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[160px]">
+                                {user.name}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[160px]">
+                                {user.email}
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       )}
-                      <Link
-                        to="/profile"
-                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-50 dark:hover:bg-gray-700 flex items-center"
-                        onClick={() => setShowAccountMenu(false)}
-                      >
-                        <FaUser className="mr-2" /> View Profile
-                      </Link>
-                      <Logout className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-50 dark:hover:bg-gray-700 flex items-center">
-                        <FaSignOutAlt className="mr-2" /> Logout
-                      </Logout>
+
+                      {/* Menu Items */}
+                      <div className="py-1">
+                        <Link
+                          to="/profile"
+                          className="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-50/50 dark:hover:bg-gray-700/80 transition-colors"
+                          onClick={() => setShowAccountMenu(false)}
+                        >
+                          <div className="p-1.5 mr-2 rounded-md bg-amber-100/50 dark:bg-gray-700">
+                            <FaUser className="text-amber-600 dark:text-indigo-400 text-xs" />
+                          </div>
+                          <span>Profile</span>
+                          <span className="ml-auto text-xs text-gray-400 dark:text-gray-500">↗</span>
+                        </Link>
+
+                        <div className="border-t border-gray-100 dark:border-gray-700 mx-3 my-1"></div>
+
+                        <Logout
+                          className="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-50/50 dark:hover:bg-gray-700/80 transition-colors"
+                          onClick={() => setShowAccountMenu(false)}
+                        >
+                          <div className="p-1.5 mr-2 rounded-md bg-amber-100/50 dark:bg-gray-700">
+                            <FaSignOutAlt className="text-amber-600 dark:text-indigo-400 text-xs" />
+                          </div>
+                          <span>Logout</span>
+                        </Logout>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -139,22 +191,43 @@ const Header = () => {
 
                   {/* Account Dropdown Menu */}
                   {showAccountMenu && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl py-1 z-50 border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-200 origin-top-right">
+                      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-amber-50/30 dark:bg-gray-700/50">
+                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Welcome to CoderHaveli</p>
+                        <p className="text-sm text-amber-600 dark:text-indigo-400 mt-1">Sign in to continue</p>
+                      </div>
 
                       <Link
                         to="/login"
-                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-50 dark:hover:bg-gray-700 flex items-center"
+                        className="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-50/50 dark:hover:bg-gray-700 transition-colors"
                         onClick={() => setShowAccountMenu(false)}
                       >
-                        <FaUser className="mr-2" /> login
+                        <FaUser className="mr-3 text-amber-500 dark:text-indigo-400" />
+                        <div>
+                          <p className="font-medium">Login</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Access your account</p>
+                        </div>
                       </Link>
-                      <Link
-                        to="/register"
-                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-50 dark:hover:bg-gray-700 flex items-center"
-                        onClick={() => setShowAccountMenu(false)}
-                      >
-                        <FaUser className="mr-2" /> Register
-                      </Link>
+
+                      <div className="border-t border-gray-100 dark:border-gray-700">
+                        <Link
+                          to="/register"
+                          className="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-50/50 dark:hover:bg-gray-700 transition-colors"
+                          onClick={() => setShowAccountMenu(false)}
+                        >
+                          <svg className="mr-3 text-amber-500 dark:text-indigo-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                          </svg>
+                          <div>
+                            <p className="font-medium">Register</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Create new account</p>
+                          </div>
+                        </Link>
+                      </div>
+
+                      <div className="px-4 py-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/30">
+                        By continuing, you agree to our Terms
+                      </div>
                     </div>
                   )}
                 </div>
@@ -230,20 +303,35 @@ const Header = () => {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-3 mt-4">
                     <Link
                       to="/profile"
-                      onClick={onClose}
-                      className="flex items-center justify-center py-2 px-4 rounded-lg bg-amber-100 dark:bg-gray-800 text-amber-600 dark:text-indigo-400 hover:bg-amber-200 dark:hover:bg-gray-700 transition-colors duration-200"
+                      onClick={() => {
+                        onClose();
+                        setShowAccountMenu(false);
+                      }}
+                      className="group flex items-center justify-center py-2.5 px-4 rounded-xl bg-gradient-to-br from-amber-50/70 to-amber-100/60 dark:from-gray-800/80 dark:to-gray-800 text-amber-600 dark:text-indigo-300 hover:from-amber-100 hover:to-amber-200 dark:hover:from-gray-700 dark:hover:to-gray-700 transition-all duration-200 shadow-sm hover:shadow-md border border-amber-200/50 dark:border-gray-700"
                     >
-                      <FaUser className="mr-2" />
-                      Profile
+                      <div className="flex items-center">
+                        <div className="p-1.5 mr-2 rounded-lg bg-amber-100/70 dark:bg-gray-700 group-hover:bg-amber-200/70 dark:group-hover:bg-gray-600 transition-colors">
+                          <FaUser className="text-amber-600 dark:text-indigo-300 text-sm" />
+                        </div>
+                        <span className="font-medium">Profile</span>
+                      </div>
                     </Link>
                     <Logout
-                      className="flex items-center justify-center py-2 px-4 rounded-lg bg-amber-100 dark:bg-gray-800 text-amber-600 dark:text-indigo-400 hover:bg-amber-200 dark:hover:bg-gray-700 transition-colors duration-200"
+                      onClick={() => {
+                        onClose();
+                        setShowAccountMenu(false);
+                      }}
+                      className="group flex items-center justify-center py-2.5 px-4 rounded-xl bg-gradient-to-br from-amber-50/70 to-amber-100/60 dark:from-gray-800/80 dark:to-gray-800 text-amber-600 dark:text-indigo-300 hover:from-amber-100 hover:to-amber-200 dark:hover:from-gray-700 dark:hover:to-gray-700 transition-all duration-200 shadow-sm hover:shadow-md border border-amber-200/50 dark:border-gray-700"
                     >
-                      <FaSignOutAlt className="mr-2" />
-                      Logout
+                      <div className="flex items-center">
+                        <div className="p-1.5 mr-2 rounded-lg bg-amber-100/70 dark:bg-gray-700 group-hover:bg-amber-200/70 dark:group-hover:bg-gray-600 transition-colors">
+                          <FaSignOutAlt className="text-amber-600 dark:text-indigo-300 text-sm" />
+                        </div>
+                        <span className="font-medium">Logout</span>
+                      </div>
                     </Logout>
                   </div>
                 </div>
