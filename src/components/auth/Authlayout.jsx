@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 
 function AuthLayout({ children }) {
     const location = useLocation();
-    console.log(location.pathname, "path");
+
 
     const { isAuthenticated } = useSelector(state => state.login); // from authSlice
     const navigate = useNavigate();

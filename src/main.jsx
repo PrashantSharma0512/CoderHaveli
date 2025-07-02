@@ -5,7 +5,7 @@ import App from './App.jsx';
 import { BrowserRouter, Route, Routes } from "react-router";
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 import { Provider } from 'react-redux';
-import  store  from './store/store.js';
+import store from './store/store.js';
 
 // Pages
 import Home from './pages/Home.jsx';
@@ -24,7 +24,7 @@ import NotFound from './components/404.jsx';
 import Loading from './components/Loading.jsx';
 import PublicRoute from './components/auth/PublicLayout.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
-
+import ForgetPassword from './components/auth/ForgetPassword.jsx'
 const theme = extendTheme({
   styles: {
     global: {
@@ -48,6 +48,7 @@ createRoot(document.getElementById('root')).render(
             {/* Public Auth Pages (Independent views) */}
             <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
             <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+            <Route path="/forget" element={<PublicRoute><ForgetPassword /></PublicRoute>} />
 
             {/* All Pages Inside App Layout */}
             <Route path="/" element={<App />}>
@@ -55,7 +56,7 @@ createRoot(document.getElementById('root')).render(
               <Route path="problem/*" element={<AuthLayout><Practice /></AuthLayout>} />
               <Route path="practice" element={<AuthLayout><ProblemList /></AuthLayout>} />
               <Route path="tutorial" element={<AuthLayout><TutorialPage /></AuthLayout>} />
-              <Route path="about" element={<AuthLayout><AboutUs /></AuthLayout>} />
+              <Route path="about" element={<AboutUs />} />
               <Route path="profile" element={<AuthLayout><ProfilePage /></AuthLayout>} />
             </Route>
 

@@ -117,12 +117,15 @@ function Compiler({ testcase, quesId }) {
   const handleDelete = (id) => {
     setTestcases(prev => prev.filter(test => test.id !== id));
   };
+  const userId = useSelector((state) => (state.login.userId))
+
   const handleRun = async () => {
     try {
       setLoading(true)
       setSelectedTabIndex(1)
       const response = await axiosInstance.post("/api/problem/run", {
         quesId: quesId,
+        userId: userId,
         lang: selectedLang,
         code: code,
         testcases: testcases.map(test => ({
@@ -481,7 +484,7 @@ function Compiler({ testcase, quesId }) {
               width={window.innerWidth}
               height={window.innerHeight}
               recycle={false}
-              numberOfPieces={600} // Slightly fewer for mobile performance
+              numberOfPieces={300} // Slightly fewer for mobile performance
               gravity={0.15}
               colors={['#FFC700', '#FF0000', '#2E3191', '#41BBC7']}
               opacity={0.8}
