@@ -135,9 +135,8 @@ function Compiler({ testcase, quesId }) {
       })
       setLoading(false)
       setOutput(response.data)
-      console.log(response, " chacha ji ");
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setLoading(false)
     }
   }
@@ -157,7 +156,7 @@ function Compiler({ testcase, quesId }) {
       setOutput(response.data);
       setLoading(false);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setLoading(false);
     }
   }

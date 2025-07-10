@@ -43,7 +43,6 @@ const MiniCompiler = ({ code, language = "javascript" }) => {
 };
 
 const CodeDisplay = ({code}) => {
-  // console.log("code",code);
   return (
     <div className='w-[100%] bg-[#101828] rounded-lg'>
       <Tabs variant="enclosed" sx={{

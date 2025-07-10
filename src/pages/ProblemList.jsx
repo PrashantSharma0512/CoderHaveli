@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Tooltip } from "@chakra-ui/react";
 import { Search, SortAsc, Filter, ChevronRight } from "lucide-react";
 import { Link } from "react-router";
-import axios from "axios";
-import Loading from "../components/Loading";
+import Loading from "../components/utils/Loading";
 import axiosInstance from "../components/helper/axiosInstance";
 
 export default function ProblemList() {

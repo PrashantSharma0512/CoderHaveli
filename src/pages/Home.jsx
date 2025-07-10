@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import Carousel from '../components/Carousel';
-import TutorialCard from '../components/TutorialCard';
-import CourseCard from '../components/CourseCards';
-import TestimonialSection from '../components/Testomonial';
-import FAQSection from '../components/FAQ';
+import Carousel from '../components/utils/Carousel';
+import TutorialCard from '../components/cards/TutorialCard';
+import CourseCard from '../components/cards/CourseCards';
+import TestimonialSection from '../components/cards/Testomonial';
+import FAQSection from '../components/utils/FAQ';
 import axiosInstance from '../components/helper/axiosInstance';
 import { useSelector } from 'react-redux';
 
@@ -50,9 +50,6 @@ function Home() {
     const [carouselImages, setCarouselImages] = useState([]);
     const [cards, setCards] = useState([]);
     const [loading, setLoading] = useState(true);
-    const isAuthenticatedd = useSelector((state) => state?.login?.isAuthenticated);
-    const role = useSelector((state) => state.login.role);
-    console.log("Authentication", isAuthenticatedd, role , useSelector((state) => state.login));
     useEffect(() => {
         const fetchData = async () => {
             try {

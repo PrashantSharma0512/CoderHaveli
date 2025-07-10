@@ -29,8 +29,6 @@ const ProfilePage = () => {
       try {
         setIsLoading(true);
         const response = await axiosInstance.get(`/api/get-profile?id=${userId}`);
-        console.log(response);
-        
         setUser(response.data?.user);
         reset(response.data);
       } catch (error) {
@@ -48,36 +46,38 @@ const ProfilePage = () => {
     try {
       const formData = new FormData();
 
-      // Append all fields to formData
-      Object.keys(data).forEach(key => {
-        if (key !== 'avatar') {
-          formData.append(key, data[key]);
-        }
-      });
+      // Append all fields
+      formData.append('name', data.name);
+      formData.append('bio', data.bio || '');
+      formData.append('phone', data.phone || '');
+      formData.append('id', userId);
 
-      // If there's a new avatar, append it
-      if (previewAvatar && data.avatar?.[0]) {
-        formData.append('avatar', data.avatar[0]);
+      // Get the file input directly
+      const fileInput = document.getElementById('avatar-upload');
+      if (fileInput?.files?.[0]) {
+        formData.append('avatar', fileInput.files[0]);
       }
 
       const response = await axiosInstance.put('/api/update-profile', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
-      setUser(response.data);
-      setPreviewAvatar(null);
-      setIsEditing(false);
-      toast.success('Profile updated successfully!');
+      // Handle success...
     } catch (error) {
-      toast.error('Failed to update profile');
-      console.error('Error updating profile:', error);
+      console.error('Full error:', {
+        message: error.message,
+        response: error.response?.data,
+        stack: error.stack
+      });
+      toast.error(error.response?.data?.error || 'Update failed');
     }
   };
-
   const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
+    // For React Hook Form compatibility
+    const file = e.target.files?.[0] || (e instanceof FileList ? e[0] : null);
+
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -154,7 +154,7 @@ const ProfilePage = () => {
                   <div className="relative">
                     {previewAvatar || user.avatar ? (
                       <img
-                        src={user.avatar || avatar}
+                        src={previewAvatar || user.avatar}
                         alt="Profile"
                         className="w-32 h-32 rounded-full object-cover border-4 border-amber-100 dark:border-gray-600"
                       />
@@ -167,8 +167,9 @@ const ProfilePage = () => {
                           type="file"
                           id="avatar-upload"
                           accept="image/*"
-                          {...register('avatar')}
-                          onChange={handleAvatarChange}
+                          {...register('avatar', {
+                            onChange: handleAvatarChange // Combine RHF registration with your handler
+                          })}
                           className="hidden"
                         />
                         <label
@@ -224,8 +225,10 @@ const ProfilePage = () => {
                                 message: 'Username must be at least 4 characters'
                               }
                             })}
+                            value={user.username}
+                            disabled
                             type="text"
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 dark:bg-gray-700 dark:text-white"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-300 cursor-not-allowed"
                           />
                           {errors.username && (
                             <p className="mt-1 text-sm text-red-600">{errors.username.message}</p>

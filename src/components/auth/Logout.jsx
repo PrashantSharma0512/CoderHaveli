@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLogout } from '../../utils/logout';
+import { useLogout } from '../utils/logout';
 import { FaSignOutAlt } from 'react-icons/fa';
 
 function Logout() {

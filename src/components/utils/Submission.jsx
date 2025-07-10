@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axiosInstance from '../helper/axiosInstance';
+import { useSelector } from 'react-redux';
 
 const submission = [
     {
@@ -27,14 +29,26 @@ const submission = [
     },
 ];
 
-function Submission() {
+function Submission({ quesId }) {
+    // const [submission, setsubmission] = useState();
+    const userId = useSelector((state) => (state.login.userId))
+
+
+    useEffect(() => {
+        try {
+            const response = axiosInstance.get(`api/problem/get-submission?id=${userId}&quesId=${quesId}`)
+            // setsubmission(response.data)
+        } catch (error) {
+            console.log(error, "Error fetching submission data");
+        }
+    }, [])
     return (
-        <div className="container mx-auto p-4 overflow-auto max-h-[80vh]" style={{scrollbarColor: '#4B5563 #1F2937',scrollbarWidth: 'thin'}}>
+        <div className="container mx-auto p-4 overflow-auto max-h-[80vh]" style={{ scrollbarColor: '#4B5563 #1F2937', scrollbarWidth: 'thin' }}>
             <div className="overflow-x-auto ">
                 <table className="w-full border border-gray-300 shadow-lg rounded-lg overflow-hidden">
                     <thead>
                         <tr className="bg-gray-900 text-gray-400 text-left">
-                            {submission.length > 0 &&
+                            {submission?.length > 0 &&
                                 Object.keys(submission[0]).map((key, index) => (
                                     <th key={index} className="px-4 py-2 border border-gray-300 capitalize">
                                         {key.replace('_', ' ')}
@@ -44,11 +58,11 @@ function Submission() {
                         </tr>
                     </thead>
                     <tbody>
-                        {submission.map((data, index) => (
+                        {submission?.map((data, index) => (
                             <tr key={index} className="border border-gray-300 odd:bg-white even:bg-gray-100">
                                 {Object.values(data).map((value, i) => (
                                     <td key={i} className="px-4 py-2 border border-gray-300 bg-gray-900">
-                                        {value instanceof Date ? value.toLocaleString() : value==='Accepted' ? <span className="text-green-500">{value} </span> : value==='wrong answer' || value==='compilation error' || value==='run time error'  ? <span className="text-red-600">{value}</span> : <span className="text-gray-300">{value}</span>}  
+                                        {value instanceof Date ? value.toLocaleString() : value === 'Accepted' ? <span className="text-green-500">{value} </span> : value === 'wrong answer' || value === 'compilation error' || value === 'run time error' ? <span className="text-red-600">{value}</span> : <span className="text-gray-300">{value}</span>}
                                     </td>
                                 ))}
                             </tr>

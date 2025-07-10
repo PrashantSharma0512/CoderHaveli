@@ -34,7 +34,7 @@ export default function ForgotPassword() {
     setIsLoading(true);
     setError("");
     try {
-      const res = await axiosInstance.post("/api/auth/verify-otp", { email, otp });
+      const res = await axiosInstance.post("/api/auth/verify-registration-otp", { email, otp });
       setMessage(res.data.message);
       setStep("reset");
     } catch (err) {

@@ -23,12 +23,12 @@ import { FiCheckCircle } from "react-icons/fi";
 import { RiLightbulbLine } from "react-icons/ri";
 
 import { useDispatch, useSelector } from 'react-redux';
-import CodeDisplay from '../components/CodeDisplay';
-import Submission from '../components/Submission';
+import CodeDisplay from '../components/utils/CodeDisplay';
+import Submission from '../components/utils/Submission';
 import axios from 'axios';
 import { MathJaxContext, MathJax } from 'better-react-mathjax';
 import { useParams } from 'react-router';
-import Loading from '../components/Loading';
+import Loading from '../components/utils/Loading';
 import { FaTag } from 'react-icons/fa6';
 import { addCode, updateCode } from '../store/slice/slice';
 import axiosInstance from '../components/helper/axiosInstance';
@@ -303,7 +303,7 @@ function Practice() {
 
               {/* Submissions Tab */}
               <TabPanel>
-                <Submission />
+                <Submission quesId={problem.quesId} />
               </TabPanel>
 
               {/* Comments Tab */}

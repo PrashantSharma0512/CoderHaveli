@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import TutorialCard from "../components/TutorialCard";
+import TutorialCard from "../components/cards/TutorialCard";
 import { FiSearch, FiFilter, FiX } from "react-icons/fi";
 import axiosInstance from "../components/helper/axiosInstance";
-import CourseCard from "../components/CourseCards";
+import CourseCard from "../components/cards/CourseCards";
 
 const TutorialPage = () => {
   const [tutorials, setTutorials] = useState([]);

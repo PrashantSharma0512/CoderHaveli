@@ -17,12 +17,11 @@ import TutorialPage from './pages/TutorialPage.jsx';
 // Auth
 import Login from './components/auth/Login.jsx';
 import Register from './components/auth/Register.jsx';
-import AuthLayout from './components/auth/Authlayout.jsx';
+import AuthLayout from './layouts/Authlayout.jsx';
 
 // Misc
-import NotFound from './components/404.jsx';
-import Loading from './components/Loading.jsx';
-import PublicRoute from './components/auth/PublicLayout.jsx';
+import NotFound from './components/utils/404.jsx';
+import PublicRoute from './layouts/PublicLayout.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import ForgetPassword from './components/auth/ForgetPassword.jsx'
 const theme = extendTheme({

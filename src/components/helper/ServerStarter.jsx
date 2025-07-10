@@ -13,8 +13,7 @@ function ServerStarter() {
         setStarted(false);
         try {
             await axios.get('https://coderhaveli-compiler.onrender.com/server-starter');
-            toast.success("Compiler Server is now active!");
-            console.log("Compiler Server is now active!");  
+            toast.success("Compiler Server is now active!"); 
             setStarted(true);
         } catch (err) {
             console.error("Failed to wake server:", err.message);

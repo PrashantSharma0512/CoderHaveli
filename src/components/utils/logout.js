@@ -1,6 +1,6 @@
 // src/utils/auth.js
 import { useNavigate } from 'react-router';
-import axiosInstance from '../components/helper/axiosInstance';
+import axiosInstance from '../helper/axiosInstance';
 
 export const useLogout = () => {
   const navigate = useNavigate();

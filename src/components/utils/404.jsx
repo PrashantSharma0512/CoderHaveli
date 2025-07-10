@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import Image404 from '../assets/404.gif';
+import Image404 from '../../assets/404.gif';
 export default function NotFound() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white text-center p-6">
