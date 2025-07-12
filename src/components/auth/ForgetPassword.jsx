@@ -34,7 +34,7 @@ export default function ForgotPassword() {
     setIsLoading(true);
     setError("");
     try {
-      const res = await axiosInstance.post("/api/auth/verify-registration-otp", { email, otp });
+      const res = await axiosInstance.post("/api/auth/verify-password-reset-otp", { email, otp });
       setMessage(res.data.message);
       setStep("reset");
     } catch (err) {
@@ -85,8 +85,8 @@ export default function ForgotPassword() {
               step === "email"
                 ? handleSendOtp
                 : step === "otp"
-                ? handleVerifyOtp
-                : handleResetPassword
+                  ? handleVerifyOtp
+                  : handleResetPassword
             }
             className="p-6 space-y-6"
           >
@@ -95,13 +95,12 @@ export default function ForgotPassword() {
               {["email", "otp", "reset"].map((s, i) => (
                 <div key={s} className="flex flex-col items-center">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      step === s
+                    className={`w-8 h-8 rounded-full flex items-center justify-center ${step === s
                         ? "bg-amber-500 text-white"
                         : step === "done" || ["email", "otp", "reset"].indexOf(step) > i
-                        ? "bg-green-500 text-white"
-                        : "bg-gray-200 dark:bg-blue-700 text-gray-600 dark:text-gray-300"
-                    }`}
+                          ? "bg-green-500 text-white"
+                          : "bg-gray-200 dark:bg-blue-700 text-gray-600 dark:text-gray-300"
+                      }`}
                   >
                     {i + 1}
                   </div>
