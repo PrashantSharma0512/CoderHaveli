@@ -8,92 +8,119 @@ import axiosInstance from '../components/helper/axiosInstance';
 import { useSelector } from 'react-redux';
 
 const ProfilePage = () => {
-  const [user, setUser] = useState({
-    name: '',
-    email: '',
-    username: '',
-    bio: '',
-    phone: '',
-    avatar: null,
-    registrationDate: ''
-  });
-
+  const [user, setUser] = useState(null); // Initialize as null
   const [isEditing, setIsEditing] = useState(false);
-  const [previewAvatar, setPreviewAvatar] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [avatarPreview, setAvatarPreview] = useState(null);
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
-  const { userId } = useSelector((state) => state?.login)
-  // Load user data on component mount
+  const { userId } = useSelector((state) => state?.login);
+
+  // Load user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         setIsLoading(true);
         const response = await axiosInstance.get(`/api/get-profile?id=${userId}`);
-        setUser(response.data?.user);
-        reset(response.data);
+        const userData = response.data?.user || {
+          name: '',
+          email: '',
+          username: '',
+          bio: '',
+          phone: '',
+          avatar: null,
+          createdAt: new Date().toISOString()
+        };
+        setUser(userData);
+        setAvatarPreview(userData.avatar);
+        reset(userData);
       } catch (error) {
         toast.error('Failed to fetch profile data');
-        console.error('Error fetching profile:', error);
+        console.error('Error:', error);
+        // Set default user data if fetch fails
+        setUser({
+          name: '',
+          email: '',
+          username: '',
+          bio: '',
+          phone: '',
+          avatar: null,
+          createdAt: new Date().toISOString()
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchUserData();
-  }, [reset]);
-
-  const onSubmit = async (data) => {
-    try {
-      const formData = new FormData();
-
-      // Append all fields
-      formData.append('name', data.name);
-      formData.append('bio', data.bio || '');
-      formData.append('phone', data.phone || '');
-      formData.append('id', userId);
-
-      // Get the file input directly
-      const fileInput = document.getElementById('avatar-upload');
-      if (fileInput?.files?.[0]) {
-        formData.append('avatar', fileInput.files[0]);
-      }
-
-      const response = await axiosInstance.put('/api/update-profile', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      // Handle success...
-    } catch (error) {
-      console.error('Full error:', {
-        message: error.message,
-        response: error.response?.data,
-        stack: error.stack
-      });
-      toast.error(error.response?.data?.error || 'Update failed');
+    if (userId) {
+      fetchUserData();
     }
-  };
-  const handleAvatarChange = (e) => {
-    // For React Hook Form compatibility
-    const file = e.target.files?.[0] || (e instanceof FileList ? e[0] : null);
+  }, [userId, reset]);
 
+  const handleAvatarChange = (e) => {
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreviewAvatar(reader.result);
+        setAvatarPreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleCancel = () => {
-    reset(user);
-    setIsEditing(false);
-    setPreviewAvatar(null);
+  const onSubmit = async (data) => {
+    if (!user) return;
+    
+    try {
+      setIsLoading(true);
+      
+      // Prepare the update data
+      const updateData = {
+        id: userId,
+        name: data.name || user.name,
+        bio: data.bio || user.bio,
+        phone: data.phone || user.phone
+      };
+
+      // Handle avatar if changed
+      const fileInput = document.getElementById('avatar-upload');
+      if (fileInput?.files?.[0]) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        
+        // Convert file to base64
+        const base64Avatar = await new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = error => reject(error);
+          reader.readAsDataURL(file);
+        });
+        
+        updateData.avatar = base64Avatar;
+      }
+
+      const response = await axiosInstance.put('/api/update-profile', updateData);
+      
+      const updatedUser = response.data?.user || user;
+      setUser(updatedUser);
+      setAvatarPreview(updatedUser.avatar);
+      setIsEditing(false);
+      toast.success('Profile updated successfully');
+    } catch (error) {
+      console.error('Update error:', error);
+      toast.error(error.response?.data?.error || 'Update failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (isLoading) {
+  const handleCancel = () => {
+    if (user) {
+      reset(user);
+      setAvatarPreview(user.avatar);
+    }
+    setIsEditing(false);
+  };
+
+  if (isLoading || !user) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-amber-600 dark:text-indigo-400 text-lg">Loading profile...</div>
@@ -106,16 +133,12 @@ const ProfilePage = () => {
       <div className="max-w-3xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Profile Settings</h1>
-          <Link
-            to="/"
-            className="text-amber-600 dark:text-indigo-400 hover:underline"
-          >
+          <Link to="/" className="text-amber-600 dark:text-indigo-400 hover:underline">
             Back to Dashboard
           </Link>
         </div>
 
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-          {/* Profile Header */}
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-amber-50 dark:bg-gray-700">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Personal Information</h2>
@@ -130,9 +153,10 @@ const ProfilePage = () => {
                 <div className="flex space-x-2">
                   <button
                     onClick={handleSubmit(onSubmit)}
-                    className="flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                    disabled={isLoading}
+                    className="flex items-center px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
                   >
-                    <FaSave className="mr-2" /> Save Changes
+                    <FaSave className="mr-2" /> {isLoading ? 'Saving...' : 'Save Changes'}
                   </button>
                   <button
                     onClick={handleCancel}
@@ -145,16 +169,15 @@ const ProfilePage = () => {
             </div>
           </div>
 
-          {/* Profile Content */}
           <div className="px-6 py-4">
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="flex flex-col md:flex-row gap-6 mb-8">
                 {/* Avatar Section */}
                 <div className="flex-shrink-0 flex flex-col items-center">
                   <div className="relative">
-                    {previewAvatar || user.avatar ? (
+                    {avatarPreview ? (
                       <img
-                        src={previewAvatar || user.avatar}
+                        src={avatarPreview}
                         alt="Profile"
                         className="w-32 h-32 rounded-full object-cover border-4 border-amber-100 dark:border-gray-600"
                       />
@@ -167,9 +190,7 @@ const ProfilePage = () => {
                           type="file"
                           id="avatar-upload"
                           accept="image/*"
-                          {...register('avatar', {
-                            onChange: handleAvatarChange // Combine RHF registration with your handler
-                          })}
+                          onChange={handleAvatarChange}
                           className="hidden"
                         />
                         <label
@@ -199,7 +220,7 @@ const ProfilePage = () => {
                         <>
                           <input
                             {...register('name', { required: 'Name is required' })}
-                            type="text"
+                            defaultValue={user.name || ''}
                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 dark:bg-gray-700 dark:text-white"
                           />
                           {errors.name && (
@@ -207,7 +228,7 @@ const ProfilePage = () => {
                           )}
                         </>
                       ) : (
-                        <p className="text-gray-900 dark:text-white py-2">{user.name}</p>
+                        <p className="text-gray-900 dark:text-white py-2">{user.name || 'Not provided'}</p>
                       )}
                     </div>
 
@@ -215,28 +236,11 @@ const ProfilePage = () => {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Username
                       </label>
-                      {isEditing ? (
-                        <>
-                          <input
-                            {...register('username', {
-                              required: 'Username is required',
-                              minLength: {
-                                value: 4,
-                                message: 'Username must be at least 4 characters'
-                              }
-                            })}
-                            value={user.username}
-                            disabled
-                            type="text"
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-300 cursor-not-allowed"
-                          />
-                          {errors.username && (
-                            <p className="mt-1 text-sm text-red-600">{errors.username.message}</p>
-                          )}
-                        </>
-                      ) : (
-                        <p className="text-gray-900 dark:text-white py-2">@{user.username}</p>
-                      )}
+                      <input
+                        value={user.username || ''}
+                        disabled
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-300 cursor-not-allowed"
+                      />
                     </div>
                   </div>
 
@@ -245,14 +249,10 @@ const ProfilePage = () => {
                       Email Address
                     </label>
                     <input
-                      type="email"
-                      value={user.email}
+                      value={user.email || ''}
                       disabled
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-300 cursor-not-allowed"
                     />
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      Email cannot be changed
-                    </p>
                   </div>
 
                   <div>
@@ -262,7 +262,7 @@ const ProfilePage = () => {
                     {isEditing ? (
                       <input
                         {...register('phone')}
-                        type="tel"
+                        defaultValue={user.phone || ''}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 dark:bg-gray-700 dark:text-white"
                       />
                     ) : (
@@ -279,6 +279,7 @@ const ProfilePage = () => {
                     {isEditing ? (
                       <textarea
                         {...register('bio')}
+                        defaultValue={user.bio || ''}
                         rows={3}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 dark:bg-gray-700 dark:text-white"
                       />
@@ -291,18 +292,17 @@ const ProfilePage = () => {
                 </div>
               </div>
 
-              {/* Read-only registration info */}
               <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Account Information</h3>
                 <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Member since</p>
                     <p className="text-sm text-gray-900 dark:text-white">
-                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
+                      {new Date(user.createdAt).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
-                      }) : 'N/A'}
+                      })}
                     </p>
                   </div>
                   <div>
