@@ -151,6 +151,7 @@ function Compiler({ testcase, quesId }) {
         quesId: quesId,
         lang: selectedLang,
         code: code,
+        userId:userId
       });
 
       setOutput(response.data);
