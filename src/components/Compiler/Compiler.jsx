@@ -162,7 +162,7 @@ function Compiler({ testcase, quesId }) {
     }
   }
   const confettiColors = useColorModeValue(
-    // Light mode colors
+    // Light mode colori
     ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722'],
     // Dark mode colors (brighter versions)
     ['#ff8a80', '#ff80ab', '#ea80fc', '#b388ff', '#8c9eff', '#82b1ff', '#80d8ff', '#84ffff', '#a7ffeb', '#b9f6ca', '#ccff90', '#f4ff81', '#ffff8d', '#ffe57f', '#ffd180', '#ff9e80']
@@ -484,11 +484,11 @@ function Compiler({ testcase, quesId }) {
               width={window.innerWidth}
               height={window.innerHeight}
               recycle={false}
-              numberOfPieces={300} // Slightly fewer for mobile performance
+              numberOfPieces={100} // Slightly fewer for mobile performance
               gravity={0.15}
               colors={['#FFC700', '#FF0000', '#2E3191', '#41BBC7']}
               opacity={0.8}
-              tweenDuration={5000}
+              tweenDuration={2000}
               confettiSource={{
                 x: window.innerWidth / 4,
                 y: window.innerHeight / 3,
