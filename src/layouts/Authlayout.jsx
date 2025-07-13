@@ -1,24 +1,30 @@
-
-
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { useSelector } from 'react-redux';
 
 function AuthLayout({ children }) {
     const location = useLocation();
-
-
-    const { isAuthenticated } = useSelector(state => state.login); // from authSlice
+    const { isAuthenticated, loading, initialized } = useSelector(state => state.login);
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!isAuthenticated) {
-            navigate('/login', { replace: true, state: { from: location.pathname } });
+        if (initialized && !isAuthenticated) {
+            navigate('/login', {
+                replace: true,
+                state: { from: location.pathname }
+            });
         }
-    }, [isAuthenticated, navigate]);
+    }, [isAuthenticated, initialized, navigate, location.pathname]);
 
-    return isAuthenticated ? <>{children}</> : <div className="text-center mt-10">Redirecting to login...</div>;
+    if (loading || !initialized) {
+        return <div className="text-center mt-10">Verifying session...</div>;
+    }
+
+    if (!isAuthenticated) {
+        return <div className="text-center mt-10">Redirecting to login...</div>;
+    }
+
+    return <>{children}</>;
 }
 
 export default AuthLayout;
-

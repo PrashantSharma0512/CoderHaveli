@@ -19,13 +19,12 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
       const res = await dispatch(checkLogin(form)).unwrap();
       setMessage('Login successful! Redirecting...');
       setTimeout(() => navigate('/'), 1500);
     } catch (err) {
-      setMessage(err || 'Login failed. Please try again.');
+      setMessage('Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }

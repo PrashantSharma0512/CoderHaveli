@@ -44,7 +44,7 @@ function Practice() {
   const id = slug['*']
   const dispatch = useDispatch();
   const toast = useToast();
-
+  const userId = useSelector(state => state.login.userId)
   const previousSolutions = [
     {
       mode: 'python',
@@ -57,11 +57,11 @@ function Practice() {
     const fetchProblemData = async () => {
       try {
         setLoading(true);
-        const [problemRes, editorialRes] = await Promise.all([
+        const [problemRes, editorialRes, submissionRes] = await Promise.all([
           axiosInstance.get(`/api/problem/${id}`),
-          axiosInstance.get(`/api/problem/get-editorial/${id}`)
+          axiosInstance.get(`/api/problem/get-editorial/${id}`),
+          
         ]);
-
         setProblemList(problemRes.data);
         setEditorialData(editorialRes.data.sort((a, b) => a.order - b.order));
         setTestcases(problemRes?.data[0]?.problemExample)
@@ -155,8 +155,8 @@ function Practice() {
               {/* Description Tab */}
               <TabPanel className='p-6 space-y-6'>
                 <div className='flex justify-between items-center'>
-                  <h1 className='text-2xl font-bold flex items-center gap-2'>
-                    {renderInlineMathJax(`${problem.quesId}.`)}
+                  <h1 className='text-2xl font-bold flex items-center gap-2 arithmatex'>
+                    {problem.quesId}.
                     {problem.quesName}
                   </h1>
                   {solved && (
