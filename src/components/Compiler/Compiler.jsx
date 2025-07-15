@@ -3,15 +3,70 @@ import AceEditor from "react-ace";
 import { CgFormatLeft } from "react-icons/cg";
 import { LuFullscreen } from "react-icons/lu";
 import { GrFormEdit } from "react-icons/gr";
-import { MdDelete } from "react-icons/md"
+import { MdDelete } from "react-icons/md";
 import { GrTest } from "react-icons/gr";
 import { HiOutlineCode } from "react-icons/hi";
 import { FiSave } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
-import { Box, Button, CircularProgress, CircularProgressLabel, Code, Flex, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Progress, Spinner, Tab, TabList, TabPanel, TabPanels, Tabs, Text, useColorModeValue, useDisclosure } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  CircularProgressLabel,
+  Code,
+  Flex,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Progress,
+  Spinner,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Text,
+  useColorModeValue,
+  useDisclosure,
+  VStack
+} from "@chakra-ui/react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateCode } from "../../store/slice/slice";
-import Confettii from "react-confetti"
+import axiosInstance from "../helper/axiosInstance";
+import { CheckCircleIcon, XCircleIcon } from "lucide-react";
+import { MdCelebration as CelebrationIcon } from 'react-icons/md';
+import Confetti from "react-confetti";
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <Box p={4} bg="red.50" border="1px" borderColor="red.200" borderRadius="md">
+          <Text color="red.600">Something went wrong with the editor. Please try refreshing the page.</Text>
+        </Box>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // Theme imports
 import "ace-builds/src-noconflict/theme-monokai";
 import "ace-builds/src-noconflict/theme-dracula";
@@ -31,12 +86,7 @@ import "ace-builds/src-noconflict/mode-python";
 import "ace-builds/src-noconflict/mode-c_cpp";
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/mode-rust";
-import axiosInstance from "../helper/axiosInstance";
-import { CheckCircleIcon, StarIcon, XCircleIcon } from "lucide-react";
-import {
-  MdCelebration as CelebrationIcon,
-  MdWarning as ExclamationIcon
-} from 'react-icons/md';
+
 function Compiler({ testcase, quesId }) {
   // Language options
   const options = [
@@ -67,28 +117,19 @@ function Compiler({ testcase, quesId }) {
     testcase.map((tc, index) => ({ ...tc, id: index }))
   );
 
-
-  const dispatch = useDispatch();
-  const { code: storedCode = "console.log('hello javascript')", mode: storedMode = "javascript" } =
-    useSelector((state) => state.compiler) || {};
-
-  const [selectedLang, setSelectedLang] = useState(storedMode);
+  const [selectedLang, setSelectedLang] = useState('javascript');
   const [selectedFont, setSelectedFont] = useState(18);
   const [selectedTheme, setSelectedTheme] = useState("monokai");
-  const [code, setCode] = useState(storedCode);
-  const [output, setOutput] = useState("");
+  const [code, setCode] = useState("");
+  const [output, setOutput] = useState(null);
   const [wrapEnabled, setWrapEnabled] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
   const [editTest, setEditTest] = useState({ input: "", output: "" });
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
   const [isFullScreen, setIsFullScreen] = useState(false);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
+  const [isEditorLoading, setIsEditorLoading] = useState(true);
   const fontSizes = [12, 14, 16, 18, 20, 22, 24, 26, 28, 30];
-
-  useEffect(() => {
-    setCode(storedCode);
-    setSelectedLang(storedMode);
-  }, [storedCode, storedMode]);
 
   const handleEdit = (index) => {
     setEditIndex(index);
@@ -104,25 +145,27 @@ function Compiler({ testcase, quesId }) {
       setEditTest({ input: "", output: "" });
     }
   };
+
   const OverlayOne = () => (
     <ModalOverlay
       bg='blackAlpha.300'
       backdropFilter='blur(10px) hue-rotate(90deg)'
     />
-  )
+  );
 
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [overlay, setOverlay] = useState(<OverlayOne />);
 
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const [overlay, setOverlay] = React.useState(<OverlayOne />)
   const handleDelete = (id) => {
     setTestcases(prev => prev.filter(test => test.id !== id));
   };
-  const userId = useSelector((state) => (state.login.userId))
+
+  const userId = useSelector((state) => state.login.userId);
 
   const handleRun = async () => {
     try {
-      setLoading(true)
-      setSelectedTabIndex(1)
+      setLoading(true);
+      setSelectedTabIndex(1);
       const response = await axiosInstance.post("/api/problem/run", {
         quesId: quesId,
         userId: userId,
@@ -132,26 +175,37 @@ function Compiler({ testcase, quesId }) {
           input: test.input,
           output: test.output
         }))
-      })
-      setLoading(false)
-      setOutput(response.data)
+      });
+      setLoading(false);
+      setOutput(response.data);
     } catch (error) {
       console.error(error);
-      setLoading(false)
+      setLoading(false);
+      setOutput({
+        isFullyPassed: false,
+        passedTestCases: 0,
+        totalTestCases: testcases.length,
+        failedTestCases: testcases.map(tc => ({
+          input: tc.input,
+          expectedOutput: tc.output,
+          actualOutput: "Error running code"
+        }))
+      });
     }
-  }
+  };
+
   const handleSubmit = async () => {
     try {
       setOverlay(<OverlayOne />);
       setLoading(true);
-      setOutput(null);  // Reset output state
+      setOutput(null);
       onOpen();
 
       const response = await axiosInstance.post("/api/problem/submit", {
         quesId: quesId,
         lang: selectedLang,
         code: code,
-        userId:userId
+        userId: userId
       });
 
       setOutput(response.data);
@@ -159,12 +213,41 @@ function Compiler({ testcase, quesId }) {
     } catch (error) {
       console.error(error);
       setLoading(false);
+      setOutput({
+        isFullyPassed: false,
+        passedTestCases: 0,
+        totalTestCases: testcases.length,
+        failedTestCases: testcases.map(tc => ({
+          input: tc.input,
+          expectedOutput: tc.output,
+          actualOutput: "Error submitting code"
+        }))
+      });
     }
-  }
+  };
+
+  useEffect(() => {
+    const fetchStarterCode = async () => {
+      setIsEditorLoading(true);
+      try {
+        const response = await axiosInstance.get(
+          `/api/problem/get-starter-code?quesId=${quesId}&language=${selectedLang}`
+        );
+        setCode(response.data.code || "");
+        console.log("starter code ", response.data);
+
+      } catch (error) {
+        console.error("Error in Fetching Starter Code", error);
+        setCode("");
+      } finally {
+        setIsEditorLoading(false);
+      }
+    };
+    fetchStarterCode();
+  }, [quesId, selectedLang]);
+
   const confettiColors = useColorModeValue(
-    // Light mode colori
     ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722'],
-    // Dark mode colors (brighter versions)
     ['#ff8a80', '#ff80ab', '#ea80fc', '#b388ff', '#8c9eff', '#82b1ff', '#80d8ff', '#84ffff', '#a7ffeb', '#b9f6ca', '#ccff90', '#f4ff81', '#ffff8d', '#ffe57f', '#ffd180', '#ff9e80']
   );
 
@@ -172,7 +255,7 @@ function Compiler({ testcase, quesId }) {
     <>
       <div className="flex flex-col w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
         {/* Editor Header */}
-        <div className="flex justify-between items-center p-2 bg-gray-100 dark:bg-gray-800 ">
+        <div className="flex justify-between items-center p-2 bg-gray-100 dark:bg-gray-800">
           <div className="flex items-center gap-4">
             <HiOutlineCode size={24} className="text-amber-600 dark:text-indigo-400" />
 
@@ -180,7 +263,7 @@ function Compiler({ testcase, quesId }) {
             <select
               value={selectedLang}
               onChange={(e) => setSelectedLang(e.target.value)}
-              className="p-1.5 rounded-md bg-white dark:bg-gray-700  text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-indigo-500"
+              className="p-1.5 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-indigo-500"
             >
               {options.map((option) => (
                 <option
@@ -197,7 +280,7 @@ function Compiler({ testcase, quesId }) {
             <select
               value={selectedTheme}
               onChange={(e) => setSelectedTheme(e.target.value)}
-              className="p-1.5 rounded-md bg-white dark:bg-gray-700  text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-indigo-500 hidden md:block"
+              className="p-1.5 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-indigo-500 hidden md:block"
             >
               {aceThemes.map((t) => (
                 <option
@@ -214,7 +297,7 @@ function Compiler({ testcase, quesId }) {
             <select
               value={selectedFont}
               onChange={(e) => setSelectedFont(Number(e.target.value))}
-              className="p-1.5 rounded-md bg-white dark:bg-gray-700  text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-indigo-500 hidden md:block"
+              className="p-1.5 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-indigo-500 hidden md:block"
             >
               {fontSizes.map((size) => (
                 <option
@@ -251,54 +334,60 @@ function Compiler({ testcase, quesId }) {
 
         {/* Code Editor */}
         <div className="flex-1">
-          <AceEditor
-            mode={selectedLang}
-            theme={selectedTheme}
-            value={code}
-            onChange={(newCode) => {
-              setCode(newCode);
-              dispatch(updateCode({ id: 1, code: newCode }));
-            }}
-            fontSize={selectedFont}
-            width="100%"
-            height={isFullScreen ? "80vh" : "45vh"}
-            wrapEnabled={wrapEnabled}
-            setOptions={{
-              enableBasicAutocompletion: true,
-              enableLiveAutocompletion: true,
-              enableSnippets: true,
-              highlightActiveLine: true,
-              highlightGutterLine: true,
-            }}
-            className=""
-          />
+          <ErrorBoundary>
+            {isEditorLoading ? (
+              <div className="flex items-center justify-center h-64">
+                <Spinner size="lg" />
+              </div>
+            ) : (
+              <AceEditor
+                mode={selectedLang || "javascript"}
+                theme={selectedTheme || "monokai"}
+                value={code || ""}
+                onChange={(newValue) => setCode(newValue)}
+                fontSize={selectedFont}
+                width="100%"
+                height={isFullScreen ? "80vh" : "45vh"}
+                wrapEnabled={wrapEnabled}
+                setOptions={{
+                  enableBasicAutocompletion: true,
+                  enableLiveAutocompletion: true,
+                  enableSnippets: true,
+                  highlightActiveLine: true,
+                  highlightGutterLine: true,
+                }}
+              />
+            )}
+          </ErrorBoundary>
         </div>
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-4 p-3 bg-gray-100 dark:bg-gray-800">
           <button
             onClick={handleRun}
-            className="px-4 py-2 bg-green-500 text-white hover:bg-green-300 dark:bg-green-500 dark:hover:bg-gray-600  dark:text-gray-200 rounded-md transition-colors"
+            disabled={loading}
+            className={`px-4 py-2 ${loading ? 'bg-gray-400' : 'bg-green-500 hover:bg-green-600'} text-white rounded-md transition-colors`}
           >
-            Run
+            {loading ? "Running..." : "Run"}
           </button>
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 bg-amber-500 hover:bg-amber-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white rounded-md transition-colors"
+            disabled={loading}
+            className={`px-4 py-2 ${loading ? 'bg-gray-400' : 'bg-amber-500 hover:bg-amber-600'} text-white rounded-md transition-colors`}
           >
-            Submit
+            {loading ? "Submitting..." : "Submit"}
           </button>
         </div>
 
         {/* Output Panel */}
-        <div className="bg-white dark:bg-gray-900 p-4 ">
+        <div className="bg-white dark:bg-gray-900 p-4">
           <Tabs index={selectedTabIndex} onChange={(index) => setSelectedTabIndex(index)}>
-            <TabList className=" ">
+            <TabList className="">
               <Tab
                 _selected={{
-                  color: 'amber.600 dark:indigo.400',
+                  color: 'amber.600',
                   borderBottom: '2px solid',
-                  borderColor: 'amber.600 dark:indigo.400'
+                  borderColor: 'amber.600'
                 }}
                 className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400"
               >
@@ -306,9 +395,9 @@ function Compiler({ testcase, quesId }) {
               </Tab>
               <Tab
                 _selected={{
-                  color: 'amber.600 dark:indigo.400',
+                  color: 'amber.600',
                   borderBottom: '2px solid',
-                  borderColor: 'amber.600 dark:indigo.400'
+                  borderColor: 'amber.600'
                 }}
                 className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400"
               >
@@ -318,8 +407,10 @@ function Compiler({ testcase, quesId }) {
 
             <TabPanels>
               {/* Test Cases Tab */}
-              <TabPanel className="p-2">
-                <div className="flex gap-4 overflow-x-auto pb-2">
+              <TabPanel className="p-2" >
+                <div className="flex gap-4 overflow-x-auto pb-2" style={{
+                  overflowY: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none'
+                }}>
                   <AnimatePresence>
                     {testcases.map((test, index) => (
                       <motion.div
@@ -398,26 +489,7 @@ function Compiler({ testcase, quesId }) {
                 <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-6 min-h-32 shadow-md transition-all duration-300">
                   {loading ? (
                     <div className="flex flex-col items-center justify-center h-32 space-y-3 text-indigo-600 dark:text-indigo-400">
-                      <svg
-                        className="animate-spin h-8 w-8 text-current"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                        ></path>
-                      </svg>
+                      <Spinner size="lg" />
                       <p className="text-sm font-medium">Executing your code, please wait...</p>
                     </div>
                   ) : output ? (
@@ -425,7 +497,7 @@ function Compiler({ testcase, quesId }) {
                       {/* Status Badge */}
                       <div
                         className={`flex items-center gap-3 px-4 py-2 rounded-full text-sm font-semibold w-fit transition-colors duration-300
-            ${output.isFullyPassed
+                          ${output.isFullyPassed
                             ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
                             : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
                           }`}
@@ -458,35 +530,36 @@ function Compiler({ testcase, quesId }) {
                   )}
                 </div>
               </TabPanel>
-
             </TabPanels>
           </Tabs>
         </div>
-      </div >
+      </div>
+
+      {/* Submission Modal */}
       <Modal
         isCentered
         isOpen={isOpen}
         onClose={onClose}
-        size={{ base: "full", md: "xl" }} // Full screen on mobile, xl on desktop
-        motionPreset="slideInBottom" // Better for mobile
+        size={{ base: "full", md: "xl" }}
+        motionPreset="slideInBottom"
         scrollBehavior="inside"
       >
         {overlay}
         <ModalContent
           bg="white"
-          borderRadius={{ base: 0, md: "xl" }} // No border radius on mobile
+          borderRadius={{ base: 0, md: "xl" }}
           boxShadow={{ base: "none", md: "xl" }}
-          minH={{ base: "100vh", md: "auto" }} // Full height on mobile
+          minH={{ base: "100vh", md: "auto" }}
           maxH={{ base: "100vh", md: "90vh" }}
         >
           {output?.isFullyPassed && (
-            <Confettii
+            <Confetti
               width={window.innerWidth}
               height={window.innerHeight}
               recycle={false}
-              numberOfPieces={100} // Slightly fewer for mobile performance
+              numberOfPieces={100}
               gravity={0.15}
-              colors={['#FFC700', '#FF0000', '#2E3191', '#41BBC7']}
+              colors={confettiColors}
               opacity={0.8}
               tweenDuration={2000}
               confettiSource={{
@@ -540,7 +613,7 @@ function Compiler({ testcase, quesId }) {
           <ModalBody py={4} px={4}>
             {output ? (
               <Box>
-                {/* Progress Section - Stacked on mobile */}
+                {/* Progress Section */}
                 <Flex
                   direction={{ base: 'column', md: 'row' }}
                   align="center"
@@ -590,7 +663,7 @@ function Compiler({ testcase, quesId }) {
                   </Box>
                 </Flex>
 
-                {/* Failed Test Cases - Simplified for mobile */}
+                {/* Failed Test Cases */}
                 {output.failedTestCases && output.failedTestCases.length > 0 && (
                   <Box
                     borderTopWidth="1px"
@@ -693,7 +766,7 @@ function Compiler({ testcase, quesId }) {
               colorScheme={output?.isFullyPassed ? 'green' : 'blue'}
               size="md"
               onClick={onClose}
-              width="full" // Full width on mobile
+              width="full"
               rightIcon={output?.isFullyPassed ? <CelebrationIcon className="h-4 w-4" /> : null}
             >
               {output?.isFullyPassed ? "Done" : "Close"}
@@ -701,9 +774,8 @@ function Compiler({ testcase, quesId }) {
           </ModalFooter>
         </ModalContent>
       </Modal>
-
     </>
-
   );
 }
+
 export default Compiler;
