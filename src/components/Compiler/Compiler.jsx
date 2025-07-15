@@ -94,7 +94,6 @@ function Compiler({ testcase, quesId }) {
     { name: "Python", value: "python" },
     { name: "C++", value: "c_cpp" },
     { name: "Java", value: "java" },
-    { name: "Rust", value: "rust" },
   ];
 
   // Editor themes
