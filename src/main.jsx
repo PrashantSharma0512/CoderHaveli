@@ -24,6 +24,7 @@ import NotFound from './components/utils/404.jsx';
 import PublicRoute from './layouts/PublicLayout.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import ForgetPassword from './components/auth/ForgetPassword.jsx'
+import DetailedPage from './pages/DetailedPage.jsx';
 const theme = extendTheme({
   styles: {
     global: {
@@ -57,6 +58,7 @@ createRoot(document.getElementById('root')).render(
               <Route path="tutorial" element={<AuthLayout><TutorialPage /></AuthLayout>} />
               <Route path="about" element={<AboutUs />} />
               <Route path="profile" element={<AuthLayout><ProfilePage /></AuthLayout>} />
+              <Route path="coursed" element={<AuthLayout><DetailedPage /></AuthLayout>} />
             </Route>
 
             {/* 404 Fallback */}

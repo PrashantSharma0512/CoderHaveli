@@ -159,9 +159,9 @@ function Practice() {
               {/* Description Tab */}
               <TabPanel className='p-6 space-y-6' >
                 <div className='flex justify-between items-center'>
-                  <button onClick={window.history.back()} className='cursor-pointer'><IoIosArrowRoundBack/></button>
-                  <h1 className='text-2xl font-bold flex items-center gap-2 arithmatex'>
-                    {problem.quesId}.
+                  <h1 className='text-2xl font-bold flex items-center gap-2 arithmatex justify-center'>
+                    <button onClick={() => window.history.back()} className='cursor-pointer'><IoIosArrowRoundBack size={35} /></button>
+                    {problem.quesId}.&nbsp;
                     {problem.quesName}
                   </h1>
                   {solved && (
