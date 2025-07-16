@@ -21,7 +21,7 @@ import { TfiCommentAlt } from "react-icons/tfi";
 import { HiOutlineLightBulb } from "react-icons/hi";
 import { FiCheckCircle } from "react-icons/fi";
 import { RiLightbulbLine } from "react-icons/ri";
-
+import { IoIosArrowRoundBack } from "react-icons/io";
 import { useDispatch, useSelector } from 'react-redux';
 import CodeDisplay from '../components/utils/CodeDisplay';
 import Submission from '../components/utils/Submission';
@@ -159,6 +159,7 @@ function Practice() {
               {/* Description Tab */}
               <TabPanel className='p-6 space-y-6' >
                 <div className='flex justify-between items-center'>
+                  <button onClick={window.history.back()} className='cursor-pointer'><IoIosArrowRoundBack/></button>
                   <h1 className='text-2xl font-bold flex items-center gap-2 arithmatex'>
                     {problem.quesId}.
                     {problem.quesName}
