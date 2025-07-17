@@ -6,7 +6,7 @@ import { MdEmail } from "react-icons/md";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  
+
   return (
     <footer className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 border-t border-gray-200 dark:border-gray-800 transition-colors duration-300">
       <div className="container mx-auto px-4 py-12">
@@ -15,10 +15,10 @@ const Footer = () => {
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <FaCode className="text-amber-600 dark:text-indigo-400 text-2xl" />
-              <h1 className="text-2xl font-bold text-amber-600 dark:text-indigo-400">CoderHaveli</h1>
+              <h1 className="text-2xl font-bold text-amber-600 dark:text-indigo-400" style={{ fontFamily: "'Dancing Script', cursive" }}>CoderHaveli</h1>
             </div>
             <p className="text-gray-600 dark:text-gray-400">
-              A platform dedicated to fostering competitive coding through daily challenges and contests. 
+              A platform dedicated to fostering competitive coding through daily challenges and contests.
               Join us to sharpen your skills and compete with a global community of developers.
             </p>
             <div className="flex space-x-4 pt-2">
@@ -57,32 +57,32 @@ const Footer = () => {
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Quick Links</h2>
             <ul className="space-y-3">
               <li>
-                <a 
-                  href="/about" 
+                <a
+                  href="/about"
                   className="text-gray-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400 transition-colors duration-200"
                 >
                   About Us
                 </a>
               </li>
               <li>
-                <a 
-                  href="/resources" 
+                <a
+                  href="/resources"
                   className="text-gray-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400 transition-colors duration-200"
                 >
                   Resources
                 </a>
               </li>
               <li>
-                <a 
-                  href="/contests" 
+                <a
+                  href="/contests"
                   className="text-gray-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400 transition-colors duration-200"
                 >
                   Contests
                 </a>
               </li>
               <li>
-                <a 
-                  href="/leaderboard" 
+                <a
+                  href="/leaderboard"
                   className="text-gray-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400 transition-colors duration-200"
                 >
                   Leaderboard
@@ -96,32 +96,32 @@ const Footer = () => {
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Support</h2>
             <ul className="space-y-3">
               <li>
-                <a 
-                  href="/faq" 
+                <a
+                  href="/faq"
                   className="text-gray-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400 transition-colors duration-200"
                 >
                   FAQ
                 </a>
               </li>
               <li>
-                <a 
-                  href="/contact" 
+                <a
+                  href="/contact"
                   className="text-gray-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400 transition-colors duration-200"
                 >
                   Contact Us
                 </a>
               </li>
               <li>
-                <a 
-                  href="/privacy" 
+                <a
+                  href="/privacy"
                   className="text-gray-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400 transition-colors duration-200"
                 >
                   Privacy Policy
                 </a>
               </li>
               <li>
-                <a 
-                  href="/terms" 
+                <a
+                  href="/terms"
                   className="text-gray-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400 transition-colors duration-200"
                 >
                   Terms of Service
@@ -161,20 +161,20 @@ const Footer = () => {
             &copy; {currentYear} CoderHaveli. All rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
-            <a 
-              href="/privacy" 
+            <a
+              href="/privacy"
               className="text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400 text-sm transition-colors duration-200"
             >
               Privacy Policy
             </a>
-            <a 
-              href="/terms" 
+            <a
+              href="/terms"
               className="text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400 text-sm transition-colors duration-200"
             >
               Terms of Service
             </a>
-            <a 
-              href="/cookies" 
+            <a
+              href="/cookies"
               className="text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400 text-sm transition-colors duration-200"
             >
               Cookie Policy

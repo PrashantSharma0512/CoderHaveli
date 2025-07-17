@@ -49,8 +49,9 @@ const Header = () => {
           {/* Logo - Centered on mobile */}
           <Link
             to="/"
-            className="text-3xl font-bold text-amber-600 dark:text-indigo-400 max-md:mx-auto"
+            className="text-4xl font-bold text-amber-600 dark:text-indigo-400 max-md:mx-auto"
             aria-label="CoderHaveli Home"
+            style={{ fontFamily: "'Dancing Script', cursive" }}
           >
             CoderHaveli
           </Link>
@@ -245,7 +246,7 @@ const Header = () => {
       <Drawer placement="left" onClose={onClose} isOpen={isOpen} size="xs">
         <DrawerContent className="bg-white dark:bg-gray-900">
           <DrawerHeader className="border-b border-gray-200 dark:border-gray-700 flex justify-between items-center p-4">
-            <span className="text-2xl font-bold text-amber-600 dark:text-indigo-400">CoderHaveli</span>
+            <span className="text-2xl font-bold text-amber-600 dark:text-indigo-400" style={{ fontFamily: "'Dancing Script', cursive" }}>CoderHaveli</span>
             <button
               onClick={onClose}
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
