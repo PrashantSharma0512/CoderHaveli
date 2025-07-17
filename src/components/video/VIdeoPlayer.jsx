@@ -2,7 +2,7 @@ import ReactPlayer from 'react-player';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 
-const VideoPlayer = ({
+const VideoPlayerComponent = ({
     url,
     light = false,
     controls = true,
@@ -82,7 +82,7 @@ const VideoPlayer = ({
     );
 };
 
-VideoPlayer.propTypes = {
+VideoPlayerComponent.propTypes = {
     url: PropTypes.string.isRequired,
     light: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
     controls: PropTypes.bool,
@@ -94,4 +94,4 @@ VideoPlayer.propTypes = {
     className: PropTypes.string
 };
 
-export default VideoPlayer;
+export default VideoPlayerComponent;

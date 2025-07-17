@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router';
 import { FiClock, FiUser, FiStar, FiBookmark, FiPlay, FiCheck, FiChevronDown } from 'react-icons/fi';
-import ReactPlayer from 'react-player';
-import VideoPlayer from '../components/Video/VIdeoPlayer';
+
+import VideoPlayer from '../components/Video/VideoPlayer';
 
 // Temporary course data
 const tempCourseData = {
