@@ -1,6 +1,7 @@
 # CoderHaveli
 
-CoderHaveli is an interactive coding platform that provides high-quality tutorials, courses, and coding challenges to help developers enhance their skills.
+CoderHaveli is an interactive coding platform that provides high-quality tutorials, courses, and coding challenges to help developers enhance their skills.  
+
 
 ## Features
 - 📚 **Tutorials & Courses**: Learn programming languages and frameworks like JavaScript, React, Node.js, and more.
