@@ -10,6 +10,7 @@ import Logout from '../auth/Logout';
 import { FaUser, FaSignOutAlt } from "react-icons/fa";
 import { useSelector } from 'react-redux';
 import axiosInstance from '../helper/axiosInstance';
+import { userAvatar } from '../../store/slice/authSlice';
 
 const Header = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -38,6 +39,8 @@ const Header = () => {
     const fetchUser = async () => {
       const response = await axiosInstance.get(`/api/get-profile?id=${userId}`)
       setUser(response.data.user)
+      dispatch(userAvatar(response.data.user.avatar))
+      dispatch()
     }
     fetchUser()
   }, [userId])
@@ -259,13 +262,9 @@ const Header = () => {
           </DrawerHeader>
 
           <DrawerBody className="p-0 flex flex-col h-full">
-            {/* Search Bar */}
-            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-              <Search mobile={true} />
-            </div>
 
             {/* Main Navigation */}
-            <nav className="flex-1 overflow-y-auto">
+            <nav className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
               <ul className="py-2">
                 {navItems.map((item) => (
                   <li key={item.name}>
@@ -275,7 +274,6 @@ const Header = () => {
                       className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-amber-50/50 dark:hover:bg-gray-800 transition-colors"
                       activeClassName="bg-amber-100/50 dark:bg-gray-800 text-amber-600 dark:text-indigo-400"
                     >
-                      {item.icon}
                       <span className="font-medium">{item.name}</span>
                     </Link>
                   </li>
@@ -284,7 +282,7 @@ const Header = () => {
             </nav>
 
             {/* User Section */}
-            <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+            <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-900">
               {isAuthenticated ? (
                 <>
                   {/* User Profile */}
@@ -351,4 +349,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default Header; 

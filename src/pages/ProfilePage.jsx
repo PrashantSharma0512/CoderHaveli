@@ -5,16 +5,18 @@ import { FaSave, FaEdit } from 'react-icons/fa';
 import { Link } from 'react-router';
 import toast from 'react-hot-toast';
 import axiosInstance from '../components/helper/axiosInstance';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { userAvatar } from '../store/slice/authSlice';
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null); // Initialize as null
+  const dispatch = useDispatch()
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
   const { userId } = useSelector((state) => state?.login);
-
+  co
   // Load user data
   useEffect(() => {
     const fetchUserData = async () => {
@@ -30,9 +32,11 @@ const ProfilePage = () => {
           avatar: null,
           createdAt: new Date().toISOString()
         };
+        dispatch(userAvatar(userData.avatar))
         setUser(userData);
         setAvatarPreview(userData.avatar);
         reset(userData);
+
       } catch (error) {
         toast.error('Failed to fetch profile data');
         console.error('Error:', error);
@@ -69,10 +73,10 @@ const ProfilePage = () => {
 
   const onSubmit = async (data) => {
     if (!user) return;
-    
+
     try {
       setIsLoading(true);
-      
+
       // Prepare the update data
       const updateData = {
         id: userId,
@@ -86,19 +90,19 @@ const ProfilePage = () => {
       if (fileInput?.files?.[0]) {
         const file = fileInput.files[0];
         const reader = new FileReader();
-        
+
         // Convert file to base64
         const base64Avatar = await new Promise((resolve, reject) => {
           reader.onload = () => resolve(reader.result);
           reader.onerror = error => reject(error);
           reader.readAsDataURL(file);
         });
-        
+
         updateData.avatar = base64Avatar;
       }
 
       const response = await axiosInstance.put('/api/update-profile', updateData);
-      
+
       const updatedUser = response.data?.user || user;
       setUser(updatedUser);
       setAvatarPreview(updatedUser.avatar);

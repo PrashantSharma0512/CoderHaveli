@@ -32,6 +32,7 @@ import Loading from '../components/utils/Loading';
 import { FaTag } from 'react-icons/fa6';
 import { addCode, updateCode } from '../store/slice/slice';
 import axiosInstance from '../components/helper/axiosInstance';
+import Comment from '../components/utils/Comment';
 
 function Practice() {
   const [solved, setSolved] = useState(false);
@@ -107,7 +108,7 @@ function Practice() {
     if (!content) return null;
     return <MathJax inline>{`\\(${content}\\)`}</MathJax>;
   };
-
+  const comments = [1]
   return (
     <MathJaxContext
       config={{
@@ -313,10 +314,7 @@ function Practice() {
 
               {/* Comments Tab */}
               <TabPanel>
-                <div className='p-6'>
-                  <h2 className='text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4'>Comments</h2>
-                  <p className='text-gray-500 dark:text-gray-400'>Coming soon...</p>
-                </div>
+                <Comment quesId={problem.quesId} />
               </TabPanel>
             </TabPanels>
           </Tabs>
@@ -326,8 +324,8 @@ function Practice() {
         <div className='w-full md:w-3/5 border-l border-gray-200 dark:border-gray-700'>
           <Compiler testcase={testcases} quesId={problem.quesId} />
         </div>
-      </div>
-    </MathJaxContext>
+      </div >
+    </MathJaxContext >
   );
 }
 
