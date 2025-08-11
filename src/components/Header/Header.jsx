@@ -21,7 +21,7 @@ const Header = () => {
   const [user, setUser] = useState({
     name: "John Doe",
     email: "john@example.com",
-    avatar: "https://randomuser.me/api/portraits/men/20.jpg" // null if no avatar
+    avatar: "https://th.bing.com/th/id/OIP.18ygnwZ7ZIBpWdtoy6cG1QHaHk?o=7rm=3&rs=1&pid=ImgDetMain&cb=idpwebpc2" // null if no avatar
   });
 
   const navItems = [
