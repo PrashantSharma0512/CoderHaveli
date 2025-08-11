@@ -4,27 +4,27 @@ import { format } from 'date-fns';
 import { useSelector } from 'react-redux'
 function Comment({ quesId }) {
     const [comments, setComments] = useState([]);
+    const [user, setUser] = useState([]);
     const [content, setContent] = useState('');
     const [commentType, setCommentType] = useState('general');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
     const { userId } = useSelector((state) => state?.login);
     const avatar = useSelector((state) => state.login.avatar);
-    console.log("avatar--------------------------->", avatar);
 
     useEffect(() => {
         const fetchComment = async () => {
             try {
                 const response = await axiosInstance.get(`/api/problem/fetch-comment?quesId=${quesId}&userId=${userId}`);
                 setComments(response.data.comments);
+                setUser(response.data.userData);
             } catch (error) {
                 setError('Failed to load comments. Please try again later.');
                 console.error('Error fetching comments:', error);
             }
         };
         fetchComment();
-    }, []);
-    console.log(comments, "djjjjjjjjjjjjj");
+    }, [comments]);
 
     const handleSubmitComment = async (e) => {
         e.preventDefault();
@@ -43,7 +43,6 @@ function Comment({ quesId }) {
                 author: userId
             });
 
-            // Add the new comment to the list (assuming response contains the new comment)
             setComments([response.data, ...comments]);
             setContent('');
         } catch (error) {
@@ -64,7 +63,7 @@ function Comment({ quesId }) {
                     <div className='flex-shrink-0'>
                         <img
                             className='h-10 w-10 rounded-full object-cover'
-                            src={avatar}
+                            src={user?.avatar}
                             alt="User avatar"
                         />
                     </div>
@@ -117,8 +116,8 @@ function Comment({ quesId }) {
                                 </div>
                                 <button
                                     type='submit'
-                                    disabled={isSubmitting || !content.trim()}
-                                    className={`px-4 py-2 text-sm font-medium text-white rounded-lg focus:ring-4 focus:outline-none ${isSubmitting || !content.trim()
+                                    disabled={isSubmitting || !content?.trim()}
+                                    className={`px-4 py-2 text-sm font-medium text-white rounded-lg focus:ring-4 focus:outline-none ${isSubmitting || !content?.trim()
                                         ? 'bg-blue-400 dark:bg-blue-400 cursor-not-allowed'
                                         : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800'
                                         }`}
@@ -133,13 +132,13 @@ function Comment({ quesId }) {
 
             {/* Comments List */}
             <div className='space-y-6'>
-                {comments.length > 0 ? (
-                    comments.map((comment) => (
-                        <div key={comment._id} className='flex space-x-3'>
+                {comments?.length > 0 ? (
+                    comments?.map((comment) => (
+                        <div key={comment?._id} className='flex space-x-3'>
                             <div className='flex-shrink-0'>
                                 <img
                                     className='h-10 w-10 rounded-full object-cover'
-                                    src={comment.url || '/default-avatar.png'}
+                                    src={comment?.author?.avatar || '/default-avatar.png'}
                                     alt="User avatar"
                                 />
                             </div>
@@ -147,19 +146,19 @@ function Comment({ quesId }) {
                                 <div className='bg-gray-50 dark:bg-gray-800 p-4 rounded-lg'>
                                     <div className='flex items-center justify-between mb-1'>
                                         <span className='text-sm font-semibold text-gray-900 dark:text-white'>
-                                            {comment.username || 'Anonymous'}
+                                            {comment?.author?.name || 'Anonymous'}
                                         </span>
                                         <span className='text-xs text-gray-500 dark:text-gray-400'>
-                                            {comment.createdAt ? format(new Date(comment.createdAt), 'MMM d, yyyy h:mm a') : 'Just now'}
+                                            {comment?.createdAt ? format(new Date(comment.createdAt), 'MMM d, yyyy h:mm a') : 'Just now'}
                                         </span>
                                     </div>
                                     <div className="flex items-center mb-1">
                                         <span className="text-xs px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                                            {comment.commentType || 'general'}
+                                            {comment?.type || 'general'}
                                         </span>
                                     </div>
                                     <p className='text-sm text-gray-700 dark:text-gray-300 mb-2 whitespace-pre-wrap'>
-                                        {comment.content}
+                                        {comment?.content}
                                     </p>
                                     <div className='flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400'>
                                         <button
@@ -169,7 +168,7 @@ function Comment({ quesId }) {
                                             <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                                                 <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5'></path>
                                             </svg>
-                                            <span>{comment.likes.length || 0}</span>
+                                            <span>{comment?.likes?.length || 0}</span>
                                         </button>
                                         <button className='hover:text-blue-500'>Reply</button>
                                         <button className='hover:text-blue-500'>Share</button>
