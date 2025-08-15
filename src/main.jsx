@@ -58,7 +58,7 @@ createRoot(document.getElementById('root')).render(
               <Route path="tutorial" element={<AuthLayout><TutorialPage /></AuthLayout>} />
               <Route path="about" element={<AboutUs />} />
               <Route path="profile" element={<AuthLayout><ProfilePage /></AuthLayout>} />
-              <Route path="coursed" element={<AuthLayout><DetailedPage /></AuthLayout>} />
+              <Route path="tutorial-page" element={<AuthLayout><DetailedPage /></AuthLayout>} />
             </Route>
 
             {/* 404 Fallback */}

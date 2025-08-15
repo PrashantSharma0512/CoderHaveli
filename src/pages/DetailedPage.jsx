@@ -204,9 +204,9 @@ const CourseDetail = () => {
               <button className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition flex items-center justify-center">
                 Enroll Now
               </button>
-              <button className="flex-1 border border-indigo-600 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-gray-700 px-6 py-3 rounded-lg font-medium transition">
+              {/* <button className="flex-1 border border-indigo-600 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-gray-700 px-6 py-3 rounded-lg font-medium transition">
                 Add to Cart
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

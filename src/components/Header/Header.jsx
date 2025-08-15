@@ -11,7 +11,7 @@ import { FaUser, FaSignOutAlt } from "react-icons/fa";
 import { useSelector } from 'react-redux';
 import axiosInstance from '../helper/axiosInstance';
 import { userAvatar } from '../../store/slice/authSlice';
-
+import logo from '../../assets/lo.jpeg'
 const Header = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [showAccountMenu, setShowAccountMenu] = useState(false);
