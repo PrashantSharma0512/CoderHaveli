@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { FiExternalLink } from "react-icons/fi";
+import { Link } from "react-router";
 
-const TutorialCard = ({ title, description, image, url, duration, category }) => {
+const TutorialCard = ({ title, description, image, url, duration, category, _id }) => {
 
   return (
     <div className="relative border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-white dark:bg-gray-800 group cursor-pointer w-full max-w-[320px] min-h-[280px] sm:min-h-[350px] md:min-h-[420px] flex flex-col">
@@ -45,13 +46,13 @@ const TutorialCard = ({ title, description, image, url, duration, category }) =>
         </div>
 
         {/* Action Button */}
-        <button
-          onClick={() => window.open('/tutorial-page', "_blank")}
+        <Link
+          to={`/tutorial-page/${_id}`}
           className="w-full flex items-center justify-center px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 bg-amber-500 hover:bg-amber-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors duration-200 text-xs sm:text-sm"
         >
           Learn More
           <FiExternalLink className="ml-1 sm:ml-2" size={12} />
-        </button>
+        </Link>
       </div>
     </div>
   );

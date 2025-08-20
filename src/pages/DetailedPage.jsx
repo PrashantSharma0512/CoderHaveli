@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router';
 import { FiClock, FiUser, FiStar, FiBookmark, FiPlay, FiCheck, FiChevronDown } from 'react-icons/fi';
 import ReactPlayer from 'react-player';
+import axiosInstance from '../components/helper/axiosInstance';
 
 // Temporary course data
 const tempCourseData = {
   _id: "64a1b2c3d4e5f6a7b8c9d0e1",
   title: "Complete React Developer Course 2024",
-  shortDescription: "Build modern web applications with React hooks, context API, and Redux",
-  description: "Master React.js from the ground up with this comprehensive course designed for developers who want to build modern, scalable web applications. You'll learn everything from React fundamentals to advanced concepts like state management with Redux and performance optimization.\n\nBy the end of this course, you'll be able to build professional-grade React applications, understand React's ecosystem, and be prepared for React developer interviews.",
+  description: "Build modern web applications with React hooks, context API, and Redux",
+  about: "Master React.js from the ground up with this comprehensive course designed for developers who want to build modern, scalable web applications. You'll learn everything from React fundamentals to advanced concepts like state management with Redux and performance optimization.\n\nBy the end of this course, you'll be able to build professional-grade React applications, understand React's ecosystem, and be prepared for React developer interviews.",
   image: {
     url: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
     alt: "Complete React Course"
@@ -81,24 +82,27 @@ const tempCourseData = {
 };
 
 const CourseDetail = () => {
-  const { courseId } = useParams();
+  const { '*': id } = useParams();
   const [course, setCourse] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [showDemoVideo, setShowDemoVideo] = useState(false);
   const [expandedModules, setExpandedModules] = useState({});
 
   useEffect(() => {
-    // Simulate API fetch
-    const timer = setTimeout(() => {
-      setCourse(tempCourseData);
-      // Initialize expanded state for all modules
-      setExpandedModules({
-        0: true // First module expanded by default
-      });
-    }, 500);
-    
-    return () => clearTimeout(timer);
-  }, [courseId]);
+    const fetchDetailedCourse = async () => {
+      try {
+        const response = await axiosInstance.get(`/api/get-detailed-tutorial?id=${id}`)
+        setCourse(response.data)
+      } catch (error) {
+        console.error(error);
+
+      }
+    }
+    fetchDetailedCourse()
+
+  }, [id]);
+  console.log(course);
+
 
   const toggleModule = (index) => {
     setExpandedModules(prev => ({
@@ -128,13 +132,13 @@ const CourseDetail = () => {
         <div className="flex flex-col md:flex-row">
           {/* Course Thumbnail/Video */}
           <div className="md:w-2/5 relative">
-            <img 
-              src={course.image.url} 
-              alt={course.image.alt} 
+            <img
+              src={course.image.url}
+              alt={course.image.alt}
               className="w-full h-full object-cover"
             />
             {hasDemoVideo && (
-              <button 
+              <button
                 onClick={() => setShowDemoVideo(true)}
                 className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 group"
               >
@@ -154,7 +158,7 @@ const CourseDetail = () => {
                   {course.category.name}
                 </span>
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{course.title}</h1>
-                <p className="mt-2 text-gray-600 dark:text-gray-300">{course.shortDescription}</p>
+                <p className="mt-2 text-gray-600 dark:text-gray-300">{course.description}</p>
               </div>
               <button className="text-gray-400 hover:text-indigo-600">
                 <FiBookmark className="text-2xl" />
@@ -165,15 +169,15 @@ const CourseDetail = () => {
               <div className="flex items-center">
                 <div className="flex text-yellow-400 mr-1">
                   {[...Array(5)].map((_, i) => (
-                    <FiStar 
-                      key={i} 
-                      className={i < Math.floor(course.stats.rating) ? "fill-current" : ""} 
+                    <FiStar
+                      key={i}
+                      className={i < Math.floor(course?.stats?.rating) ? "fill-current" : ""}
                     />
                   ))}
                 </div>
-                <span className="text-gray-600 dark:text-gray-300 text-sm ml-1">
-                  {course.stats.rating} ({course.stats.totalReviews.toLocaleString()} reviews)
-                </span>
+                {/* <span className="text-gray-600 dark:text-gray-300 text-sm ml-1">
+                  {course?.stats?.rating} ({course?.stats?.totalReviews?.toLocaleString()} reviews)
+                </span> */}
               </div>
               <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm">
                 <FiUser className="mr-1" /> {course.instructor.name}
@@ -185,7 +189,7 @@ const CourseDetail = () => {
 
             <div className="mt-6">
               <div className="flex items-end mb-2">
-                <span className="text-3xl font-bold text-gray-900 dark:text-white">₹{course.price.toLocaleString()}</span>
+                <span className="text-3xl font-bold text-gray-900 dark:text-white">{course?.price ? '₹' + course?.price?.toLocaleString() : ''}</span>
                 {course.originalPrice && (
                   <span className="text-lg text-gray-500 line-through ml-2">₹{course.originalPrice.toLocaleString()}</span>
                 )}
@@ -195,9 +199,13 @@ const CourseDetail = () => {
                   </span>
                 )}
               </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                {course.moneyBackGuarantee ? "30-Day Money-Back Guarantee" : ""}
-              </p>
+              {course.price ?
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  30-Day Money-Back Guarantee
+                </p>
+                :
+                ""
+              }
             </div>
 
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -216,7 +224,7 @@ const CourseDetail = () => {
       {showDemoVideo && hasDemoVideo && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-4xl relative">
-            <button 
+            <button
               onClick={() => setShowDemoVideo(false)}
               className="absolute -top-10 right-0 text-white hover:text-gray-300"
             >
@@ -276,13 +284,13 @@ const CourseDetail = () => {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">About This Course</h3>
-                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">{course.description}</p>
+                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">{course.about}</p>
                 </div>
 
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">What You'll Learn</h3>
                   <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {course.learningOutcomes.map((outcome, index) => (
+                    {course?.learningOutcomes?.map((outcome, index) => (
                       <li key={index} className="flex items-start">
                         <FiCheck className="text-green-500 mt-1 mr-2 flex-shrink-0" />
                         <span className="text-gray-700 dark:text-gray-300">{outcome}</span>
@@ -309,14 +317,14 @@ const CourseDetail = () => {
               <div>
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {course.tutorials.length} Lessons • {course.duration} hours
+                    {course?.lessons?.length} Lessons • {course?.duration} hours
                   </h3>
-                  <button 
+                  <button
                     className="text-indigo-600 dark:text-indigo-400 text-sm font-medium"
                     onClick={() => {
                       const allExpanded = Object.values(expandedModules).every(Boolean);
                       const newState = {};
-                      course.tutorials.forEach((_, i) => {
+                      course?.lessons?.forEach((_, i) => {
                         newState[i] = !allExpanded;
                       });
                       setExpandedModules(newState);
@@ -327,9 +335,9 @@ const CourseDetail = () => {
                 </div>
 
                 <div className="space-y-2">
-                  {course.tutorials.map((lesson, index) => (
+                  {course.lessons .map((lesson, index) => (
                     <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                      <button 
+                      <button
                         className="w-full flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                         onClick={() => toggleModule(index)}
                       >
@@ -344,12 +352,12 @@ const CourseDetail = () => {
                           <FiChevronDown className={`text-gray-500 transition-transform ${expandedModules[index] ? 'transform rotate-180' : ''}`} />
                         </div>
                       </button>
-                      
+
                       {expandedModules[index] && (
                         <div className="p-4 bg-white dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
-                          <p className="text-gray-700 dark:text-gray-300 mb-3">{lesson.description}</p>
+                          <p className="text-gray-700 dark:text-gray-300 mb-3">{lesson.content}</p>
                           {index === 0 && (
-                            <button 
+                            <button
                               onClick={() => setShowDemoVideo(true)}
                               className="flex items-center text-indigo-600 dark:text-indigo-400 font-medium"
                             >
@@ -367,9 +375,9 @@ const CourseDetail = () => {
             {activeTab === 'instructor' && (
               <div className="flex flex-col sm:flex-row gap-6">
                 <div className="w-24 h-24 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
-                  <img 
-                    src={course.instructor.avatar} 
-                    alt={course.instructor.name} 
+                  <img
+                    src={course?.instructor?.image?.url}
+                    alt={course?.instructor?.name}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -379,9 +387,9 @@ const CourseDetail = () => {
                   <div className="flex items-center mt-3">
                     <div className="flex text-yellow-400 mr-2">
                       {[...Array(5)].map((_, i) => (
-                        <FiStar 
-                          key={i} 
-                          className={i < Math.floor(course.instructor.rating) ? "fill-current" : ""} 
+                        <FiStar
+                          key={i}
+                          className={i < Math.floor(course.instructor.rating) ? "fill-current" : ""}
                         />
                       ))}
                     </div>
