@@ -118,7 +118,7 @@ function Compiler({ testcase, quesId }) {
 
   const [selectedLang, setSelectedLang] = useState('javascript');
   const [selectedFont, setSelectedFont] = useState(18);
-  const [selectedTheme, setSelectedTheme] = useState("monokai");
+  const [selectedTheme, setSelectedTheme] = useState("xcode");
   const [code, setCode] = useState("");
   const [output, setOutput] = useState(null);
   const [wrapEnabled, setWrapEnabled] = useState(false);

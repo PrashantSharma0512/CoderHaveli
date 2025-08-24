@@ -3,6 +3,8 @@ import { FiShoppingCart, FiStar, FiClock } from "react-icons/fi";
 import { Link } from "react-router";
 
 export default function CourseCard({ imageUrl, title, price, category, duration, rating = 4.0, _id }) {
+  console.log({ imageUrl, title, price, category, duration, _id }, "course ininnknknlknlknl");
+
   return (
     <div className="w-full max-w-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
       {/* Product Image */}
@@ -42,7 +44,7 @@ export default function CourseCard({ imageUrl, title, price, category, duration,
           <div className="flex">
             {[...Array(5)].map((_, i) => (
               <FiStar
-                key={i}
+                _id={i}
                 className={`w-3 h-3 sm:w-4 sm:h-4 ${i < Math.floor(rating) ?
                   'text-amber-400 fill-amber-400' :
                   'text-gray-300 dark:text-gray-600'}`}

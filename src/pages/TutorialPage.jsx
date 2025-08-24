@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import TutorialCard from "../components/cards/TutorialCard";
-import { FiSearch, FiFilter, FiX } from "react-icons/fi";
+import { FiSearch, FiFilter, FiX, FiBook, FiVideo } from "react-icons/fi";
 import axiosInstance from "../components/helper/axiosInstance";
 import CourseCard from "../components/cards/CourseCards";
 
@@ -12,6 +12,7 @@ const TutorialPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [categories, setCategories] = useState([]);
   const [courseData, setCourseData] = useState([]);
+  const [activeTab, setActiveTab] = useState("all"); // "all", "tutorials", "courses"
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,27 +37,25 @@ const TutorialPage = () => {
   }, []);
 
   const filteredTutorials = tutorials.filter(tutorial => {
-    // Search filter
     const matchesSearch = tutorial.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       tutorial.description.toLowerCase().includes(searchTerm.toLowerCase());
 
-    // Category filter - check if tutorial has a category that's selected
     const matchesCategory = selectedCategories.length === 0 ||
       (tutorial.category && selectedCategories.includes(tutorial.category.id));
 
     return matchesSearch && matchesCategory;
   });
-  const filteredCourse = courseData.filter(courseData => {
-    // Search filter
-    const matchesSearch = courseData.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      courseData.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    // Category filter - check if tutorial has a category that's selected
+  const filteredCourse = courseData.filter(course => {
+    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.description?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesCategory = selectedCategories.length === 0 ||
-      (courseData.category && selectedCategories.includes(courseData.category.id));
+      (course.category && selectedCategories.includes(course.category.id));
 
     return matchesSearch && matchesCategory;
   });
+
 
   const toggleCategory = (categoryId) => {
     setSelectedCategories(prev =>
@@ -71,6 +70,14 @@ const TutorialPage = () => {
     setSelectedCategories([]);
   };
 
+  const getTotalResults = () => {
+    switch (activeTab) {
+      case "tutorials": return filteredTutorials.length;
+      case "courses": return filteredCourse.length;
+      default: return filteredTutorials.length + filteredCourse.length;
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -80,23 +87,46 @@ const TutorialPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 bg-white dark:bg-gray-900 min-h-screen">
+    <div className="container mx-auto px-4 sm:px-6 py-8 bg-white dark:bg-gray-900 min-h-screen">
       {/* Page Header */}
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Tutorials & Courses</h1>
-        <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-          Learn new skills and advance your knowledge with our curated collection of tutorials and courses.
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-4">Tutorials & Courses</h1>
+        <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto px-4 text-lg">
+          Discover comprehensive learning resources to enhance your skills and knowledge
         </p>
       </div>
 
+      {/* Content Tabs */}
+      <div className="mb-8 flex justify-center">
+        <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+          {[
+            { id: "all", label: "All", icon: null },
+            { id: "tutorials", label: "Tutorials", icon: <FiVideo className="mr-2" /> },
+            { id: "courses", label: "Courses", icon: <FiBook className="mr-2" /> }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center px-6 py-3 rounded-md text-sm font-medium transition-all duration-200 ${activeTab === tab.id
+                ? "bg-white dark:bg-gray-700 text-amber-600 dark:text-indigo-400 shadow-sm"
+                : "text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+                }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Search and Filter Bar */}
-      <div className="mb-8 flex flex-col md:flex-row gap-4">
+      <div className="mb-8 flex flex-col md:flex-row gap-4 items-stretch">
         <div className="relative flex-grow">
-          <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+          <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
           <input
             type="text"
-            placeholder="Search tutorials..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-amber-500 dark:focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
+            placeholder="Search tutorials and courses..."
+            className="w-full pl-12 pr-4 py-4 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-amber-500 dark:focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-200"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -104,39 +134,55 @@ const TutorialPage = () => {
 
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+          className="flex items-center justify-center px-6 py-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 min-w-[120px]"
         >
           <FiFilter className="mr-2 text-gray-600 dark:text-gray-400" />
           Filters
           {selectedCategories.length > 0 && (
-            <span className="ml-2 bg-amber-500 dark:bg-indigo-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+            <span className="ml-2 bg-amber-500 dark:bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
               {selectedCategories.length}
             </span>
           )}
         </button>
       </div>
 
+      {/* Results Count */}
+      <div className="mb-6 flex justify-between items-center">
+        <span className="text-sm text-gray-600 dark:text-gray-400">
+          {getTotalResults()} results found
+        </span>
+        {(searchTerm || selectedCategories.length > 0) && (
+          <button
+            onClick={clearAllFilters}
+            className="text-sm text-amber-600 dark:text-indigo-400 hover:underline flex items-center"
+          >
+            <FiX className="mr-1" />
+            Clear all filters
+          </button>
+        )}
+      </div>
+
       {/* Filter Panel */}
       {showFilters && (
-        <div className="mb-8 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 shadow-sm">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-medium text-gray-800 dark:text-white">Filter by Category</h3>
+        <div className="mb-8 p-6 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 shadow-sm">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="font-semibold text-gray-800 dark:text-white text-lg">Filter by Category</h3>
             <button
               onClick={() => setShowFilters(false)}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
             >
               <FiX size={20} />
             </button>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {categories.map(category => (
               <button
-                key={category._id}  // Changed from id to _id to match typical MongoDB schema
+                key={category._id}
                 onClick={() => toggleCategory(category._id)}
-                className={`px-3 py-1 text-sm rounded-full border transition-colors ${selectedCategories.includes(category._id)
-                  ? 'bg-amber-500 dark:bg-indigo-600 border-transparent text-white'
-                  : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600'
+                className={`px-4 py-2 text-sm rounded-full border transition-all duration-200 ${selectedCategories.includes(category._id)
+                  ? 'bg-amber-500 dark:bg-indigo-600 border-transparent text-white shadow-md'
+                  : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 hover:shadow-sm'
                   }`}
               >
                 {category.name}
@@ -147,106 +193,112 @@ const TutorialPage = () => {
       )}
 
       {/* Active Filters Display */}
-      {(searchTerm || selectedCategories.length > 0) && (
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          {searchTerm && (
-            <span className="flex items-center px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm">
-              Search: "{searchTerm}"
-              <button
-                onClick={() => setSearchTerm("")}
-                className="ml-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-              >
-                <FiX size={14} />
-              </button>
-            </span>
-          )}
+      {selectedCategories.length > 0 && (
+        <div className="mb-6 flex flex-wrap items-center gap-2">
           {selectedCategories.map(catId => {
             const category = categories.find(c => c._id === catId);
             return category ? (
-              <span key={catId} className="flex items-center px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm">
+              <span key={catId} className="flex items-center px-3 py-2 bg-amber-100 dark:bg-indigo-900 text-amber-800 dark:text-indigo-200 rounded-full text-sm">
                 {category.name}
                 <button
                   onClick={() => toggleCategory(catId)}
-                  className="ml-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                  className="ml-2 text-amber-600 dark:text-indigo-300 hover:text-amber-800 dark:hover:text-indigo-100"
                 >
                   <FiX size={14} />
                 </button>
               </span>
             ) : null;
           })}
-          {(searchTerm || selectedCategories.length > 0) && (
-            <button
-              onClick={clearAllFilters}
-              className="text-sm text-amber-600 dark:text-indigo-400 hover:underline"
-            >
-              Clear all
-            </button>
-          )}
         </div>
       )}
 
-      {/* Tutorials Grid */}
-      {filteredTutorials.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredTutorials.map(tutorial => (
-            <TutorialCard
-              _id={tutorial._id}
-              title={tutorial.title}
-              description={tutorial.description}
-              image={tutorial.image}
-              url={tutorial.url}
-              duration={tutorial.duration}
-              category={tutorial.category}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-12">
-          <h3 className="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
-            No tutorials found
-          </h3>
-          <p className="text-gray-500 dark:text-gray-400">
-            Try adjusting your search or filter criteria
-          </p>
-          <button
-            onClick={clearAllFilters}
-            className="mt-4 px-4 py-2 bg-amber-500 dark:bg-indigo-600 text-white rounded-lg hover:bg-amber-600 dark:hover:bg-indigo-700 transition-colors"
-          >
-            Clear filters
-          </button>
-        </div>
-      )}
-      <h1 className="text-center text-3xl font-semibold py-6">Course List</h1>
-      {/* course Grid */}
-      {filteredCourse.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredCourse.map(course => (
-            <CourseCard
-              title={course.title}
-              description={course.description}
-              imageUrl={course.image.url}
-              price={course.price}
-              duration={course.duration}
-              category={course.category.name}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-12">
-          <h3 className="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
-            No tutorials found
-          </h3>
-          <p className="text-gray-500 dark:text-gray-400">
-            Try adjusting your search or filter criteria
-          </p>
-          <button
-            onClick={clearAllFilters}
-            className="mt-4 px-4 py-2 bg-amber-500 dark:bg-indigo-600 text-white rounded-lg hover:bg-amber-600 dark:hover:bg-indigo-700 transition-colors"
-          >
-            Clear filters
-          </button>
-        </div>
-      )}
+      {/* Content Grid */}
+      <div className="space-y-12">
+        {/* Tutorials Section - Show based on active tab */}
+        {(activeTab === "all" || activeTab === "tutorials") && (
+          <section>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-semibold text-gray-800 dark:text-white flex items-center">
+                <FiVideo className="mr-3 text-amber-500 dark:text-indigo-400" />
+                Tutorials
+                <span className="ml-3 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1 rounded-full text-sm">
+                  {filteredTutorials.length}
+                </span>
+              </h2>
+            </div>
+
+            {filteredTutorials.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                {filteredTutorials.map(tutorial => (
+                  <TutorialCard
+                    key={tutorial._id}
+                    _id={tutorial._id}
+                    title={tutorial.title}
+                    description={tutorial.description}
+                    image={tutorial.image}
+                    url={tutorial.url}
+                    duration={tutorial.duration}
+                    category={tutorial.category}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <FiVideo className="mx-auto text-4xl text-gray-400 dark:text-gray-500 mb-4" />
+                <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  No tutorials found
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                  Try different search terms or clear filters
+                </p>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Courses Section - Show based on active tab */}
+        {(activeTab === "all" || activeTab === "courses") && (
+          <section>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-semibold text-gray-800 dark:text-white flex items-center">
+                <FiBook className="mr-3 text-amber-500 dark:text-indigo-400" />
+                Courses
+                <span className="ml-3 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1 rounded-full text-sm">
+                  {filteredCourse.length}
+                </span>2
+              </h2>
+            </div>
+
+            {filteredCourse.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:gri-cols-4 gap-4 sm:gap-6">
+                {filteredCourse.map(course => (
+                  console.log(course, "inside course"),
+
+                  <CourseCard
+                    _id={course._id}
+                    title={course.title}
+                    description={course.description}
+                    imageUrl={course.image?.url}
+                    price={course.price}
+                    duration={course.duration}
+                    category={course.category?.name}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <FiBook className="mx-auto text-4xl text-gray-400 dark:text-gray-500 mb-4" />
+                <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  No courses found
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                  Try different search terms or clear filters
+                </p>
+              </div>
+            )}
+          </section>
+        )}
+      </div>
     </div>
   );
 };

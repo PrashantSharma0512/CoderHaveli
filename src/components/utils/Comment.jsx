@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 
 function Comment({ quesId }) {
     const [comments, setComments] = useState([]);
-    const [user, setUser] = useState([]);
+    const [user, setUser] = useState({});
     const [content, setContent] = useState('');
     const [commentType, setCommentType] = useState('general');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -15,20 +15,21 @@ function Comment({ quesId }) {
     const [editType, setEditType] = useState('general');
     const { userId } = useSelector((state) => state?.login);
     const avatar = useSelector((state) => state.login.avatar);
+    const userName = useSelector((state) => state.login.name);
 
     useEffect(() => {
         const fetchComment = async () => {
             try {
                 const response = await axiosInstance.get(`/api/problem/fetch-comment?quesId=${quesId}&userId=${userId}`);
                 setComments(response.data.comments);
-                setUser(response.data.userData);
+                setUser(response.data.userData || {});
             } catch (error) {
                 setError('Failed to load comments. Please try again later.');
                 console.error('Error fetching comments:', error);
             }
         };
         fetchComment();
-    }, [userId, quesId]);
+    }, [userId, quesId, isSubmitting]);
 
     const handleSubmitComment = async (e) => {
         e.preventDefault();
@@ -47,7 +48,17 @@ function Comment({ quesId }) {
                 author: userId
             });
 
-            setComments([response.data, ...comments]);
+            // Add the current user's data to the comment before storing it
+            const newComment = {
+                ...response.data,
+                author: {
+                    _id: userId,
+                    name: user?.name || userName || 'Current User',
+                    avatar: user?.avatar || avatar || '/default-avatar.png'
+                }
+            };
+
+            setComments([newComment, ...comments]);
             setContent('');
         } catch (error) {
             setError('Failed to post comment. Please try again.');
@@ -92,10 +103,16 @@ function Comment({ quesId }) {
                 type: editType
             });
 
-            // Update the comment in the state
+            // Update the comment while preserving the author data
             setComments(comments.map(comment =>
                 comment._id === commentId
-                    ? { ...comment, content: editContent, type: editType, updatedAt: new Date() }
+                    ? {
+                        ...comment,
+                        content: editContent,
+                        type: editType,
+                        updatedAt: new Date(),
+                        author: comment.author // Preserve the existing author data
+                    }
                     : comment
             ));
 
@@ -146,7 +163,7 @@ function Comment({ quesId }) {
 
     // Check if current user has liked a comment
     const hasUserLiked = (comment) => {
-        return comment.likes.some(likeId => likeId.toString() === userId.toString());
+        return comment?.likes?.some(likeId => likeId.toString() === userId.toString());
     };
 
     return (
@@ -159,7 +176,7 @@ function Comment({ quesId }) {
                     <div className='flex-shrink-0'>
                         <img
                             className='h-10 w-10 rounded-full object-cover'
-                            src={user?.avatar}
+                            src={user?.avatar || avatar || '/default-avatar.png'}
                             alt="User avatar"
                         />
                     </div>
