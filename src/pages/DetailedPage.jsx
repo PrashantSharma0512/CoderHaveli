@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router';
+import { useLocation, useParams, useSearchParams } from 'react-router';
 import { FiClock, FiUser, FiStar, FiBookmark, FiPlay, FiCheck, FiChevronDown } from 'react-icons/fi';
 import ReactPlayer from 'react-player';
 import axiosInstance from '../components/helper/axiosInstance';
@@ -82,16 +82,20 @@ const tempCourseData = {
 };
 
 const CourseDetail = () => {
-  const { '*': id } = useParams();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const urlId = queryParams.get('id');
+  const urlType = queryParams.get('type');
   const [course, setCourse] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [showDemoVideo, setShowDemoVideo] = useState(false);
   const [expandedModules, setExpandedModules] = useState({});
 
+
   useEffect(() => {
     const fetchDetailedCourse = async () => {
       try {
-        const response = await axiosInstance.get(`/api/get-detailed-tutorial?id=${id}`)
+        const response = await axiosInstance.get(`/api/get-detailed-tutorial?id=${urlId}&&type=${urlType}`)
         setCourse(response.data)
       } catch (error) {
         console.error(error);
@@ -100,8 +104,7 @@ const CourseDetail = () => {
     }
     fetchDetailedCourse()
 
-  }, [id]);
-  console.log(course);
+  }, [urlId, urlType]);
 
 
   const toggleModule = (index) => {
@@ -209,12 +212,18 @@ const CourseDetail = () => {
             </div>
 
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              <button className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition flex items-center justify-center">
-                Enroll Now
-              </button>
-              {/* <button className="flex-1 border border-indigo-600 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-gray-700 px-6 py-3 rounded-lg font-medium transition">
-                Add to Cart
-              </button> */}
+              {
+                urlType === 'tutorial' ?
+                  <button className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition flex items-center justify-center">
+                    Enroll Now
+                  </button>
+                  :
+                  <button className="flex-1 border bg-amber-600 border-indigo-600 text-white hover:bg-amber-700 dark:hover:bg-gray-700 px-6 py-3 rounded-lg font-medium transition cursor-pointer">
+                    Add to Cart
+                  </button>
+              }
+
+
             </div>
           </div>
         </div>
@@ -290,7 +299,7 @@ const CourseDetail = () => {
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">What You'll Learn</h3>
                   <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {course?.learningOutcomes?.map((outcome, index) => (
+                    {course?.whatYouWillLearn?.map((outcome, index) => (
                       <li key={index} className="flex items-start">
                         <FiCheck className="text-green-500 mt-1 mr-2 flex-shrink-0" />
                         <span className="text-gray-700 dark:text-gray-300">{outcome}</span>
@@ -335,7 +344,7 @@ const CourseDetail = () => {
                 </div>
 
                 <div className="space-y-2">
-                  {course.lessons .map((lesson, index) => (
+                  {course.lessons.map((lesson, index) => (
                     <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                       <button
                         className="w-full flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
@@ -408,7 +417,15 @@ const CourseDetail = () => {
             <div className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Course Includes</h3>
               <ul className="space-y-3">
-                <li className="flex items-start">
+                {
+                  course?.courseIncludes?.map((ele) => (
+                    <li className="flex items-start">
+                      ✅
+                      <span className="text-gray-700 dark:text-gray-300">{ele}</span>
+                    </li>
+                  ))
+                }
+                {/* <li className="flex items-start">
                   <svg className="text-indigo-600 dark:text-indigo-400 mt-1 mr-3 flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
@@ -438,8 +455,8 @@ const CourseDetail = () => {
                     <span className="text-gray-700 dark:text-gray-300">Certificate of completion</span>
                   </li>
                 )}
+              </ul> */}
               </ul>
-
               <div className="mt-8">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Share this course</h3>
                 <div className="flex space-x-4">

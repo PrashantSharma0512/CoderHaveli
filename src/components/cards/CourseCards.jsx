@@ -1,7 +1,8 @@
 import React from "react";
 import { FiShoppingCart, FiStar, FiClock } from "react-icons/fi";
+import { Link } from "react-router";
 
-export default function CourseCard({ imageUrl, title, price, category, duration, rating = 4.0 }) {
+export default function CourseCard({ imageUrl, title, price, category, duration, rating = 4.0, _id }) {
   return (
     <div className="w-full max-w-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
       {/* Product Image */}
@@ -65,10 +66,12 @@ export default function CourseCard({ imageUrl, title, price, category, duration,
               </span>
             )}
           </div>
-          <button className="w-full sm:w-auto flex items-center justify-center text-white bg-amber-500 hover:bg-amber-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 font-medium rounded-lg px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm transition-colors duration-200">
+          <Link
+            to={`/tutorial-page?id=${_id}&&type=course`}
+            className="w-full sm:w-auto flex items-center justify-center text-white bg-amber-500 hover:bg-amber-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 font-medium rounded-lg px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm transition-colors duration-200">
             <FiShoppingCart className="mr-1 sm:mr-2" size={12} />
             Add to Cart
-          </button>
+          </Link>
         </div>
       </div>
     </div>

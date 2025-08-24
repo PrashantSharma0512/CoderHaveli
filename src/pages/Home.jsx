@@ -163,6 +163,7 @@ function Home() {
                                     price={course.price}
                                     duration={course.duration}
                                     category={course.category.name}
+                                    _id={course._id}
                                 />
                             </div>
                         ))
