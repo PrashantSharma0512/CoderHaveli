@@ -265,7 +265,7 @@ const TutorialPage = () => {
                 Courses
                 <span className="ml-3 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1 rounded-full text-sm">
                   {filteredCourse.length}
-                </span>2
+                </span>
               </h2>
             </div>
 
