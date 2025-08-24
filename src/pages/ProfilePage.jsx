@@ -16,7 +16,6 @@ const ProfilePage = () => {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
   const { userId } = useSelector((state) => state?.login);
-  co
   // Load user data
   useEffect(() => {
     const fetchUserData = async () => {
