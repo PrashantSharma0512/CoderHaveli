@@ -59,7 +59,7 @@ function Practice() {
       try {
         setLoading(true);
         const [problemRes, editorialRes, submissionRes] = await Promise.all([
-          axiosInstance.get(`/api/problem/${id}`),
+          axiosInstance.get(`/api/problem/get-problem-by-id?id=${id}`),
           axiosInstance.get(`/api/problem/get-editorial/${id}`),
 
         ]);

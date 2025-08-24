@@ -24,7 +24,7 @@ function Comment({ quesId }) {
             }
         };
         fetchComment();
-    }, [comments]);
+    }, [userId, comments.length]);
 
     const handleSubmitComment = async (e) => {
         e.preventDefault();
@@ -52,7 +52,15 @@ function Comment({ quesId }) {
             setIsSubmitting(false);
         }
     };
-
+    const handleDelete = async (id) => {
+        try {
+            const response = await axiosInstance.post('/api/problem/delete-comment', { id });
+            console.log(response);
+        } catch (error) {
+            setError('Failed to post comment. Please try again.');
+            console.error('Error posting comment:', error);
+        }
+    }
     return (
         <div className='p-6'>
             <h2 className='text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4'>Discussion</h2>
@@ -182,6 +190,17 @@ function Comment({ quesId }) {
                                         </button>
                                         <button className='hover:text-blue-500'>Reply</button>
                                         <button className='hover:text-blue-500'>Share</button>
+                                        {
+
+                                            comment?.author?._id == userId ?
+                                                <>
+                                                    <button className='hover:text-blue-500'>Edit</button>
+                                                    <button className='hover:text-blue-500' onClick={() => handleDelete(comment._id)}>Delete</button>
+                                                </>
+                                                :
+                                                ""
+                                        }
+
                                     </div>
                                 </div>
                             </div>
