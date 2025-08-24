@@ -47,7 +47,7 @@ const TutorialCard = ({ title, description, image, url, duration, category, _id 
 
         {/* Action Button */}
         <Link
-          to={`/tutorial-page/${_id}/tutorial`}
+          to={`/tutorial-page?id=${_id}&type=tutorial`}
           className="w-full flex items-center justify-center px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 bg-amber-500 hover:bg-amber-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors duration-200 text-xs sm:text-sm"
         >
           Learn More

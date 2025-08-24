@@ -67,7 +67,7 @@ export default function CourseCard({ imageUrl, title, price, category, duration,
             )}
           </div>
           <Link
-            to={`/tutorial-page?id=${_id}&&type=course`}
+            to={`/tutorial-page?id=${_id}&type=course`}
             className="w-full sm:w-auto flex items-center justify-center text-white bg-amber-500 hover:bg-amber-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 font-medium rounded-lg px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm transition-colors duration-200">
             <FiShoppingCart className="mr-1 sm:mr-2" size={12} />
             Add to Cart
