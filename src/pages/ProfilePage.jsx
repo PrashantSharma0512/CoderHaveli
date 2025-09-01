@@ -6,7 +6,7 @@ import { Link } from 'react-router';
 import toast from 'react-hot-toast';
 import axiosInstance from '../components/helper/axiosInstance';
 import { useDispatch, useSelector } from 'react-redux';
-import { userAvatar } from '../store/slice/authSlice';
+import { userAvatar, userDetails } from '../store/slice/authSlice';
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null); // Initialize as null

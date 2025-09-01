@@ -8,15 +8,15 @@ import ThemeToggle from '../theme/themeToggler';
 import ServerStarter from '../helper/ServerStarter';
 import Logout from '../auth/Logout';
 import { FaUser, FaSignOutAlt } from "react-icons/fa";
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import axiosInstance from '../helper/axiosInstance';
-import { userAvatar } from '../../store/slice/authSlice';
+import { userAvatar, userDetails } from '../../store/slice/authSlice';
 import logo from '../../assets/lo.jpeg'
 const Header = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const { isAuthenticated, userId, role } = useSelector((state) => state?.login);
-
+  const dispatch = useDispatch()
   // Mock user data - replace with your actual user data
   const [user, setUser] = useState({
     name: "John Doe",
@@ -38,9 +38,11 @@ const Header = () => {
   useEffect(() => {
     const fetchUser = async () => {
       const response = await axiosInstance.get(`/api/get-profile?id=${userId}`)
+      console.log(response.data.user);
+
       setUser(response.data.user)
+      dispatch(userDetails(response.data.user))
       dispatch(userAvatar(response.data.user.avatar))
-      dispatch()
     }
     fetchUser()
   }, [userId])

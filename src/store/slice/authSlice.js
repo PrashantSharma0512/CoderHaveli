@@ -37,7 +37,8 @@ const authSlice = createSlice({
     loading: false,
     error: null,
     initialized: false,
-    avatar: null
+    avatar: null,
+    user: null,
   },
   reducers: {
     logout: (state) => {
@@ -46,15 +47,18 @@ const authSlice = createSlice({
       state.role = null;
       state.userId = null;
       state.error = null;
-      setInitialized: (state) => {
-        state.initialized = true;
-      }
+    },
+    setInitialized: (state) => {
+      state.initialized = true;
     },
     updateAccessToken: (state, action) => {
       state.accessToken = action.payload;
     },
     userAvatar: (state, action) => {
       state.avatar = action.payload
+    },
+    userDetails: (state, action) => {
+      state.user = action.payload
     }
   },
   extraReducers: (builder) => {
@@ -86,6 +90,7 @@ const authSlice = createSlice({
         state.accessToken = action.payload.accessToken;
         state.role = action.payload.user.role;
         state.userId = action.payload.user.id;
+        state.user = action.payload.user;
       })
       .addCase(checkAuth.rejected, (state, action) => {
         state.loading = false;
@@ -99,5 +104,5 @@ const authSlice = createSlice({
   }
 });
 
-export const { logout, updateAccessToken, userAvatar } = authSlice.actions;
+export const { logout, updateAccessToken, userAvatar, userDetails  } = authSlice.actions;
 export default authSlice.reducer;

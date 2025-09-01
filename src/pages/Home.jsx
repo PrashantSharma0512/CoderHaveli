@@ -50,6 +50,8 @@ function Home() {
     const [carouselImages, setCarouselImages] = useState([]);
     const [cards, setCards] = useState([]);
     const [loading, setLoading] = useState(true);
+    const userId = useSelector(state => state.login.userId)
+    console.log(userId, "userId");
 
     useEffect(() => {
         const fetchData = async () => {
@@ -58,7 +60,7 @@ function Home() {
                 const [coursesResponse, carouselResponse, cardResponse] = await Promise.all([
                     axiosInstance.get('/api/get-courses'),
                     axiosInstance.get('/api/get-carousel'),
-                    axiosInstance.get('/api/get-tutorial')
+                    axiosInstance.get(`/api/get-tutorial?userId=${userId}`)
                 ]);
 
                 setCarouselImages(carouselResponse.data.map(item => item.url));

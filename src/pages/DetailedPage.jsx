@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useParams, useSearchParams } from 'react-router';
-import { FiClock, FiUser, FiStar, FiBookmark, FiPlay, FiCheck, FiChevronDown } from 'react-icons/fi';
+import { FiClock, FiUser, FiStar, FiBookmark, FiPlay, FiCheck, FiChevronDown, FiLock } from 'react-icons/fi';
 import ReactPlayer from 'react-player';
 import axiosInstance from '../components/helper/axiosInstance';
-
+import { useSelector } from 'react-redux';
+import toast from 'react-hot-toast';
 
 const CourseDetail = () => {
   const location = useLocation();
@@ -14,28 +15,69 @@ const CourseDetail = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showDemoVideo, setShowDemoVideo] = useState(false);
   const [expandedModules, setExpandedModules] = useState({});
-
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [isCheckingEnrollment, setIsCheckingEnrollment] = useState(true);
+  const userId = useSelector(state => state.login.userId);
 
   useEffect(() => {
     const fetchDetailedCourse = async () => {
       try {
-        const response = await axiosInstance.get(`/api/get-detailed-tutorial?id=${urlId}&&type=${urlType}`)
-        setCourse(response.data)
+        const response = await axiosInstance.get(`/api/get-detailed-tutorial?id=${urlId}&&type=${urlType}`);
+        setCourse(response.data);
+
+        // Check if user is enrolled after course data is loaded
+        if (userId) {
+          checkEnrollmentStatus(response.data._id);
+        } else {
+          setIsCheckingEnrollment(false);
+        }
       } catch (error) {
         console.error(error);
-
+        setIsCheckingEnrollment(false);
       }
+    };
+    fetchDetailedCourse();
+  }, [urlId, urlType, userId]);
+
+  const checkEnrollmentStatus = async (courseId) => {
+    try {
+      const response = await axiosInstance.get(`/api/check-enrollment?userId=${userId}&courseId=${courseId}&courseType=tutorial`);
+      setIsEnrolled(response.data.enrolled);
+    } catch (error) {
+      console.error("Error checking enrollment:", error);
+    } finally {
+      setIsCheckingEnrollment(false);
     }
-    fetchDetailedCourse()
-
-  }, [urlId, urlType]);
-
+  };
 
   const toggleModule = (index) => {
-    setExpandedModules(prev => ({
-      ...prev,
-      [index]: !prev[index]
-    }));
+    // Only allow expanding if enrolled or it's the first lesson (preview)
+    if (isEnrolled || index === 0) {
+      setExpandedModules(prev => ({
+        ...prev,
+        [index]: !prev[index]
+      }));
+    }
+  };
+
+  const handleEnroll = async (id) => {
+    try {
+      const response = await axiosInstance.post('/api/enroll-now', {
+        userId,
+        courseId: id,
+        courseType: 'tutorial'
+      });
+
+      if (response.data.success) {
+        setIsEnrolled(true);
+        toast.success("Enrolled successfully!");
+      } else {
+        toast.error(response.data.message || "Failed to enroll");
+      }
+    } catch (error) {
+      console.error("Enroll error:", error);
+      toast.error(error.response?.data?.message || "Something went wrong");
+    }
   };
 
   if (!course) {
@@ -102,9 +144,6 @@ const CourseDetail = () => {
                     />
                   ))}
                 </div>
-                {/* <span className="text-gray-600 dark:text-gray-300 text-sm ml-1">
-                  {course?.stats?.rating} ({course?.stats?.totalReviews?.toLocaleString()} reviews)
-                </span> */}
               </div>
               <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm">
                 <FiUser className="mr-1" /> {course.instructor.name}
@@ -136,18 +175,26 @@ const CourseDetail = () => {
             </div>
 
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              {
-                urlType === 'tutorial' ?
-                  <button className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition flex items-center justify-center">
-                    Enroll Now
-                  </button>
-                  :
-                  <button className="flex-1 border bg-amber-600 border-indigo-600 text-white hover:bg-amber-700 dark:hover:bg-gray-700 px-6 py-3 rounded-lg font-medium transition cursor-pointer">
-                    Add to Cart
-                  </button>
-              }
-
-
+              {isCheckingEnrollment ? (
+                <div className="flex-1 flex items-center justify-center py-3">
+                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-indigo-500"></div>
+                </div>
+              ) : isEnrolled ? (
+                <button className="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-medium cursor-default">
+                  Already Enrolled
+                </button>
+              ) : urlType === 'tutorial' ? (
+                <button
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition flex items-center justify-center"
+                  onClick={() => handleEnroll(course?._id)}
+                >
+                  Enroll Now
+                </button>
+              ) : (
+                <button className="flex-1 border bg-amber-600 border-indigo-600 text-white hover:bg-amber-700 dark:hover:bg-gray-700 px-6 py-3 rounded-lg font-medium transition cursor-pointer">
+                  Add to Cart
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -252,55 +299,89 @@ const CourseDetail = () => {
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     {course?.lessons?.length} Lessons • {course?.duration} hours
                   </h3>
-                  <button
-                    className="text-indigo-600 dark:text-indigo-400 text-sm font-medium"
-                    onClick={() => {
-                      const allExpanded = Object.values(expandedModules).every(Boolean);
-                      const newState = {};
-                      course?.lessons?.forEach((_, i) => {
-                        newState[i] = !allExpanded;
-                      });
-                      setExpandedModules(newState);
-                    }}
-                  >
-                    {Object.values(expandedModules).every(Boolean) ? 'Collapse All' : 'Expand All'}
-                  </button>
+                  {isEnrolled && (
+                    <button
+                      className="text-indigo-600 dark:text-indigo-400 text-sm font-medium"
+                      onClick={() => {
+                        const allExpanded = Object.values(expandedModules).every(Boolean);
+                        const newState = {};
+                        course?.lessons?.forEach((_, i) => {
+                          newState[i] = !allExpanded;
+                        });
+                        setExpandedModules(newState);
+                      }}
+                    >
+                      {Object.values(expandedModules).every(Boolean) ? 'Collapse All' : 'Expand All'}
+                    </button>
+                  )}
                 </div>
 
                 <div className="space-y-2">
                   {course.lessons.map((lesson, index) => (
-                    <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    <div
+                      key={index}
+                      className={`border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden ${!isEnrolled && index > 0 ? 'opacity-70 blur-sm transition-all duration-300' : ''}`}
+                    >
                       <button
-                        className="w-full flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                        className={`w-full flex justify-between items-center p-4 transition ${isEnrolled || index === 0 ? 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700' : 'bg-gray-100 dark:bg-gray-900 cursor-default'}`}
                         onClick={() => toggleModule(index)}
+                        disabled={!isEnrolled && index > 0}
                       >
                         <div className="flex items-center">
                           <span className="text-gray-500 dark:text-gray-400 mr-3 font-medium">Lesson {index + 1}</span>
                           <h4 className="font-medium text-gray-900 dark:text-white">{lesson.title}</h4>
+                          {!isEnrolled && index > 0 && (
+                            <FiLock className="ml-2 text-gray-400" />
+                          )}
                         </div>
                         <div className="flex items-center">
                           <span className="text-sm text-gray-500 dark:text-gray-400 mr-3">
                             <FiClock className="inline mr-1" /> {lesson.duration} min
                           </span>
-                          <FiChevronDown className={`text-gray-500 transition-transform ${expandedModules[index] ? 'transform rotate-180' : ''}`} />
+                          {(isEnrolled || index === 0) && (
+                            <FiChevronDown className={`text-gray-500 transition-transform ${expandedModules[index] ? 'transform rotate-180' : ''}`} />
+                          )}
                         </div>
                       </button>
 
                       {expandedModules[index] && (
                         <div className="p-4 bg-white dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
                           <p className="text-gray-700 dark:text-gray-300 mb-3">{lesson.content}</p>
-                          {index === 0 && (
-                            <button
-                              onClick={() => setShowDemoVideo(true)}
-                              className="flex items-center text-indigo-600 dark:text-indigo-400 font-medium"
-                            >
-                              <FiPlay className="mr-2" /> Preview this lesson
-                            </button>
+                          {index === 0 && !isEnrolled && (
+                            <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+                              <p className="text-indigo-700 dark:text-indigo-300 text-sm mb-2">
+                                This is a preview lesson. Enroll now to access all {course.lessons.length} lessons.
+                              </p>
+                              <button
+                                onClick={() => handleEnroll(course._id)}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm font-medium"
+                              >
+                                Enroll to Unlock All Lessons
+                              </button>
+                            </div>
                           )}
                         </div>
                       )}
                     </div>
                   ))}
+
+                  {!isEnrolled && (
+                    <div className="mt-6 p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-center">
+                      <FiLock className="text-indigo-600 dark:text-indigo-400 text-3xl mx-auto mb-3" />
+                      <h3 className="text-lg font-semibold text-indigo-800 dark:text-indigo-200 mb-2">
+                        Enroll to unlock the full curriculum
+                      </h3>
+                      <p className="text-indigo-700 dark:text-indigo-300 mb-4">
+                        Get access to all {course.lessons.length} lessons and start your learning journey today.
+                      </p>
+                      <button
+                        onClick={() => handleEnroll(course._id)}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium"
+                      >
+                        Enroll Now
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -342,44 +423,13 @@ const CourseDetail = () => {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Course Includes</h3>
               <ul className="space-y-3">
                 {
-                  course?.courseIncludes?.map((ele) => (
-                    <li className="flex items-start">
+                  course?.courseIncludes?.map((ele, index) => (
+                    <li key={index} className="flex items-start">
                       ✅
-                      <span className="text-gray-700 dark:text-gray-300">{ele}</span>
+                      <span className="text-gray-700 dark:text-gray-300 ml-2">{ele}</span>
                     </li>
                   ))
                 }
-                {/* <li className="flex items-start">
-                  <svg className="text-indigo-600 dark:text-indigo-400 mt-1 mr-3 flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                  <span className="text-gray-700 dark:text-gray-300">{course.totalVideos} on-demand videos</span>
-                </li>
-                <li className="flex items-start">
-                  <FiBookmark className="text-indigo-600 dark:text-indigo-400 mt-1 mr-3 flex-shrink-0" />
-                  <span className="text-gray-700 dark:text-gray-300">{course.totalArticles} articles</span>
-                </li>
-                <li className="flex items-start">
-                  <svg className="text-indigo-600 dark:text-indigo-400 mt-1 mr-3 flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  <span className="text-gray-700 dark:text-gray-300">{course.totalResources} downloadable resources</span>
-                </li>
-                <li className="flex items-start">
-                  <svg className="text-indigo-600 dark:text-indigo-400 mt-1 mr-3 flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                  <span className="text-gray-700 dark:text-gray-300">Full lifetime access</span>
-                </li>
-                {course.certificateIncluded && (
-                  <li className="flex items-start">
-                    <svg className="text-indigo-600 dark:text-indigo-400 mt-1 mr-3 flex-shrink-0 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span className="text-gray-700 dark:text-gray-300">Certificate of completion</span>
-                  </li>
-                )}
-              </ul> */}
               </ul>
               <div className="mt-8">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Share this course</h3>
