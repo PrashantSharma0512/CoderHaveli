@@ -7,7 +7,7 @@ import { Link } from 'react-router';
 import ThemeToggle from '../theme/themeToggler';
 import ServerStarter from '../helper/ServerStarter';
 import Logout from '../auth/Logout';
-import { FaUser, FaSignOutAlt } from "react-icons/fa";
+import { FaUser, FaSignOutAlt, FaLaptopCode } from "react-icons/fa";
 import { useDispatch, useSelector } from 'react-redux';
 import axiosInstance from '../helper/axiosInstance';
 import { userAvatar, userDetails } from '../../store/slice/authSlice';
@@ -154,6 +154,19 @@ const Header = () => {
                             <FaUser className="text-amber-600 dark:text-indigo-400 text-xs" />
                           </div>
                           <span>Profile</span>
+                          <span className="ml-auto text-xs text-gray-400 dark:text-gray-500">↗</span>
+                        </Link>
+
+                        <div className="border-t border-gray-100 dark:border-gray-700 mx-3 my-1"></div>
+                        <Link
+                          to="/mycourse"
+                          className="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-50/50 dark:hover:bg-gray-700/80 transition-colors"
+                          onClick={() => setShowAccountMenu(false)}
+                        >
+                          <div className="p-1.5 mr-2 rounded-md bg-amber-100/50 dark:bg-gray-700">
+                            <FaLaptopCode className="text-amber-600 dark:text-indigo-400 text-xs" />
+                          </div>
+                          <span>My Course</span>
                           <span className="ml-auto text-xs text-gray-400 dark:text-gray-500">↗</span>
                         </Link>
 
@@ -307,21 +320,29 @@ const Header = () => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Link
                       to="/profile"
                       onClick={onClose}
-                      className="flex items-center justify-center py-2 px-4 rounded-lg bg-amber-50 dark:bg-gray-800 hover:bg-amber-100 dark:hover:bg-gray-700 transition-colors text-amber-600 dark:text-indigo-400"
+                      className="flex items-center justify-center py-3 px-4 rounded-lg bg-amber-50 dark:bg-gray-800 hover:bg-amber-100 dark:hover:bg-gray-700 transition-colors text-amber-600 dark:text-indigo-400"
                     >
-                      <FaUser className="mr-2" />
-                      <span>Profile</span>
+                      <FaUser className="mr-2 flex-shrink-0" />
+                      <span className="truncate">Profile</span>
+                    </Link>
+                    <Link
+                      to="/mycourse"
+                      onClick={onClose}
+                      className="flex items-center justify-center py-3 px-4 rounded-lg bg-amber-50 dark:bg-gray-800 hover:bg-amber-100 dark:hover:bg-gray-700 transition-colors text-amber-600 dark:text-indigo-400"
+                    >
+                      <FaLaptopCode className="mr-2 flex-shrink-0" />
+                      <span className="truncate">My Courses</span>
                     </Link>
                     <Logout
                       onClick={onClose}
-                      className="flex items-center justify-center py-2 px-4 rounded-lg bg-amber-50 dark:bg-gray-800 hover:bg-amber-100 dark:hover:bg-gray-700 transition-colors text-amber-600 dark:text-indigo-400"
+                      className="flex items-center justify-center py-3 px-4 rounded-lg bg-amber-50 dark:bg-gray-800 hover:bg-amber-100 dark:hover:bg-gray-700 transition-colors text-amber-600 dark:text-indigo-400 sm:col-span-2"
                     >
-                      <FaSignOutAlt className="mr-2" />
-                      <span>Logout</span>
+                      <FaSignOutAlt className="mr-2 flex-shrink-0" />
+                      <span className="truncate">Logout</span>
                     </Logout>
                   </div>
                 </>
