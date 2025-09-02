@@ -6,14 +6,14 @@ import { FiBookOpen, FiUser, FiClock, FiArrowRight, FiStar } from 'react-icons/f
 import { Link } from 'react-router'
 
 function MyCourse() {
-    const User = useSelector(state => state.login.userId)
+    const User = useSelector(state => state.login.user)
     const [userCourse, setUserCourse] = useState([])
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
         const fetchUserCourses = async () => {
             try {
-                const response = await axiosInstance.get(`/api/get-user-course?id=${User}`)
+                const response = await axiosInstance.get(`/api/get-user-course?id=${User._id}`)
                 setUserCourse(response.data.courses)
             } catch (error) {
                 console.error("Error fetching user courses:", error)
@@ -22,7 +22,7 @@ function MyCourse() {
             }
         }
         fetchUserCourses()
-    }, [User])
+    }, [User._id])
 
     if (isLoading) {
         return (
@@ -88,23 +88,23 @@ function MyCourse() {
                                 <div key={course._id} className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                                     <div className="relative">
                                         <img
-                                            src={course.image?.url || '/course-placeholder.jpg'}
-                                            alt={course.image?.alt || course.title}
+                                            src={course.courseImage?.url || '/course-placeholder.jpg'}
+                                            alt={course.image?.alt || course.courseDetails.title}
                                             className="w-full h-48 object-cover"
                                         />
-                                        <div className="absolute top-4 right-4">
+                                        {/* <div className="absolute top-4 right-4">
                                             <span className="bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded">
                                                 {course.category?.name || 'Programming'}
                                             </span>
-                                        </div>
+                                        </div> */}
                                     </div>
 
                                     <div className="p-5">
                                         <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-2 line-clamp-2">
-                                            {course.title}
+                                            {course.courseDetails.title}
                                         </h3>
                                         <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
-                                            {course.description}
+                                            {course.courseDetails.description}
                                         </p>
 
                                         <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">
@@ -114,7 +114,7 @@ function MyCourse() {
                                             </div>
                                             <div className="flex items-center">
                                                 <FiClock className="mr-1" />
-                                                <span>{course.duration || '0'} hours</span>
+                                                <span>{course.courseDetails.duration || '0'} hours</span>
                                             </div>
                                         </div>
 
@@ -135,7 +135,7 @@ function MyCourse() {
                                             </div>
 
                                             <Link
-                                                to={`/course-detail?id=${course._id}&type=tutorial`}
+                                                to={`/tutorial-page?id=${course.courseDetails._id}&type=tutorial`}
                                                 className="flex items-center text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium text-sm"
                                             >
                                                 View Course

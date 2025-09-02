@@ -556,7 +556,7 @@ function Compiler({ testcase, quesId }) {
               width={window.innerWidth}
               height={window.innerHeight}
               recycle={false}
-              numberOfPieces={100}
+              numberOfPieces={40}
               gravity={0.15}
               colors={confettiColors}
               opacity={0.8}
