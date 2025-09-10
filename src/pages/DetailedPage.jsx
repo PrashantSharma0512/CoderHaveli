@@ -347,6 +347,7 @@ const CourseDetail = () => {
                       {expandedModules[index] && (
                         <div className="p-4 bg-white dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
                           <p className="text-gray-700 dark:text-gray-300 mb-3">{lesson.content}</p>
+                          <p className="text-blue-700 dark:text-gray-300 mb-3 cursor-pointer">{lesson.videoUrl}</p>
                           {index === 0 && !isEnrolled && (
                             <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
                               <p className="text-indigo-700 dark:text-indigo-300 text-sm mb-2">

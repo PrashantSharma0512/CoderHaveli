@@ -26,6 +26,7 @@ import ProfilePage from './pages/ProfilePage.jsx';
 import ForgetPassword from './components/auth/ForgetPassword.jsx'
 import DetailedPage from './pages/DetailedPage.jsx';
 import CourseDashboard from './pages/MyCourse.jsx';
+import VideoPlayer from './pages/VideoPlayer.jsx';
 const theme = extendTheme({
   styles: {
     global: {
@@ -61,6 +62,7 @@ createRoot(document.getElementById('root')).render(
               <Route path="profile" element={<AuthLayout><ProfilePage /></AuthLayout>} />
               <Route path="tutorial-page/*" element={<AuthLayout><DetailedPage /></AuthLayout>} />
               <Route path="mycourse" element={<AuthLayout><CourseDashboard /></AuthLayout>} />
+              <Route path="video" element={<AuthLayout><VideoPlayer /></AuthLayout>} />
             </Route>
 
             {/* 404 Fallback */}
