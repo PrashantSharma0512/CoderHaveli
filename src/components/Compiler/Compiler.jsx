@@ -36,7 +36,7 @@ import {
 } from "@chakra-ui/react";
 import { useDispatch, useSelector } from "react-redux";
 import axiosInstance from "../helper/axiosInstance";
-import { CheckCircleIcon, XCircleIcon } from "lucide-react";
+import { CheckCircleIcon, PlayIcon, XCircleIcon } from "lucide-react";
 import { MdCelebration as CelebrationIcon } from 'react-icons/md';
 import Confetti from "react-confetti";
 
@@ -233,7 +233,6 @@ function Compiler({ testcase, quesId }) {
           `/api/problem/get-starter-code?quesId=${quesId}&language=${selectedLang}`
         );
         setCode(response.data.code || "");
-        console.log("starter code ", response.data);
 
       } catch (error) {
         console.error("Error in Fetching Starter Code", error);
@@ -485,20 +484,31 @@ function Compiler({ testcase, quesId }) {
 
               {/* Results Tab */}
               <TabPanel>
-                <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-6 min-h-32 shadow-md transition-all duration-300">
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-4 md:p-6 min-h-32 shadow-md transition-all duration-300 border border-gray-200 dark:border-gray-700">
                   {loading ? (
                     <div className="flex flex-col items-center justify-center h-32 space-y-3 text-indigo-600 dark:text-indigo-400">
-                      <Spinner size="lg" />
-                      <p className="text-sm font-medium">Executing your code, please wait...</p>
+                      <div className="relative">
+                        <Spinner size="lg" />
+                        <span className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs font-bold">
+                          {Math.min(70, 100)}%
+                        </span>
+                      </div>
+                      <p className="text-sm font-medium text-center">Executing your code, please wait...</p>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700 max-w-xs">
+                        <div
+                          className="bg-indigo-600 h-1.5 rounded-full transition-all duration-300"
+                          style={{ width: `${70}%` }}
+                        ></div>
+                      </div>
                     </div>
                   ) : output ? (
                     <div className="space-y-4">
                       {/* Status Badge */}
                       <div
                         className={`flex items-center gap-3 px-4 py-2 rounded-full text-sm font-semibold w-fit transition-colors duration-300
-                          ${output.isFullyPassed
-                            ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                            : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
+            ${output.isFullyPassed
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 shadow-sm'
+                            : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 shadow-sm'
                           }`}
                       >
                         {output.isFullyPassed ? (
@@ -515,16 +525,104 @@ function Compiler({ testcase, quesId }) {
                       </div>
 
                       {/* Testcase Summary */}
-                      <div className="text-sm text-gray-700 dark:text-gray-300">
-                        <span className="font-medium text-base">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                        <span className="font-medium text-base bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-md w-fit">
                           {output.passedTestCases} / {output.totalTestCases}
-                        </span>{' '}
-                        test cases passed
+                        </span>
+                        <span>test cases passed</span>
                       </div>
+
+                      {/* Execution Metrics */}
+                      {(output.executionTime || output.memoryUsage) && (
+                        <div className="flex flex-wrap gap-4 text-xs text-gray-600 dark:text-gray-400">
+                          {output.executionTime && (
+                            <div className="flex items-center gap-1">
+                              <ClockIcon className="h-4 w-4" />
+                              <span>Time: {output.executionTime}ms</span>
+                            </div>
+                          )}
+                          {output.memoryUsage && (
+                            <div className="flex items-center gap-1">
+                              <ChipIcon className="h-4 w-4" />
+                              <span>Memory: {output.memoryUsage}MB</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Test Case Details */}
+                      {output.totalTestCases !== output.passedTestCases && (
+                        <div className="space-y-3 mt-4">
+                          <h4 className="font-medium text-gray-700 dark:text-gray-300 text-sm">Failed Test Cases:</h4>
+                          <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                            {output?.testResults?.filter(test => !test.passed).map((test, index) => (
+                              <div key={index} className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-100 dark:border-red-800/50">
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                                  <span className="font-medium text-red-700 dark:text-red-300 text-sm">
+                                    Test Case #{index + 1}
+                                  </span>
+                                  {test.executionTime && (
+                                    <span className="text-xs text-red-600 dark:text-red-400 sm:text-right">
+                                      {test.executionTime}ms
+                                    </span>
+                                  )}
+                                </div>
+
+                                {test.input && (
+                                  <div className="mt-2">
+                                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Input:</span>
+                                    <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded mt-1 overflow-x-auto whitespace-pre-wrap break-words">
+                                      {typeof test.input === 'object' ? JSON.stringify(test.input, null, 2) : test.input}
+                                    </pre>
+                                  </div>
+                                )}
+
+                                {test.expected && (
+                                  <div className="mt-2">
+                                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Expected:</span>
+                                    <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded mt-1 overflow-x-auto whitespace-pre-wrap break-words">
+                                      {typeof test.expected === 'object' ? JSON.stringify(test.expected, null, 2) : test.expected}
+                                    </pre>
+                                  </div>
+                                )}
+
+                                {test.actual && (
+                                  <div className="mt-2">
+                                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Your Output:</span>
+                                    <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded mt-1 overflow-x-auto whitespace-pre-wrap break-words">
+                                      {typeof test.actual === 'object' ? JSON.stringify(test.actual, null, 2) : test.actual}
+                                    </pre>
+                                  </div>
+                                )}
+
+                                {test.error && (
+                                  <div className="mt-2">
+                                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Error:</span>
+                                    <pre className="text-xs text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 p-2 rounded mt-1 overflow-x-auto whitespace-pre-wrap break-words">
+                                      {test.error}
+                                    </pre>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Success Celebration */}
+                      {output.isFullyPassed && (
+                        <div className="flex items-center gap-2 mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800/50">
+                          <CheckCircleIcon className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                          <p className="text-sm text-green-700 dark:text-green-300">
+                            Congratulations! All test cases passed successfully.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center h-24 text-gray-500 dark:text-gray-400 italic">
-                      Run your code to see results
+                    <div className="flex flex-col items-center justify-center h-24 text-gray-500 dark:text-gray-400 italic space-y-2">
+                      <PlayIcon className="h-6 w-6 text-indigo-400" />
+                      <p className="text-center">Run your code to see results</p>
                     </div>
                   )}
                 </div>

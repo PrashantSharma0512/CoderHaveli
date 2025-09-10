@@ -154,7 +154,7 @@ function Practice() {
               ))}
             </TabList>
 
-            <TabPanels className='h-[calc(100vh-56px)] overflow-y-auto' style={{
+            <TabPanels className='max-h-[calc(100vh-56px)] overflow-y-auto' style={{
               overflowY: 'auto', scrollbarWidth: 'thin', msOverflowStyle: 'none'
             }}>
               {/* Description Tab */}
