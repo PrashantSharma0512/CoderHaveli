@@ -13,12 +13,7 @@ const mathJaxConfig = {
   loader: { load: ["[tex]/ams"] },
   tex: { packages: { "[+]": ["ams"] } },
 };
-setInterval(async () => {
-  await axios.get('https://coderhaveli-compiler.onrender.com/server-starter')
-  await axios.get('https://coderhaveli-com.onrender.com/')
-  // await axios.get('http://localhost:3000/')
 
-}, 10000)
 function App() {
   const location = useLocation();
   const dispatch = useDispatch();

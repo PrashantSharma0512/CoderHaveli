@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useLocation, useParams, useSearchParams } from 'react-router';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
 import { FiClock, FiUser, FiStar, FiBookmark, FiPlay, FiCheck, FiChevronDown, FiLock } from 'react-icons/fi';
 import ReactPlayer from 'react-player';
 import axiosInstance from '../components/helper/axiosInstance';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
+import { addVideo } from '../store/slice/videoSlice';
 
 const CourseDetail = () => {
   const location = useLocation();
@@ -17,6 +18,8 @@ const CourseDetail = () => {
   const [expandedModules, setExpandedModules] = useState({});
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [isCheckingEnrollment, setIsCheckingEnrollment] = useState(true);
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const userId = useSelector(state => state.login.userId);
 
   useEffect(() => {
@@ -39,6 +42,10 @@ const CourseDetail = () => {
     fetchDetailedCourse();
   }, [urlId, urlType, userId]);
 
+  const handleWatchChapter = (chapterVideoUrl) => {
+    dispatch(addVideo(chapterVideoUrl));
+    navigate('/video');
+  };
   const checkEnrollmentStatus = async (courseId) => {
     try {
       const response = await axiosInstance.get(`/api/check-enrollment?userId=${userId}&courseId=${courseId}&courseType=tutorial`);
@@ -347,7 +354,9 @@ const CourseDetail = () => {
                       {expandedModules[index] && (
                         <div className="p-4 bg-white dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
                           <p className="text-gray-700 dark:text-gray-300 mb-3">{lesson.content}</p>
-                          <p className="text-blue-700 dark:text-gray-300 mb-3 cursor-pointer">{lesson.videoUrl}</p>
+                          <p className="text-blue-700 dark:text-gray-300 mb-3 cursor-pointer"
+                            onClick={() => handleWatchChapter(lesson.videoUrl)}
+                          >{lesson.videoUrl}</p>
                           {index === 0 && !isEnrolled && (
                             <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
                               <p className="text-indigo-700 dark:text-indigo-300 text-sm mb-2">

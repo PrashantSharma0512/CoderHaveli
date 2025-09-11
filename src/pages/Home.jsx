@@ -51,7 +51,7 @@ function Home() {
     const [cards, setCards] = useState([]);
     const [loading, setLoading] = useState(true);
     const userId = useSelector(state => state.login.userId)
-    console.log(userId, "userId");
+
 
     useEffect(() => {
         const fetchData = async () => {

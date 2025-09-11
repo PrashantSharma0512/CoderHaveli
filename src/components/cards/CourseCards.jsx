@@ -3,7 +3,7 @@ import { FiShoppingCart, FiStar, FiClock } from "react-icons/fi";
 import { Link } from "react-router";
 
 export default function CourseCard({ imageUrl, title, price, category, duration, rating = 4.0, _id }) {
-  console.log({ imageUrl, title, price, category, duration, _id }, "course ininnknknlknlknl");
+ 
 
   return (
     <div className="w-full max-w-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">

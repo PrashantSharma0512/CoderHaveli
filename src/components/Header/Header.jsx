@@ -38,7 +38,6 @@ const Header = () => {
   useEffect(() => {
     const fetchUser = async () => {
       const response = await axiosInstance.get(`/api/get-profile?id=${userId}`)
-      console.log(response.data.user);
 
       setUser(response.data.user)
       dispatch(userDetails(response.data.user))
