@@ -58,7 +58,7 @@ function Home() {
             try {
                 setLoading(true);
                 const [coursesResponse, carouselResponse, cardResponse] = await Promise.all([
-                    axiosInstance.get('/api/get-courses'),
+                    axiosInstance.get('/api/get-courses?userId=${userId}'),
                     axiosInstance.get('/api/get-carousel'),
                     axiosInstance.get(`/api/get-tutorial?userId=${userId}`)
                 ]);

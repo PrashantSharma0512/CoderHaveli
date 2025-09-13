@@ -27,6 +27,8 @@ import ForgetPassword from './components/auth/ForgetPassword.jsx'
 import DetailedPage from './pages/DetailedPage.jsx';
 import CourseDashboard from './pages/MyCourse.jsx';
 import VideoPlayer from './pages/VideoPlayer.jsx';
+import AddToCart from './pages/AddToCart.jsx';
+import Checkout from './pages/Checkout.jsx';
 const theme = extendTheme({
   styles: {
     global: {
@@ -63,6 +65,8 @@ createRoot(document.getElementById('root')).render(
               <Route path="tutorial-page/*" element={<AuthLayout><DetailedPage /></AuthLayout>} />
               <Route path="mycourse" element={<AuthLayout><CourseDashboard /></AuthLayout>} />
               <Route path="video" element={<AuthLayout><VideoPlayer /></AuthLayout>} />
+              <Route path="addtocart" element={<AuthLayout><AddToCart /></AuthLayout>} />
+              <Route path="checkout" element={<AuthLayout><Checkout /></AuthLayout>} />
             </Route>
 
             {/* 404 Fallback */}

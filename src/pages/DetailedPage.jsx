@@ -87,6 +87,26 @@ const CourseDetail = () => {
     }
   };
 
+  const handleCancelSubscription = async (id) => {
+    try {
+      const response = await axiosInstance.post('/api/cancel-subscription', {
+        userId,
+        courseId: id,
+        courseType: 'tutorial'
+      });
+
+      if (response.data.success) {
+        setIsEnrolled(false);
+        toast.success("Subscription cancel successfully!");
+      } else {
+        toast.error(response.data.message || "Failed to enroll");
+      }
+    } catch (error) {
+      console.error("Enroll error:", error);
+      toast.error(error.response?.data?.message || "Something went wrong");
+    }
+  };
+
   if (!course) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -187,7 +207,10 @@ const CourseDetail = () => {
                   <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-indigo-500"></div>
                 </div>
               ) : isEnrolled ? (
-                <button className="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-medium cursor-default">
+                <button
+                  className="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-medium cursor-default"
+                  onClick={() => handleCancelSubscription(course?._id)}
+                >
                   Cancel Subscription
                 </button>
               ) : urlType === 'tutorial' ? (

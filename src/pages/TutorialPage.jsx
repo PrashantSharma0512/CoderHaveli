@@ -3,6 +3,7 @@ import TutorialCard from "../components/cards/TutorialCard";
 import { FiSearch, FiFilter, FiX, FiBook, FiVideo } from "react-icons/fi";
 import axiosInstance from "../components/helper/axiosInstance";
 import CourseCard from "../components/cards/CourseCards";
+import { useSelector } from "react-redux";
 
 const TutorialPage = () => {
   const [tutorials, setTutorials] = useState([]);
@@ -13,14 +14,14 @@ const TutorialPage = () => {
   const [categories, setCategories] = useState([]);
   const [courseData, setCourseData] = useState([]);
   const [activeTab, setActiveTab] = useState("all"); // "all", "tutorials", "courses"
-
+  const userId = useSelector(state => state.userId)
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [tutorialsResponse, categoriesResponse, coursesResponse] = await Promise.all([
-          axiosInstance.get('/api/get-tutorial'),
+          axiosInstance.get(`/api/get-tutorial?userId=${userId}`),
           axiosInstance.get('/api/get-category'),
-          axiosInstance.get('/api/get-courses')
+          axiosInstance.get(`/api/get-courses?userId=${userId}`)
         ]);
 
         setTutorials(tutorialsResponse.data);

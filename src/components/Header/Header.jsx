@@ -7,7 +7,7 @@ import { Link } from 'react-router';
 import ThemeToggle from '../theme/themeToggler';
 import ServerStarter from '../helper/ServerStarter';
 import Logout from '../auth/Logout';
-import { FaUser, FaSignOutAlt, FaLaptopCode } from "react-icons/fa";
+import { FaUser, FaSignOutAlt, FaLaptopCode, FaShoppingCart } from "react-icons/fa";
 import { useDispatch, useSelector } from 'react-redux';
 import axiosInstance from '../helper/axiosInstance';
 import { userAvatar, userDetails } from '../../store/slice/authSlice';
@@ -91,6 +91,15 @@ const Header = () => {
             >
               <IoMdNotificationsOutline size={26} />
             </button>
+
+            <div className="flex items-center space-x-4">
+              <button className="p-2 rounded-full bg-amber-100 dark:bg-indigo-900 text-amber-700 dark:text-indigo-300 relative">
+                <FaShoppingCart className="text-lg" />
+                <span className="absolute -top-1 -right-1 bg-amber-500 dark:bg-indigo-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {6}
+                </span>
+              </button>
+            </div>
 
             {/* Account Button with Dropdown */}
             {
