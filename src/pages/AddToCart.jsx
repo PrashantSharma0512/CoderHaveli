@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { FaTrash, FaPlus, FaMinus, FaArrowLeft, FaShoppingCart } from 'react-icons/fa';
-
+import { useDispatch, useSelector } from 'react-redux';
+// import { addcourse } from '../store/slice/courseSlice';
+import { Link } from 'react-router';
 const AddToCartPage = () => {
     // Sample cart data
     const [cartItems, setCartItems] = useState([
@@ -29,12 +31,12 @@ const AddToCartPage = () => {
             category: "Python"
         }
     ]);
-
+    const dispatch = useDispatch()
     // Function to remove item from cart
     const removeItem = (id) => {
         setCartItems(cartItems.filter(item => item.id !== id));
     };
-
+    // dispatch(addcourse(cartItems));
     // Calculate total
     const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
     const tax = subtotal * 0.1;
@@ -153,11 +155,12 @@ const AddToCartPage = () => {
                                     <span className="text-lg font-semibold text-gray-900 dark:text-white">Total</span>
                                     <span className="text-lg font-bold text-amber-600 dark:text-indigo-400">${total.toFixed(2)}</span>
                                 </div>
-
-                                <button className="w-full mt-6 bg-gradient-to-r from-amber-500 to-amber-600 dark:from-indigo-500 dark:to-indigo-600 hover:from-amber-600 hover:to-amber-700 dark:hover:from-indigo-600 dark:hover:to-indigo-700 text-white font-medium py-3 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg">
-                                    Proceed to Checkout
-                                </button>
-
+                                <Link to={'/checkout'}>
+                                    <button className="w-full mt-6 bg-gradient-to-r from-amber-500 to-amber-600 dark:from-indigo-500 dark:to-indigo-600 hover:from-amber-600 hover:to-amber-700 dark:hover:from-indigo-600 dark:hover:to-indigo-700 text-white font-medium py-3 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
+                                    >
+                                        Proceed to Checkout
+                                    </button>
+                                </Link>
                                 <div className="mt-6 p-4 bg-amber-50 dark:bg-indigo-900/30 rounded-lg border border-amber-100 dark:border-indigo-800">
                                     <h3 className="font-medium text-amber-800 dark:text-indigo-200 mb-2">Special Offer for Developers!</h3>
                                     <p className="text-sm text-amber-700 dark:text-indigo-300">Add 2 more courses to get 15% discount on your entire order.</p>

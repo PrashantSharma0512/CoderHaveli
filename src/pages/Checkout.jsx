@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FiBookmark, FiClock, FiStar, FiUser, FiCreditCard, FiLock, FiCheck, FiArrowLeft, FiBookOpen } from 'react-icons/fi';
+import { useSelector } from 'react-redux';
 
 const course = {
   category: {
@@ -33,6 +34,8 @@ function Checkout() {
   const [cvv, setCvv] = useState('');
   const [saveCard, setSaveCard] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState('razorpay');
+  // const checkoutCourse = useSelector(state => state.course)
+  // console.log(checkoutCourse, "this data comes from redux");
 
   const formatCardNumber = (value) => {
     const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
@@ -75,13 +78,7 @@ function Checkout() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <header className="flex items-center mb-8">
-          <div className="flex items-center">
-            <div className="bg-indigo-600 text-white p-2 rounded-lg mr-3">
-              <FiBookOpen className="text-xl" />
-            </div>
-            <h1 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">CoderHaveli</h1>
-          </div>
-          <h2 className="ml-8 text-gray-600 dark:text-gray-300 flex items-center">
+          <h2 className="ml-8 text-gray-600 dark:text-gray-300 flex items-center" onClick={() => window.history.back()}>
             <FiArrowLeft className="mr-2" /> Back to course
           </h2>
         </header>

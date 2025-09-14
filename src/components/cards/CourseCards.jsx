@@ -1,34 +1,83 @@
-import React from "react";
-import { FiShoppingCart, FiStar, FiClock } from "react-icons/fi";
+import React, { useState, useEffect } from "react";
+import { FiShoppingCart, FiStar, FiClock, FiShoppingBag } from "react-icons/fi";
 import { Link } from "react-router";
+import axiosInstance from "../helper/axiosInstance";
+import { useSelector, useDispatch } from "react-redux";
+import toast from "react-hot-toast";
+import { addItem } from "../../store/slice/cartSlice"; // Import your cart actions
 
 export default function CourseCard({ imageUrl, title, price, category, duration, rating = 4.0, _id }) {
- 
+  const [isInCart, setIsInCart] = useState(false);
+  const UserId = useSelector(state => state.login.userId);
+  const cartItems = useSelector(state => state.cart.items); // Get cart items from Redux
+  const dispatch = useDispatch();
+  console.log(cartItems);
+
+  // Check if course is already in cart
+  useEffect(() => {
+    const itemInCart = cartItems.some(item => item.product._id === _id);
+    setIsInCart(itemInCart);
+  }, [cartItems, _id]);
+
+  const AddToCart = async (id) => {
+    try {
+      const response = await axiosInstance.post('/api/cart/add', {
+        userId: UserId,
+        productId: id,
+      });
+
+      if (response.data.success) {
+        // Add to Redux store
+        dispatch(addItem({
+          product: {
+            _id,
+            title,
+            price,
+            imageUrl,
+            category,
+            duration,
+            rating
+          },
+          quantity: 1
+        }));
+
+        setIsInCart(true);
+        toast.success("Course Added in Cart");
+      } else {
+        toast.error('Something went wrong');
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast.error('Failed to add to cart');
+    }
+  }
 
   return (
     <div className="w-full max-w-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-      {/* Product Image */}
-      <div className="relative bg-gray-100 dark:bg-gray-700">
-        <img
-          className="w-full h-24 sm:h-32 md:h-40 lg:h-48 object-contain p-2 sm:p-4 md:p-6"
-          src={imageUrl}
-          alt={title}
-          loading="lazy"
-        />
-        {/* Category Badge */}
-        {category && (
-          <span className="absolute top-1 sm:top-2 md:top-3 left-1 sm:left-2 md:left-3 bg-amber-500 dark:bg-indigo-600 text-white text-xs font-semibold px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 rounded-full max-w-[45%] truncate">
-            {category}
-          </span>
-        )}
-        {/* Duration Badge */}
-        {duration && (
-          <span className="absolute top-1 sm:top-2 md:top-3 right-1 sm:right-2 md:right-3 flex items-center bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 text-xs font-medium px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 rounded-full max-w-[45%]">
-            <FiClock className="mr-0.5 sm:mr-1 flex-shrink-0" size={10} />
-            <span className="text-xs truncate">{duration}</span>
-          </span>
-        )}
-      </div>
+      <Link to={`/tutorial-page?id=${_id}&type=course`}>
+        {/* Product Image */}
+        <div className="relative bg-gray-100 dark:bg-gray-700">
+          <img
+            className="w-full h-24 sm:h-32 md:h-40 lg:h-48 object-contain p-2 sm:p-4 md:p-6"
+            src={imageUrl}
+            alt={title}
+            loading="lazy"
+          />
+          {/* Category Badge */}
+          {category && (
+            <span className="absolute top-1 sm:top-2 md:top-3 left-1 sm:left-2 md:left-3 bg-amber-500 dark:bg-indigo-600 text-white text-xs font-semibold px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 rounded-full max-w-[45%] truncate">
+              {category}
+            </span>
+          )}
+          {/* Duration Badge */}
+          {duration && (
+            <span className="absolute top-1 sm:top-2 md:top-3 right-1 sm:right-2 md:right-3 flex items-center bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 text-xs font-medium px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 rounded-full max-w-[45%]">
+              <FiClock className="mr-0.5 sm:mr-1 flex-shrink-0" size={10} />
+              <span className="text-xs truncate">{duration}</span>
+            </span>
+          )}
+        </div>
+      </Link>
 
       {/* Product Info */}
       <div className="p-2 sm:p-3 md:p-4 lg:p-5">
@@ -44,7 +93,7 @@ export default function CourseCard({ imageUrl, title, price, category, duration,
           <div className="flex">
             {[...Array(5)].map((_, i) => (
               <FiStar
-                _id={i}
+                key={i}
                 className={`w-3 h-3 sm:w-4 sm:h-4 ${i < Math.floor(rating) ?
                   'text-amber-400 fill-amber-400' :
                   'text-gray-300 dark:text-gray-600'}`}
@@ -68,12 +117,34 @@ export default function CourseCard({ imageUrl, title, price, category, duration,
               </span>
             )}
           </div>
-          <Link
-            to={`/tutorial-page?id=${_id}&type=course`}
-            className="w-full sm:w-auto flex items-center justify-center text-white bg-amber-500 hover:bg-amber-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 font-medium rounded-lg px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm transition-colors duration-200">
-            <FiShoppingCart className="mr-1 sm:mr-2" size={12} />
-            Add to Cart
-          </Link>
+          <div>
+            {isInCart ? (
+              <Link
+                to="/cart" // Changed from "/addtocart" to "/cart" which is more standard
+                className="flex items-center justify-center px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                <FiShoppingBag className="mr-2" />
+                Go to Cart
+              </Link>
+            ) : (
+              <div className="flex gap-1">
+                <Link
+                  to={`/checkout?id=${_id}&type=course`}
+                  className="w-full sm:w-auto flex items-center justify-center text-white bg-green-600 hover:bg-amber-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 font-medium rounded-lg px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm transition-colors duration-200 cursor-pointer"
+                >
+                  <FiShoppingBag className="mr-1 sm:mr-2" size={12} />
+                  Buy Now
+                </Link>
+                <button
+                  onClick={() => AddToCart(_id)}
+                  className="w-full sm:w-auto flex items-center justify-center text-white bg-amber-500 hover:bg-amber-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 font-medium rounded-lg px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm transition-colors duration-200 cursor-pointer"
+                >
+                  <FiShoppingCart className="mr-1 sm:mr-2" size={12} />
+                  Add to Cart
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

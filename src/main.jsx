@@ -58,7 +58,7 @@ createRoot(document.getElementById('root')).render(
             <Route path="/" element={<App />}>
               <Route index element={<Home />} />
               <Route path="problem/*" element={<AuthLayout><Practice /></AuthLayout>} />
-              <Route path="practice" element={<AuthLayout><ProblemList /></AuthLayout>} />
+              <Route path="practice" element={<ProblemList />} />
               <Route path="tutorial" element={<AuthLayout><TutorialPage /></AuthLayout>} />
               <Route path="about" element={<AboutUs />} />
               <Route path="profile" element={<AuthLayout><ProfilePage /></AuthLayout>} />
@@ -73,7 +73,6 @@ createRoot(document.getElementById('root')).render(
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-
       </ChakraProvider>
     </StrictMode>
   </Provider>

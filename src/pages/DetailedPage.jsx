@@ -221,9 +221,15 @@ const CourseDetail = () => {
                   Enroll Now
                 </button>
               ) : (
-                <button className="flex-1 border bg-amber-600 border-indigo-600 text-white hover:bg-amber-700 dark:hover:bg-gray-700 px-6 py-3 rounded-lg font-medium transition cursor-pointer">
-                  Add to Cart
-                </button>
+                <div className='space-x-5'>
+                  <button className="flex-1 border bg-green-600 border-indigo-600 text-white hover:bg-green-700 dark:hover:bg-gray-700 px-6 py-3 rounded-lg font-medium transition cursor-pointer">
+                    Buy Now
+                  </button>
+                  <button className="flex-1 border bg-amber-600 border-indigo-600 text-white hover:bg-amber-700 dark:hover:bg-gray-700 px-6 py-3 rounded-lg font-medium transition cursor-pointer">
+                    Add to Cart
+                  </button>
+                </div>
+
               )}
             </div>
           </div>
