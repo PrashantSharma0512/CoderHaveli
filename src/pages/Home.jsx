@@ -6,6 +6,7 @@ import TestimonialSection from '../components/cards/Testomonial';
 import FAQSection from '../components/utils/FAQ';
 import axiosInstance from '../components/helper/axiosInstance';
 import { useSelector } from 'react-redux';
+import toast from 'react-hot-toast';
 
 const faqs = [
     { question: "What is CoderHaveli?", answer: "CoderHaveli is an online platform that helps developers enhance their coding skills through structured courses, tutorials, and projects." },
@@ -49,8 +50,14 @@ function Home() {
     const [coursesData, setCoursesData] = useState([]);
     const [carouselImages, setCarouselImages] = useState([]);
     const [cards, setCards] = useState([]);
+    const [cart, setCart] = useState([]);
     const [loading, setLoading] = useState(true);
     const userId = useSelector(state => state.login.userId)
+
+
+    useEffect(() => {
+
+    }, []);
 
 
     useEffect(() => {
@@ -58,7 +65,7 @@ function Home() {
             try {
                 setLoading(true);
                 const [coursesResponse, carouselResponse, cardResponse] = await Promise.all([
-                    axiosInstance.get('/api/get-courses?userId=${userId}'),
+                    axiosInstance.get(`/api/get-courses?userId=${userId}`),
                     axiosInstance.get('/api/get-carousel'),
                     axiosInstance.get(`/api/get-tutorial?userId=${userId}`)
                 ]);
@@ -73,8 +80,27 @@ function Home() {
             }
         };
 
+
+        const fetchCart = async () => {
+            try {
+                const res = await axiosInstance.get(`/api/cart?id=${userId}`);
+                if (res.data.success) {
+                    setCart(res.data.cart || []); // Ensure it's always an array
+                }
+            } catch (err) {
+                console.error("Error fetching cart:", err);
+                setCart([]); // Set empty array on error
+            }
+        };
         fetchData();
-    }, []);
+        if (userId) {
+            fetchCart();
+        } else {
+            setCart([]); // Clear cart if no user
+        }
+    }, [userId]);
+
+
 
     return (
         <div className='bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300 min-h-screen'>
@@ -166,6 +192,8 @@ function Home() {
                                     duration={course.duration}
                                     category={course.category.name}
                                     _id={course._id}
+                                    cart={cart}
+                                    setCart={setCart}
                                 />
                             </div>
                         ))

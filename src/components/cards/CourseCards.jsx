@@ -4,53 +4,57 @@ import { Link } from "react-router";
 import axiosInstance from "../helper/axiosInstance";
 import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
-import { addItem } from "../../store/slice/cartSlice"; // Import your cart actions
+import { addItem } from "../../store/slice/cartSlice";
 
-export default function CourseCard({ imageUrl, title, price, category, duration, rating = 4.0, _id }) {
+export default function CourseCard({ imageUrl, title, price, category, duration, rating = 4.0, _id, cart, setCart }) {
   const [isInCart, setIsInCart] = useState(false);
-  const UserId = useSelector(state => state.login.userId);
-  const cartItems = useSelector(state => state.cart.items); // Get cart items from Redux
+  const userId = useSelector(state => state.login.userId);
   const dispatch = useDispatch();
-  console.log(cartItems);
 
-  // Check if course is already in cart
   useEffect(() => {
-    const itemInCart = cartItems.some(item => item.product._id === _id);
+    const itemInCart = cart?.some(item => item.productId === _id || item._id === _id);
     setIsInCart(itemInCart);
-  }, [cartItems, _id]);
+  }, [cart, _id]);
 
-  const AddToCart = async (id) => {
-    try {
-      const response = await axiosInstance.post('/api/cart/add', {
-        userId: UserId,
-        productId: id,
-      });
-
-      if (response.data.success) {
-        // Add to Redux store
-        dispatch(addItem({
-          product: {
-            _id,
-            title,
-            price,
-            imageUrl,
-            category,
-            duration,
-            rating
-          },
-          quantity: 1
-        }));
-
-        setIsInCart(true);
-        toast.success("Course Added in Cart");
-      } else {
-        toast.error('Something went wrong');
-      }
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      toast.error('Failed to add to cart');
+  const addToCart = async () => {
+    // Check if user is logged in
+    if (!userId) {
+      toast.error("Please login to add items to cart");
+      return;
     }
-  }
+
+    try {
+      const res = await axiosInstance.post("/api/cart/add", {
+        userId,
+        productId: _id,
+      });
+      
+      if (res.data.success) {
+        // Update local cart state
+        const newCartItem = { 
+          productId: _id, 
+          quantity: 1,
+          title,
+          price,
+          imageUrl,
+          category,
+          duration
+        };
+        
+        setCart(prev => [...prev, newCartItem]);
+        setIsInCart(true);
+        
+        toast.success("Added to Cart");
+      }
+    } catch (err) {
+      console.error("Add to cart error:", err);
+      if (err.response?.data?.message) {
+        toast.error(err.response.data.message);
+      } else {
+        toast.error("Failed to add item to cart");
+      }
+    }
+  };
 
   return (
     <div className="w-full max-w-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
@@ -120,7 +124,7 @@ export default function CourseCard({ imageUrl, title, price, category, duration,
           <div>
             {isInCart ? (
               <Link
-                to="/cart" // Changed from "/addtocart" to "/cart" which is more standard
+                to="/addtocart"
                 className="flex items-center justify-center px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors"
               >
                 <FiShoppingBag className="mr-2" />
@@ -136,7 +140,7 @@ export default function CourseCard({ imageUrl, title, price, category, duration,
                   Buy Now
                 </Link>
                 <button
-                  onClick={() => AddToCart(_id)}
+                  onClick={addToCart} // Fixed: removed parameter since we're using the component's _id
                   className="w-full sm:w-auto flex items-center justify-center text-white bg-amber-500 hover:bg-amber-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 font-medium rounded-lg px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm transition-colors duration-200 cursor-pointer"
                 >
                   <FiShoppingCart className="mr-1 sm:mr-2" size={12} />
