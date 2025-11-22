@@ -89,7 +89,7 @@ function MyCourse() {
                                     <div className="relative">
                                         <img
                                             src={course.courseImage?.url || '/course-placeholder.jpg'}
-                                            alt={course.image?.alt || course.courseDetails.title}
+                                            alt={course.image?.alt || course.courseDetails?.title}
                                             className="w-full h-48 object-cover"
                                         />
                                         {/* <div className="absolute top-4 right-4">
