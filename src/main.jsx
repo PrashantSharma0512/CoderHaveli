@@ -30,6 +30,7 @@ import VideoPlayer from './pages/VideoPlayer.jsx';
 import AddToCart from './pages/AddToCart.jsx';
 import Checkout from './pages/Checkout.jsx';
 import PaymentButton from './components/payments/Razorpay.jsx';
+import AdminDashboard from './pages/AdminDashboard.jsx';
 const theme = extendTheme({
   styles: {
     global: {
@@ -69,6 +70,7 @@ createRoot(document.getElementById('root')).render(
               <Route path="addtocart" element={<AuthLayout><AddToCart /></AuthLayout>} />
               <Route path="checkout" element={<AuthLayout><Checkout /></AuthLayout>} />
               <Route path="payment" element={<AuthLayout><PaymentButton /></AuthLayout>} />
+              <Route path="admin" element={<AuthLayout><AdminDashboard /></AuthLayout>} />
             </Route>
 
             {/* 404 Fallback */}

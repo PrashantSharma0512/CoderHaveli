@@ -12,11 +12,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import axiosInstance from '../helper/axiosInstance';
 import { userAvatar, userDetails } from '../../store/slice/authSlice';
 import logo from '../../assets/lo.jpeg'
+
 const Header = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const { isAuthenticated, userId, role } = useSelector((state) => state?.login);
   const dispatch = useDispatch()
+  
   // Mock user data - replace with your actual user data
   const [user, setUser] = useState({
     name: "John Doe",
@@ -38,7 +40,6 @@ const Header = () => {
   useEffect(() => {
     const fetchUser = async () => {
       const response = await axiosInstance.get(`/api/get-profile?id=${userId}`)
-
       setUser(response.data.user)
       dispatch(userDetails(response.data.user))
       dispatch(userAvatar(response.data.user.avatar))
@@ -268,14 +269,14 @@ const Header = () => {
         </nav>
       </header>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer - Fixed dark mode styling */}
       <Drawer placement="left" onClose={onClose} isOpen={isOpen} size="xs">
-        <DrawerContent className="bg-white dark:bg-gray-900">
-          <DrawerHeader className="border-b border-gray-200 dark:border-gray-700 flex justify-between items-center p-4">
+        <DrawerContent className="bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+          <DrawerHeader className="border-b border-gray-200 dark:border-gray-700 flex justify-between items-center p-4 bg-white dark:bg-gray-900">
             <span className="text-2xl font-bold text-amber-600 dark:text-indigo-400" style={{ fontFamily: "'Dancing Script', cursive" }}>CoderHaveli</span>
             <button
               onClick={onClose}
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors"
               aria-label="Close menu"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -284,7 +285,7 @@ const Header = () => {
             </button>
           </DrawerHeader>
 
-          <DrawerBody className="p-0 flex flex-col h-full">
+          <DrawerBody className="p-0 flex flex-col h-full bg-white dark:bg-gray-900">
 
             {/* Main Navigation */}
             <nav className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
@@ -294,7 +295,7 @@ const Header = () => {
                     <Link
                       to={item.slug}
                       onClick={onClose}
-                      className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-amber-50/50 dark:hover:bg-gray-800 transition-colors"
+                      className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-amber-50/50 dark:hover:bg-gray-800 transition-colors duration-200"
                       activeClassName="bg-amber-100/50 dark:bg-gray-800 text-amber-600 dark:text-indigo-400"
                     >
                       <span className="font-medium">{item.name}</span>
@@ -332,7 +333,7 @@ const Header = () => {
                     <Link
                       to="/profile"
                       onClick={onClose}
-                      className="flex items-center justify-center py-3 px-4 rounded-lg bg-amber-50 dark:bg-gray-800 hover:bg-amber-100 dark:hover:bg-gray-700 transition-colors text-amber-600 dark:text-indigo-400"
+                      className="flex items-center justify-center py-3 px-4 rounded-lg bg-amber-50 dark:bg-gray-800 hover:bg-amber-100 dark:hover:bg-gray-700 transition-colors duration-200 text-amber-600 dark:text-indigo-400"
                     >
                       <FaUser className="mr-2 flex-shrink-0" />
                       <span className="truncate">Profile</span>
@@ -340,14 +341,14 @@ const Header = () => {
                     <Link
                       to="/mycourse"
                       onClick={onClose}
-                      className="flex items-center justify-center py-3 px-4 rounded-lg bg-amber-50 dark:bg-gray-800 hover:bg-amber-100 dark:hover:bg-gray-700 transition-colors text-amber-600 dark:text-indigo-400"
+                      className="flex items-center justify-center py-3 px-4 rounded-lg bg-amber-50 dark:bg-gray-800 hover:bg-amber-100 dark:hover:bg-gray-700 transition-colors duration-200 text-amber-600 dark:text-indigo-400"
                     >
                       <FaLaptopCode className="mr-2 flex-shrink-0" />
                       <span className="truncate">My Courses</span>
                     </Link>
                     <Logout
                       onClick={onClose}
-                      className="flex items-center justify-center py-3 px-4 rounded-lg bg-amber-50 dark:bg-gray-800 hover:bg-amber-100 dark:hover:bg-gray-700 transition-colors text-amber-600 dark:text-indigo-400 sm:col-span-2"
+                      className="flex items-center justify-center py-3 px-4 rounded-lg bg-amber-50 dark:bg-gray-800 hover:bg-amber-100 dark:hover:bg-gray-700 transition-colors duration-200 text-amber-600 dark:text-indigo-400 sm:col-span-2"
                     >
                       <FaSignOutAlt className="mr-2 flex-shrink-0" />
                       <span className="truncate">Logout</span>
@@ -359,14 +360,14 @@ const Header = () => {
                   <Link
                     to="/login"
                     onClick={onClose}
-                    className="block w-full py-2.5 px-4 rounded-lg bg-amber-600 dark:bg-indigo-600 hover:bg-amber-700 dark:hover:bg-indigo-700 text-white text-center font-medium transition-colors"
+                    className="block w-full py-2.5 px-4 rounded-lg bg-amber-600 dark:bg-indigo-600 hover:bg-amber-700 dark:hover:bg-indigo-700 text-white text-center font-medium transition-colors duration-200"
                   >
                     Sign In
                   </Link>
                   <Link
                     to="/register"
                     onClick={onClose}
-                    className="block w-full py-2.5 px-4 rounded-lg border border-amber-600 dark:border-indigo-600 text-amber-600 dark:text-indigo-400 hover:bg-amber-50/50 dark:hover:bg-gray-800 text-center font-medium transition-colors"
+                    className="block w-full py-2.5 px-4 rounded-lg border border-amber-600 dark:border-indigo-600 text-amber-600 dark:text-indigo-400 hover:bg-amber-50/50 dark:hover:bg-gray-800 text-center font-medium transition-colors duration-200"
                   >
                     Create Account
                   </Link>
@@ -380,4 +381,4 @@ const Header = () => {
   );
 };
 
-export default Header; 
+export default Header;
