@@ -6,6 +6,8 @@ import Loading from '../components/utils/Loading';
 const PublicRoute = ({ children }) => {
     const navigate = useNavigate();
     const { isAuthenticated, loading, initialized } = useSelector(state => state.login);
+    const Data = useSelector(state => state.login);
+    console.log(JSON.stringify(Data), "lfllflfl");
 
     useEffect(() => {
         if (initialized && isAuthenticated) {

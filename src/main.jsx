@@ -69,7 +69,6 @@ createRoot(document.getElementById('root')).render(
               <Route path="video" element={<AuthLayout><VideoPlayer /></AuthLayout>} />
               <Route path="addtocart" element={<AuthLayout><AddToCart /></AuthLayout>} />
               <Route path="checkout" element={<AuthLayout><Checkout /></AuthLayout>} />
-              <Route path="payment" element={<AuthLayout><PaymentButton /></AuthLayout>} />
               <Route path="admin" element={<AuthLayout><AdminDashboard /></AuthLayout>} />
             </Route>
 
