@@ -27,9 +27,45 @@ const AdminDashboard = () => {
         setLoading(false);
       }
     };
+    const fetchSubmissions = async () => {
+      try {
+        const response = await axiosInstance.get('/admin/submissions');
+        setSubmissions(response.data.data);
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+        setError("Failed to load questions");
+      }
+    }
+    const fetchQuestions = async () => {
+      try {
+        const response = await axiosInstance.get('/admin/questions');
+        setQuestions(response.data.data);
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+        setError("Failed to load questions");
+      }
+    }
+    const fetchStudents = async () => {
+      try {
+        const response = await axiosInstance.get('/admin/users');
+        setStudents(response.data.data);
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+        setError("Failed to load questions");
+      }
+    }
 
     if (activeTab === 'dashboard') {
       fetchDashboardData();
+    }
+    if (activeTab === 'submissions') {
+      fetchSubmissions();
+    }
+    if (activeTab === 'questions') {
+      fetchQuestions();
+    }
+    if (activeTab === 'students') {
+      fetchStudents();
     }
   }, [activeTab]);
 
@@ -215,17 +251,32 @@ const DashboardContent = ({ stats, recentSubmissions }) => (
   </div>
 );
 
-// Questions Component with Modal (Keep the same as before)
+// Questions Component with Modal
 const QuestionsContent = ({ questions, setQuestions }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('edit');
   const [newQuestion, setNewQuestion] = useState({
+    quesId: '',
     title: '',
     description: '',
-    language: 'javascript',
+    languages: ['javascript', 'python', 'java', 'cpp'],
     difficulty: 'easy',
-    code: ''
+    tags: [],
+    problemExample: '',
+    code: {
+      javascript: '',
+      python: '',
+      java: '',
+      cpp: ''
+    }
   });
+
+  const languageOptions = [
+    { value: 'javascript', label: 'JavaScript', icon: '🟨' },
+    { value: 'python', label: 'Python', icon: '🐍' },
+    { value: 'java', label: 'Java', icon: '☕' },
+    { value: 'cpp', label: 'C++', icon: '⚡' }
+  ];
 
   const handleInputChange = (field, value) => {
     setNewQuestion(prev => ({
@@ -234,22 +285,85 @@ const QuestionsContent = ({ questions, setQuestions }) => {
     }));
   };
 
+  const handleCodeChange = (language, value) => {
+    setNewQuestion(prev => ({
+      ...prev,
+      code: {
+        ...prev.code,
+        [language]: value
+      }
+    }));
+  };
+
+  const handleTagInput = (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const tag = e.target.value.trim();
+      if (tag && !newQuestion.tags.includes(tag)) {
+        setNewQuestion(prev => ({
+          ...prev,
+          tags: [...prev.tags, tag]
+        }));
+        e.target.value = '';
+      }
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    setNewQuestion(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
+  };
+
+  // Handle language selection (toggle in array)
+  const handleLanguageToggle = (language) => {
+    setNewQuestion(prev => {
+      const currentLanguages = prev.languages || [];
+      if (currentLanguages.includes(language)) {
+        return {
+          ...prev,
+          languages: currentLanguages.filter(lang => lang !== language)
+        };
+      } else {
+        return {
+          ...prev,
+          languages: [...currentLanguages, language]
+        };
+      }
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const question = {
       _id: Date.now().toString(),
-      quesId: (questions.length + 1).toString(),
-      ...newQuestion,
+      quesId: newQuestion.quesId,
+      quesName: newQuestion.title,
+      quesDesc: newQuestion.description,
+      languages: newQuestion.languages,
+      difficulty: newQuestion.difficulty,
+      tags: newQuestion.tags,
+      problemExample: newQuestion.problemExample || `example_${Date.now()}`,
+      code: newQuestion.code,
       createdAt: new Date().toISOString()
     };
     setQuestions(prev => [...prev, question]);
     setIsModalOpen(false);
     setNewQuestion({
+      quesId: '',
       title: '',
       description: '',
-      language: 'javascript',
+      languages: ['javascript', 'python', 'java', 'cpp'],
       difficulty: 'easy',
-      code: ''
+      tags: [],
+      problemExample: '',
+      code: {
+        javascript: '',
+        python: '',
+        java: '',
+        cpp: ''
+      }
     });
   };
 
@@ -339,114 +453,227 @@ const QuestionsContent = ({ questions, setQuestions }) => {
                 <div className="grid grid-cols-2 gap-6 h-full">
                   {/* Left Column - Form */}
                   <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Question ID *</label>
+                        <input
+                          type="text"
+                          value={newQuestion.quesId}
+                          onChange={(e) => handleInputChange('quesId', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="e.g., Q001"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Problem Example ID</label>
+                        <input
+                          type="text"
+                          value={newQuestion.problemExample}
+                          onChange={(e) => handleInputChange('problemExample', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="e.g., 507f1f77bcf86cd799439081"
+                        />
+                      </div>
+                    </div>
+
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Question Title</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Question Title *</label>
                       <input
                         type="text"
                         value={newQuestion.title}
                         onChange={(e) => handleInputChange('title', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Enter question title"
+                        required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Description (Supports LaTeX)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Description (Supports LaTeX) *</label>
                       <textarea
                         value={newQuestion.description}
                         onChange={(e) => handleInputChange('description', e.target.value)}
-                        rows="12"
+                        rows="8"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
                         placeholder="Enter question description with LaTeX math expressions..."
+                        required
                       />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Language</label>
-                        <select
-                          value={newQuestion.language}
-                          onChange={(e) => handleInputChange('language', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="javascript">JavaScript</option>
-                          <option value="python">Python</option>
-                          <option value="java">Java</option>
-                          <option value="cpp">C++</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
-                        <select
-                          value={newQuestion.difficulty}
-                          onChange={(e) => handleInputChange('difficulty', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="easy">Easy</option>
-                          <option value="medium">Medium</option>
-                          <option value="hard">Hard</option>
-                        </select>
-                      </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Starter Code</label>
-                      <textarea
-                        value={newQuestion.code}
-                        onChange={(e) => handleInputChange('code', e.target.value)}
-                        rows="8"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-                        placeholder="Enter starter code"
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {newQuestion.tags.map(tag => (
+                          <span key={tag} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {tag}
+                            <button
+                              type="button"
+                              onClick={() => removeTag(tag)}
+                              className="ml-2 text-blue-600 hover:text-blue-800"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                      <input
+                        type="text"
+                        onKeyDown={handleTagInput}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Type tag and press Enter or comma"
                       />
+                      <p className="text-xs text-gray-500 mt-1">Press Enter or comma to add tags</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty *</label>
+                      <select
+                        value={newQuestion.difficulty}
+                        onChange={(e) => handleInputChange('difficulty', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      >
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Right Column - Code Editors */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Supported Languages *</label>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {languageOptions.map(lang => (
+                          <button
+                            key={lang.value}
+                            type="button"
+                            onClick={() => handleLanguageToggle(lang.value)}
+                            className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${newQuestion.languages.includes(lang.value)
+                                ? 'bg-blue-100 text-blue-800 border-2 border-blue-300'
+                                : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200'
+                              }`}
+                          >
+                            <span className="mr-2">{lang.icon}</span>
+                            {lang.label}
+                            {newQuestion.languages.includes(lang.value) && ' ✓'}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Selected: {newQuestion.languages.map(l => 
+                          languageOptions.find(lo => lo.value === l)?.label || l
+                        ).join(', ')}
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      {languageOptions.map(lang => (
+                        newQuestion.languages.includes(lang.value) && (
+                          <div key={lang.value} className="border border-gray-200 rounded-lg p-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              <span className="mr-2">{lang.icon}</span>
+                              {lang.label} Starter Code
+                            </label>
+                            <textarea
+                              value={newQuestion.code[lang.value]}
+                              onChange={(e) => handleCodeChange(lang.value, e.target.value)}
+                              rows="8"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                              placeholder={`Enter ${lang.label} starter code...`}
+                            />
+                          </div>
+                        )
+                      ))}
                     </div>
                   </div>
                 </div>
               ) : (
                 /* Preview Tab */
-                <div className="bg-white p-6 rounded-lg border border-gray-200">
-                  <h3 className="text-xl font-bold text-gray-800 mb-4">{newQuestion.title || 'Question Title'}</h3>
-                  <div className="prose max-w-none">
-                    <div id="math-preview" className="text-gray-700 leading-relaxed">
-                      {newQuestion.description ? (
-                        <div dangerouslySetInnerHTML={{
-                          __html: newQuestion.description
-                            .replace(/\\\(/g, '\\( ')
-                            .replace(/\\\)/g, ' \\)')
-                            .replace(/\$\$(.*?)\$\$/g, '\\[$1\\]')
-                        }}
-                        />
-                      ) : (
-                        <p className="text-gray-500 italic">No description provided</p>
-                      )}
+                <div className="space-y-6">
+                  <div className="bg-white p-6 rounded-lg border border-gray-200">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-800">
+                          {newQuestion.quesId ? `[${newQuestion.quesId}] ` : ''}
+                          {newQuestion.title || 'Question Title'}
+                        </h3>
+                        {newQuestion.problemExample && (
+                          <p className="text-sm text-gray-500 mt-1">
+                            Example ID: {newQuestion.problemExample}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${newQuestion.difficulty === 'easy'
+                          ? 'bg-green-100 text-green-800'
+                          : newQuestion.difficulty === 'medium'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
+                          }`}>
+                          {newQuestion.difficulty || 'Difficulty'}
+                        </span>
+                        {newQuestion.languages && newQuestion.languages.map(lang => {
+                          const langInfo = languageOptions.find(l => l.value === lang);
+                          return (
+                            <span key={lang} className="inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800">
+                              {langInfo?.icon} {langInfo?.label || lang}
+                            </span>
+                          );
+                        })}
+                      </div>
                     </div>
 
-                    {newQuestion.code && (
-                      <div className="mt-6">
-                        <h4 className="font-semibold text-gray-800 mb-2">Starter Code:</h4>
-                        <pre className="bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto">
-                          <code>{newQuestion.code}</code>
-                        </pre>
+                    {newQuestion.tags.length > 0 && (
+                      <div className="mb-4">
+                        <div className="flex flex-wrap gap-2">
+                          {newQuestion.tags.map(tag => (
+                            <span key={tag} className="inline-flex px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     )}
 
-                    <div className="mt-4 flex gap-2">
-                      <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${newQuestion.difficulty === 'easy'
-                        ? 'bg-green-100 text-green-800'
-                        : newQuestion.difficulty === 'medium'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
-                        }`}>
-                        {newQuestion.difficulty || 'Difficulty'}
-                      </span>
-                      <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800">
-                        {newQuestion.language || 'Language'}
-                      </span>
+                    <div className="prose max-w-none">
+                      <div id="math-preview" className="text-gray-700 leading-relaxed mb-6">
+                        {newQuestion.description ? (
+                          <div dangerouslySetInnerHTML={{
+                            __html: newQuestion.description
+                              .replace(/\\\(/g, '\\( ')
+                              .replace(/\\\)/g, ' \\)')
+                              .replace(/\$\$(.*?)\$\$/g, '\\[$1\\]')
+                          }}
+                          />
+                        ) : (
+                          <p className="text-gray-500 italic">No description provided</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-4">
+                        {languageOptions.map(lang => (
+                          newQuestion.languages.includes(lang.value) && newQuestion.code[lang.value] && (
+                            <div key={lang.value} className="border border-gray-200 rounded-lg overflow-hidden">
+                              <div className="bg-gray-800 text-white px-4 py-2 flex items-center">
+                                <span className="mr-2">{lang.icon}</span>
+                                <span className="font-medium">{lang.label} Starter Code</span>
+                              </div>
+                              <pre className="bg-gray-900 text-gray-100 p-4 overflow-x-auto text-sm">
+                                <code>{newQuestion.code[lang.value]}</code>
+                              </pre>
+                            </div>
+                          )
+                        ))}
+                      </div>
                     </div>
                   </div>
 
                   <button
                     onClick={renderMathJax}
-                    className="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
                   >
                     Refresh Math Rendering
                   </button>
@@ -464,7 +691,7 @@ const QuestionsContent = ({ questions, setQuestions }) => {
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={!newQuestion.title || !newQuestion.description}
+                disabled={!newQuestion.quesId || !newQuestion.title || !newQuestion.description || newQuestion.languages.length === 0}
                 className="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Add Question
@@ -482,8 +709,9 @@ const QuestionsContent = ({ questions, setQuestions }) => {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Language</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Languages</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Difficulty</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tags</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
@@ -492,8 +720,16 @@ const QuestionsContent = ({ questions, setQuestions }) => {
               {questions.map(question => (
                 <tr key={question._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{question.quesId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{question.title}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{question.language}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{question.quesName}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-wrap gap-1">
+                      {question.languages && question.languages.map(lang => (
+                        <span key={lang} className="inline-flex px-2 py-1 text-xs font-medium rounded bg-gray-100 text-gray-800">
+                          {lang.charAt(0).toUpperCase() + lang.slice(1)}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${question.difficulty === 'easy'
                       ? 'bg-green-100 text-green-800'
@@ -503,6 +739,15 @@ const QuestionsContent = ({ questions, setQuestions }) => {
                       }`}>
                       {question.difficulty}
                     </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-wrap gap-1">
+                      {question.tags && question.tags.map(tag => (
+                        <span key={tag} className="inline-flex px-2 py-1 text-xs rounded bg-blue-50 text-blue-700">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(question.createdAt).toLocaleDateString()}
@@ -521,7 +766,7 @@ const QuestionsContent = ({ questions, setQuestions }) => {
   );
 };
 
-// Students Component (Keep the same as before)
+// Students Component
 const StudentsContent = ({ students }) => (
   <div>
     <h1 className="text-3xl font-bold text-gray-800 mb-8">Registered Students</h1>
@@ -543,10 +788,10 @@ const StudentsContent = ({ students }) => (
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{student.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.email}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {new Date(student.registrationDate).toLocaleDateString()}
+                  {new Date(student.createdAt).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.totalSubmissions}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.solvedQuestions}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.totalQuestionsAttempted}</td>
               </tr>
             ))}
           </tbody>
@@ -556,7 +801,7 @@ const StudentsContent = ({ students }) => (
   </div>
 );
 
-// Submissions Component (Keep the same as before)
+// Submissions Component
 const SubmissionsContent = ({ submissions }) => (
   <div>
     <h1 className="text-3xl font-bold text-gray-800 mb-8">All Submissions</h1>
@@ -576,11 +821,11 @@ const SubmissionsContent = ({ submissions }) => (
           <tbody className="bg-white divide-y divide-gray-200">
             {submissions.map(submission => (
               <tr key={submission._id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{submission.studentName}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{submission.questionTitle}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{submission.language}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{submission.user}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{submission.question}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{submission.codelanguage}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${submission.status === 'accepted'
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${submission.status === 'Accepted'
                     ? 'bg-green-100 text-green-800'
                     : 'bg-red-100 text-red-800'
                     }`}>
@@ -588,7 +833,7 @@ const SubmissionsContent = ({ submissions }) => (
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {new Date(submission.submittedAt).toLocaleString()}
+                  {new Date(submission.createdAt).toLocaleString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{submission.executionTime}</td>
               </tr>
@@ -600,10 +845,11 @@ const SubmissionsContent = ({ submissions }) => (
   </div>
 );
 
-// Analytics Component (Keep the same as before)
+// Analytics Component
 const AnalyticsContent = ({ stats, submissions, questions }) => {
   const languageStats = submissions.reduce((acc, sub) => {
-    acc[sub.language] = (acc[sub.language] || 0) + 1;
+    const lang = sub.codelanguage || 'unknown';
+    acc[lang] = (acc[lang] || 0) + 1;
     return acc;
   }, {});
 
@@ -626,7 +872,7 @@ const AnalyticsContent = ({ stats, submissions, questions }) => {
                 <span className="text-sm font-medium">Accepted</span>
               </div>
               <span className="text-sm font-semibold">
-                {submissions.filter(s => s.status === 'accepted').length}
+                {submissions.filter(s => s.status === 'Accepted').length}
               </span>
             </div>
             <div className="flex justify-between items-center">
@@ -635,7 +881,7 @@ const AnalyticsContent = ({ stats, submissions, questions }) => {
                 <span className="text-sm font-medium">Rejected</span>
               </div>
               <span className="text-sm font-semibold">
-                {submissions.filter(s => s.status === 'rejected').length}
+                {submissions.filter(s => s.status !== 'Accepted').length}
               </span>
             </div>
           </div>
@@ -647,7 +893,7 @@ const AnalyticsContent = ({ stats, submissions, questions }) => {
           <div className="space-y-3">
             {Object.entries(languageStats).map(([lang, count]) => (
               <div key={lang} className="flex justify-between items-center">
-                <span className="text-sm font-medium">{lang}</span>
+                <span className="text-sm font-medium capitalize">{lang}</span>
                 <span className="text-sm font-semibold">{count}</span>
               </div>
             ))}
@@ -680,7 +926,7 @@ const AnalyticsContent = ({ stats, submissions, questions }) => {
   );
 };
 
-// Upload Component (Keep the same as before)
+// Upload Component
 const UploadContent = () => {
   const [activeUploadTab, setActiveUploadTab] = useState('course');
   const [uploadData, setUploadData] = useState({
