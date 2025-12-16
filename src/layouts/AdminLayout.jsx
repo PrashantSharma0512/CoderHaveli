@@ -21,14 +21,6 @@ function AdminLayout({ children }) {
     } = useSelector(state => state.login);
 
 
-    console.log(
-        isAuthenticated,
-        loading,
-        initialized,
-        role,
-        user
-        , "AdminLayout States");
-
     useEffect(() => {
         if (!initialized) return;
 

@@ -44,7 +44,7 @@ axiosInstance.interceptors.response.use(
         });
 
         const newAccessToken = res.data.accessToken;
-        // console.log(newAccessToken);
+  
         
         storeRef?.dispatch({ type: 'auth/updateAccessToken', payload: newAccessToken });
 

@@ -17,7 +17,6 @@ function AuthLayout({ children }) {
     }, [isAuthenticated, initialized, navigate, location.pathname]);
 
 
-    console.log(isAuthenticated, loading, initialized ,"Auth Layout Render");
     
     if (loading || !initialized) {
         return (
