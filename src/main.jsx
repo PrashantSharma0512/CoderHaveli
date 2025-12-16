@@ -31,6 +31,7 @@ import AddToCart from './pages/AddToCart.jsx';
 import Checkout from './pages/Checkout.jsx';
 import PaymentButton from './components/payments/Razorpay.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
+import AdminLayout from './layouts/AdminLayout.jsx';
 const theme = extendTheme({
   styles: {
     global: {
@@ -69,7 +70,15 @@ createRoot(document.getElementById('root')).render(
               <Route path="video" element={<AuthLayout><VideoPlayer /></AuthLayout>} />
               <Route path="addtocart" element={<AuthLayout><AddToCart /></AuthLayout>} />
               <Route path="checkout" element={<AuthLayout><Checkout /></AuthLayout>} />
-              <Route path="admin" element={<AuthLayout><AdminDashboard /></AuthLayout>} />
+              {/* 🔐 ADMIN ROUTES (ISOLATED) */}
+              <Route
+                path="/admin"
+                element={
+                  <AdminLayout>
+                    <AdminDashboard />
+                  </AdminLayout>
+                }
+              />
             </Route>
 
             {/* 404 Fallback */}

@@ -16,6 +16,9 @@ function AuthLayout({ children }) {
         }
     }, [isAuthenticated, initialized, navigate, location.pathname]);
 
+
+    console.log(isAuthenticated, loading, initialized ,"Auth Layout Render");
+    
     if (loading || !initialized) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[300px] bg-gray-50 dark:bg-gray-900 space-y-4 p-6 rounded-lg border border-gray-200 dark:border-gray-700">

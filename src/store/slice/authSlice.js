@@ -47,6 +47,8 @@ const authSlice = createSlice({
       state.role = null;
       state.userId = null;
       state.error = null;
+      state.user = null;
+      state.avatar = null;
     },
     setInitialized: (state) => {
       state.initialized = true;
@@ -104,5 +106,5 @@ const authSlice = createSlice({
   }
 });
 
-export const { logout, updateAccessToken, userAvatar, userDetails  } = authSlice.actions;
+export const { logout, updateAccessToken, userAvatar, userDetails } = authSlice.actions;
 export default authSlice.reducer;
