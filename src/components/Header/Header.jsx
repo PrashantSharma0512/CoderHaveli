@@ -3,7 +3,7 @@ import Search from '../utils/Search';
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { RiAccountCircleLine, RiMenu3Fill } from "react-icons/ri";
 import { Drawer, DrawerBody, DrawerContent, DrawerHeader, useDisclosure } from '@chakra-ui/react';
-import { Link } from 'react-router';
+import { Link, NavLink, useNavigate } from 'react-router';
 import ThemeToggle from '../theme/themeToggler';
 import ServerStarter from '../helper/ServerStarter';
 import Logout from '../auth/Logout';
@@ -18,13 +18,15 @@ const Header = () => {
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const { isAuthenticated, userId, role } = useSelector((state) => state?.login);
   const dispatch = useDispatch()
-  
+  const navigate = useNavigate();
+
   // Mock user data - replace with your actual user data
   const [user, setUser] = useState({
     name: "John Doe",
     email: "john@example.com",
     avatar: "https://th.bing.com/th/id/OIP.18ygnwZ7ZIBpWdtoy6cG1QHaHk?o=7rm=3&rs=1&pid=ImgDetMain&cb=idpwebpc2" // null if no avatar
   });
+  const [cartCount, setCartCount] = useState(0);
 
   const navItems = [
     { name: 'Home', slug: '/' },
@@ -44,7 +46,17 @@ const Header = () => {
       dispatch(userDetails(response.data.user))
       dispatch(userAvatar(response.data.user.avatar))
     }
-    fetchUser()
+    const fetchCartCount = async () => {
+      try {
+        const response = await axiosInstance.get(`/api/cart/user-cart-count?id=${userId}`);
+        setCartCount(response.data.count);
+      } catch (error) {
+        console.error("Error fetching cart count:", error);
+      }
+    };
+
+    fetchUser();
+    fetchCartCount();
   }, [userId])
 
   return (
@@ -72,13 +84,18 @@ const Header = () => {
             <ul className="flex space-x-6">
               {navItems.map((item) => (
                 <li key={item.name}>
-                  <Link
+                  <NavLink
                     to={item.slug}
-                    className="text-gray-700 dark:text-gray-200 hover:text-amber-600 dark:hover:text-indigo-400 text-lg font-medium transition-colors duration-200"
-                    activeClassName="text-amber-600 dark:text-indigo-400 font-semibold"
+                    className={({ isActive }) =>
+                      `text-lg font-medium transition-colors duration-200
+     ${isActive
+                        ? "text-amber-600 dark:text-indigo-400 font-semibold"
+                        : "text-gray-700 dark:text-gray-200 hover:text-amber-600 dark:hover:text-indigo-400"
+                      }`
+                    }
                   >
                     {item.name}
-                  </Link>
+                  </NavLink>
                 </li>
               ))}
             </ul>
@@ -93,11 +110,11 @@ const Header = () => {
               <IoMdNotificationsOutline size={26} />
             </button>
 
-            <div className="flex items-center space-x-4">
-              <button className="p-2 rounded-full bg-amber-100 dark:bg-indigo-900 text-amber-700 dark:text-indigo-300 relative">
+            <div className="flex items-center space-x-4 " onClick={() => navigate('/addtocart')}>
+              <button className="p-2 rounded-full bg-amber-100 dark:bg-indigo-900 text-amber-700 dark:text-indigo-300 relative cursor-pointer">
                 <FaShoppingCart className="text-lg" />
                 <span className="absolute -top-1 -right-1 bg-amber-500 dark:bg-indigo-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {6}
+                  {cartCount}
                 </span>
               </button>
             </div>
@@ -292,14 +309,19 @@ const Header = () => {
               <ul className="py-2">
                 {navItems.map((item) => (
                   <li key={item.name}>
-                    <Link
+                    <NavLink
                       to={item.slug}
                       onClick={onClose}
-                      className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-amber-50/50 dark:hover:bg-gray-800 transition-colors duration-200"
-                      activeClassName="bg-amber-100/50 dark:bg-gray-800 text-amber-600 dark:text-indigo-400"
+                      className={({ isActive }) =>
+                        `flex items-center px-4 py-3 transition-colors duration-200
+       ${isActive
+                          ? "bg-amber-100/50 dark:bg-gray-800 text-amber-600 dark:text-indigo-400"
+                          : "text-gray-700 dark:text-gray-200 hover:bg-amber-50/50 dark:hover:bg-gray-800"
+                        }`
+                      }
                     >
                       <span className="font-medium">{item.name}</span>
-                    </Link>
+                    </NavLink>
                   </li>
                 ))}
               </ul>

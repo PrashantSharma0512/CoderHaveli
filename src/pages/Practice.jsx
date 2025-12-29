@@ -214,9 +214,6 @@ function Practice() {
                     </div>
                   </div>
                 ))}
-                {
-                  console.log(problem.constraints,"llllllllllllllllllllllllllllllllllllll")
-                }
                 {problem.constraints?.length > 0 && (
                   <div>
                     <h3 className='text-lg font-medium mb-2'>Constraints</h3>

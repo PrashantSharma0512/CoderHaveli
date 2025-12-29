@@ -87,6 +87,21 @@ import "ace-builds/src-noconflict/mode-c_cpp";
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/mode-rust";
 
+import "ace-builds/src-noconflict/worker-javascript";
+// autocomplete
+import "ace-builds/src-noconflict/ext-language_tools";
+
+// 🔥 WORKER FIX FOR VITE
+ace.config.set(
+  "basePath",
+  "https://cdn.jsdelivr.net/npm/ace-builds@1.32.3/src-noconflict/"
+);
+
+ace.config.set(
+  "workerPath",
+  "https://cdn.jsdelivr.net/npm/ace-builds@1.32.3/src-noconflict/"
+);
+
 function Compiler({ testcase, quesId }) {
   // Language options
   const options = [

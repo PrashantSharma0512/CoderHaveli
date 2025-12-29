@@ -273,8 +273,9 @@ const TutorialPage = () => {
 
               {filteredCourse.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:gri-cols-4 gap-4 sm:gap-6">
-                  {filteredCourse.map(course => (
+                  {filteredCourse.map((course, i) => (
                     <CourseCard
+                      key={i}
                       _id={course._id}
                       title={course.title}
                       description={course.description}
