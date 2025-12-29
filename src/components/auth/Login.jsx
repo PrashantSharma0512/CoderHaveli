@@ -22,7 +22,12 @@ const Login = () => {
     try {
       const res = await dispatch(checkLogin(form)).unwrap();
       setMessage('Login successful! Redirecting...');
-      setTimeout(() => navigate('/'), 1500);
+      if (res.user.role === 'admin') {
+        setTimeout(() => navigate('/admin'), 1500);
+      }
+      else {
+        setTimeout(() => navigate('/'), 1500);
+      }
     } catch (err) {
       setMessage('Login failed. Please try again.');
     } finally {
