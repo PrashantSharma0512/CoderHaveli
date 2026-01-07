@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import QuestionsTable from './QuestionsTable';
 import QuestionModal from './QuestionModal';
+import toast from 'react-hot-toast';
+import axiosInstance from '../../components/helper/axiosInstance';
 
 const QuestionsContent = ({ questions, setQuestions }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -13,6 +15,9 @@ const QuestionsContent = ({ questions, setQuestions }) => {
     difficulty: 'easy',
     tags: [],
     problemExample: '',
+    hints: [],
+    constraints: [],
+    testCases: [],
     code: {
       javascript: '',
       python: '',
@@ -21,20 +26,30 @@ const QuestionsContent = ({ questions, setQuestions }) => {
     }
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const question = {
-      _id: Date.now().toString(),
       quesId: newQuestion.quesId,
       quesName: newQuestion.title,
       quesDesc: newQuestion.description,
       languages: newQuestion.languages,
+      hints: newQuestion.hints,
+      testcases: newQuestion.testCases,
+      constraints: newQuestion.constraints,
       difficulty: newQuestion.difficulty,
       tags: newQuestion.tags,
-      problemExample: newQuestion.problemExample || `example_${Date.now()}`,
       code: newQuestion.code,
       createdAt: new Date().toISOString()
     };
+    const response = await axiosInstance.post('/api/problem/add-question', {
+      question: question
+    });
+    
+    if (!response.data.success) {
+      toast.error('Failed to add question');
+      return;
+    }
+    toast.success('Question added successfully');
     setQuestions(prev => [...prev, question]);
     setIsModalOpen(false);
     setNewQuestion({
