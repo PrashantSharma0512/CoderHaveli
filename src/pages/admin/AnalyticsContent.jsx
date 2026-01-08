@@ -2,13 +2,14 @@
 import React from 'react';
 import AnalyticsCard from './AnalyticsCard';
 
-const AnalyticsContent = ({ stats, submissions, questions }) => {
+const AnalyticsContent = ({ dashboardData, submissions, questions }) => {
   const languageStats = submissions.reduce((acc, sub) => {
     const lang = sub.codelanguage || 'unknown';
     acc[lang] = (acc[lang] || 0) + 1;
     return acc;
   }, {});
-
+  console.log(questions,"kfdkgnldfknglkd");
+  
   const difficultyStats = questions.reduce((acc, q) => {
     acc[q.difficulty] = (acc[q.difficulty] || 0) + 1;
     return acc;
@@ -44,7 +45,7 @@ const AnalyticsContent = ({ stats, submissions, questions }) => {
           <h3 className="text-base md:text-lg font-semibold text-gray-800 dark:text-white mb-3 md:mb-4">Overall Performance</h3>
           <div className="text-center">
             <div className="text-2xl md:text-4xl font-bold text-amber-600 dark:text-indigo-400 mb-1 md:mb-2">
-              {stats.successRate}%
+              {dashboardData?.submissionSuccessPercentage}%
             </div>
             <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Success Rate</p>
           </div>

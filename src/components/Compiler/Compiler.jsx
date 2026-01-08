@@ -107,7 +107,7 @@ function Compiler({ testcase, quesId }) {
   const options = [
     { name: "JavaScript", value: "javascript" },
     { name: "Python", value: "python" },
-    { name: "C++", value: "c_cpp" },
+    { name: "C++", value: "cpp" },
     { name: "Java", value: "java" },
   ];
 
@@ -354,7 +354,7 @@ function Compiler({ testcase, quesId }) {
               </div>
             ) : (
               <AceEditor
-                mode={selectedLang || "javascript"}
+                mode={selectedLang === "cpp" ? "c_cpp" : selectedLang}
                 theme={selectedTheme || "monokai"}
                 value={code || ""}
                 onChange={(newValue) => setCode(newValue)}

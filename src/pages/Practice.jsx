@@ -95,7 +95,7 @@ function Practice() {
   if (loading) return <Loading />;
 
   const problem = problemList[0] || {};
-  
+
   const sortedEditorial = editorialData;
 
   // Function to safely render MathJax content
@@ -303,6 +303,21 @@ function Practice() {
                         </div>
                       </div>
                     </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      Video Explanation:&nbsp;
+                      {approach.videoUrl ? (
+                        <a
+                          href={approach.videoUrl}
+                          target="_blank"
+                          className="text-blue-600 dark:text-blue-400 underline"
+                        >
+                          Watch Video
+                        </a>
+                      ) : (
+                        "N/A"
+                      )}
+                    </div>
+
                   </div>
                 ))}
               </TabPanel>

@@ -6,6 +6,7 @@ import StudentsContent from './StudentContent';
 import SubmissionsContent from './SubmissionContent';
 import AnalyticsContent from './AnalyticsContent';
 import UploadContent from './UploadContent';
+import ApproachesContent from './ApproachesContent'; // Add this import
 
 const ContentContainer = ({
   activeTab,
@@ -15,7 +16,9 @@ const ContentContainer = ({
   questions,
   setQuestions,
   students,
-  submissions
+  submissions,
+  approaches, // Add this prop
+  setApproaches // Add this prop
 }) => {
   const renderContent = () => {
     if (loading && activeTab === 'dashboard') {
@@ -39,12 +42,17 @@ const ContentContainer = ({
       questions: () => <QuestionsContent questions={questions} setQuestions={setQuestions} />,
       students: () => <StudentsContent students={students} />,
       submissions: () => <SubmissionsContent submissions={submissions} />,
-      analytics: () => <AnalyticsContent 
+      analytics: () => <AnalyticsContent
         dashboardData={dashboardData}
         submissions={submissions}
         questions={questions}
       />,
-      upload: () => <UploadContent />
+      upload: () => <UploadContent />,
+      approaches: () => <ApproachesContent
+        questions={questions}
+        approaches={approaches}
+        setApproaches={setApproaches}
+      /> // Add this component
     };
 
     return components[activeTab] ? components[activeTab]() : components.dashboard();
