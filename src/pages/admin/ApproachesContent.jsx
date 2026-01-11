@@ -1,10 +1,12 @@
 // components/ApproachesContent.js
 import React, { useState, useEffect } from 'react';
-import { 
-  Plus, Edit, Trash2, Code, Play, Copy, Check, 
+import axiosInstance from '../../components/helper/axiosInstance';
+import {
+  Plus, Edit, Trash2, Code, Play, Copy, Check,
   ChevronUp, ChevronDown, Eye, EyeOff, Search,
   Youtube, Clock, HardDrive
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const languageOptions = [
   { value: 'javascript', label: 'JavaScript', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' },
@@ -16,9 +18,7 @@ const languageOptions = [
 const approachTypeOptions = [
   { value: 'Brute Force', label: 'Brute Force', color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' },
   { value: 'Optimized', label: 'Optimized', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  { value: 'Improved', label: 'Improved', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  { value: 'Alternative', label: 'Alternative', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' },
-  { value: 'Recursive', label: 'Recursive', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' },
+  { value: 'Improved', label: 'Improved', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' }
 ];
 
 const ApproachesContent = ({ questions, approaches, setApproaches }) => {
@@ -27,6 +27,7 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedQuestion, setSelectedQuestion] = useState('');
   const [copiedCode, setCopiedCode] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     quesId: '',
     approachName: '',
@@ -45,8 +46,8 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
 
   // Filter approaches based on search and selected question
   const filteredApproaches = approaches?.filter(approach => {
-    const matchesSearch = approach.approachName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         approach.approachDesc.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = approach.approachName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      approach.approachDesc.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesQuestion = !selectedQuestion || approach.quesId === selectedQuestion;
     return matchesSearch && matchesQuestion;
   });
@@ -73,71 +74,110 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
     }
   }, [showModal]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    const newApproach = {
-      _id: editingApproach?._id || `approach_${Date.now()}`,
-      ...formData,
-      order: editingApproach?.order || (approaches?.length || 0) + 1,
-      createdAt: editingApproach?.createdAt || new Date().toISOString(),
-      modifiedAt: new Date().toISOString(),
-    };
+    setLoading(true);
 
-    if (editingApproach) {
-      setApproaches(prev => 
-        prev.map(approach => 
-          approach._id === editingApproach._id ? newApproach : approach
-        )
-      );
-    } else {
-      setApproaches(prev => [...prev, newApproach]);
+    try {
+      const approachData = {
+        quesId: formData.quesId,
+        approachName: formData.approachName,
+        approachDesc: formData.approachDesc,
+        approachType: formData.approachType,
+        code: formData.code,
+        time_complexity: formData.time_complexity,
+        space_complexity: formData.space_complexity,
+        videoUrl: formData.videoUrl,
+      };
+
+      // If editing, include the approach ID
+      if (editingApproach && editingApproach._id) {
+        approachData._id = editingApproach._id;
+      }
+
+      // Make API call to save approach
+      const response = await axiosInstance.post('/admin/save-approach', approachData);
+
+      if (response.data.success) {
+        const savedApproach = response.data.data;
+        toast.success('Approach saved successfully!');
+        // Update local state
+        if (editingApproach) {
+          // Update existing approach
+          setApproaches(prev =>
+            prev.map(approach =>
+              approach._id === editingApproach._id ? savedApproach : approach
+            )
+          );
+        } else {
+          // Add new approach
+          setApproaches(prev => [...prev, savedApproach]);
+        }
+
+        setShowModal(false);
+      } else {
+        alert('Failed to save approach: ' + (response.data.message || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error saving approach:', error);
+      alert('Error saving approach. Please try again.');
+    } finally {
+      setLoading(false);
     }
-
-    setShowModal(false);
   };
 
-  const handleEdit = (approach) => {
-    setEditingApproach(approach);
+  const handleEdit = async (approach) => {
+    const response = await axiosInstance.get(`/admin/get-approach?id=${approach._id}`);
+    console.log(response, "repoe");
+
+    setEditingApproach(response.data.data);
     setFormData({
-      quesId: approach.quesId,
-      approachName: approach.approachName,
-      approachDesc: approach.approachDesc,
-      approachType: approach.approachType,
-      code: { ...approach.code },
-      time_complexity: approach.time_complexity,
-      space_complexity: approach.space_complexity,
-      videoUrl: approach.videoUrl || '',
+      quesId: response.data.data.quesId,
+      approachName: response.data.data.approachName,
+      approachDesc: response.data.data.approachDesc,
+      approachType: response.data.data.approachType,
+      code: { ...response.data.data.code },
+      time_complexity: response.data.data.time_complexity,
+      space_complexity: response.data.data.space_complexity,
+      videoUrl: response.data.data.videoUrl || '',
     });
     setShowModal(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this approach?')) {
-      setApproaches(prev => prev.filter(approach => approach._id !== id));
-    }
-  };
+      try {
+        // Make API call to delete approach
+        console.log(id, "khsdfkjkjbk");
 
-  const handleMove = (index, direction) => {
-    const newApproaches = [...approaches];
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-    
-    if (newIndex >= 0 && newIndex < newApproaches.length) {
-      [newApproaches[index], newApproaches[newIndex]] = 
-      [newApproaches[newIndex], newApproaches[index]];
-      setApproaches(newApproaches);
+        const response = await axiosInstance.delete(`/admin/delete-approach`, {
+          data: { id }
+        });
+
+        if (response.data.success) {
+          toast.success('Approach deleted successfully!');
+          // Update local state
+          setApproaches(prev => prev.filter(approach => approach._id !== id));
+        } else {
+          alert('Failed to delete approach: ' + (response.data.message || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Error deleting approach:', error);
+        alert('Error deleting approach. Please try again.');
+      }
     }
   };
 
   const handleCopyCode = (code, language) => {
     navigator.clipboard.writeText(code);
+    toast.info('Code copied to clipboard!');
     setCopiedCode(`${language}_${Date.now()}`);
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
   const getQuestionTitle = (quesId) => {
-    const question = questions?.find(q => q.id === quesId);
-    return question ? question.title : `Question ${quesId}`;
+    const question = questions?.find(q => q.quesId === quesId);
+    return question ? question.quesName : `Question ${quesId}`;
   };
 
   const ApproachCard = ({ approach, index }) => {
@@ -149,21 +189,28 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                #{approach.order}
-              </span>
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${approachTypeOptions.find(t => t.value === approach.approachType)?.color}`}>
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-medium ${approach.approachType === "Brute Force"
+                    ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200"
+                    : approach.approachType === "Improved"
+                      ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200"
+                      : approach.approachType === "Optimised"
+                        ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200"
+                        : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                  }`}
+              >
                 {approach.approachType}
               </span>
-              <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-xs font-medium text-gray-600 dark:text-gray-300">
+
+              <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-xs font-medium text-blue-500 dark:text-blue-300">
                 Q{approach.quesId}: {getQuestionTitle(approach.quesId)}
               </span>
             </div>
-            
+
             <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
               {approach.approachName}
             </h3>
-            
+
             <p className="text-gray-600 dark:text-gray-300 mb-4">
               {approach.approachDesc}
             </p>
@@ -180,10 +227,9 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
               {approach.videoUrl && (
                 <div className="flex items-center gap-2">
                   <Youtube className="w-4 h-4 text-red-500" />
-                  <a 
-                    href={approach.videoUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
+                  <a
+                    href={approach.videoUrl}
+                    target="_blank"
                     className="text-blue-600 dark:text-blue-400 hover:underline"
                   >
                     Video Tutorial
@@ -195,34 +241,20 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => handleMove(index, 'up')}
-              disabled={index === 0}
-              className={`p-2 rounded ${index === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
-            >
-              <ChevronUp className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => handleMove(index, 'down')}
-              disabled={index === approaches.length - 1}
-              className={`p-2 rounded ${index === approaches.length - 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
-            >
-              <ChevronDown className="w-4 h-4" />
-            </button>
-            <button
               onClick={() => setExpanded(!expanded)}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
             >
               {expanded ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
             <button
               onClick={() => handleEdit(approach)}
-              className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900 rounded text-blue-600 dark:text-blue-400"
+              className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900 rounded text-blue-600 dark:text-blue-400 transition-colors"
             >
               <Edit className="w-4 h-4" />
             </button>
             <button
               onClick={() => handleDelete(approach._id)}
-              className="p-2 hover:bg-red-100 dark:hover:bg-red-900 rounded text-red-600 dark:text-red-400"
+              className="p-2 hover:bg-red-100 dark:hover:bg-red-900 rounded text-red-600 dark:text-red-400 transition-colors"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -235,18 +267,17 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
               <h4 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-3">
                 Code Implementation
               </h4>
-              
+
               {/* Language Tabs */}
               <div className="flex gap-2 mb-4 overflow-x-auto">
                 {languageOptions.map((lang) => (
                   <button
                     key={lang.value}
                     onClick={() => setSelectedLanguage(lang.value)}
-                    className={`px-4 py-2 rounded-t-lg font-medium transition-colors ${
-                      selectedLanguage === lang.value
-                        ? `${lang.color} border-t-2 border-l-2 border-r-2 border-gray-300 dark:border-gray-600`
-                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                    }`}
+                    className={`px-4 py-2 rounded-t-lg font-medium transition-colors ${selectedLanguage === lang.value
+                      ? `${lang.color} border-t-2 border-l-2 border-r-2 border-gray-300 dark:border-gray-600`
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                      }`}
                   >
                     {lang.label}
                   </button>
@@ -265,7 +296,7 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
                     </div>
                     <button
                       onClick={() => handleCopyCode(approach.code[selectedLanguage], selectedLanguage)}
-                      className="flex items-center gap-2 px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm text-gray-300"
+                      className="flex items-center gap-2 px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm text-gray-300 transition-colors"
                     >
                       {copiedCode?.startsWith(selectedLanguage) ? (
                         <>
@@ -306,10 +337,23 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
+          disabled={loading}
         >
-          <Plus className="w-4 h-4" />
-          Add New Approach
+          {loading ? (
+            <>
+              <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Saving...
+            </>
+          ) : (
+            <>
+              <Plus className="w-4 h-4" />
+              Add New Approach
+            </>
+          )}
         </button>
       </div>
 
@@ -323,19 +367,30 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
               placeholder="Search approaches..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-          
+
           <select
             value={selectedQuestion}
             onChange={(e) => setSelectedQuestion(e.target.value)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none cursor-pointer"
+            style={{
+              WebkitAppearance: 'menulist',
+              MozAppearance: 'menulist',
+              appearance: 'menulist',
+            }}
           >
-            <option value="">All Questions</option>
+            <option value="" className="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+              All Questions
+            </option>
             {questions?.map(q => (
-              <option key={q.id} value={q.id}>
-                Q{q.id}: {q.title}
+              <option 
+                key={q.quesId} 
+                value={q.quesId}
+                className="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+              >
+                Q{q.quesId}: {q.quesName}
               </option>
             ))}
           </select>
@@ -352,9 +407,9 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
       <div className="space-y-4">
         {filteredApproaches?.length > 0 ? (
           filteredApproaches.map((approach, index) => (
-            <ApproachCard 
-              key={approach._id} 
-              approach={approach} 
+            <ApproachCard
+              key={approach._id}
+              approach={approach}
               index={approaches.findIndex(a => a._id === approach._id)}
             />
           ))
@@ -367,8 +422,8 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
               No approaches found
             </h3>
             <p className="text-gray-500 dark:text-gray-400">
-              {searchTerm || selectedQuestion 
-                ? 'Try changing your search criteria' 
+              {searchTerm || selectedQuestion
+                ? 'Try changing your search criteria'
                 : 'Get started by adding your first approach'}
             </p>
           </div>
@@ -386,7 +441,8 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
                 </h3>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 disabled:opacity-50"
+                  disabled={loading}
                 >
                   ✕
                 </button>
@@ -402,13 +458,25 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
                     <select
                       required
                       value={formData.quesId}
-                      onChange={(e) => setFormData({...formData, quesId: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(e) => setFormData({ ...formData, quesId: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed appearance-none cursor-pointer"
+                      disabled={loading}
+                      style={{
+                        WebkitAppearance: 'menulist',
+                        MozAppearance: 'menulist',
+                        appearance: 'menulist',
+                      }}
                     >
-                      <option value="">Select a question</option>
+                      <option value="" className="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+                        Select a question
+                      </option>
                       {questions?.map(q => (
-                        <option key={q.id} value={q.id}>
-                          Q{q.id}: {q.title}
+                        <option 
+                          key={q.quesId} 
+                          value={q.quesId}
+                          className="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+                        >
+                          Q{q.quesId}: {q.quesName}
                         </option>
                       ))}
                     </select>
@@ -421,11 +489,21 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
                     <select
                       required
                       value={formData.approachType}
-                      onChange={(e) => setFormData({...formData, approachType: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(e) => setFormData({ ...formData, approachType: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed appearance-none cursor-pointer"
+                      disabled={loading}
+                      style={{
+                        WebkitAppearance: 'menulist',
+                        MozAppearance: 'menulist',
+                        appearance: 'menulist',
+                      }}
                     >
                       {approachTypeOptions.map(option => (
-                        <option key={option.value} value={option.value}>
+                        <option 
+                          key={option.value} 
+                          value={option.value}
+                          className="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+                        >
                           {option.label}
                         </option>
                       ))}
@@ -440,9 +518,10 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
                       type="text"
                       required
                       value={formData.approachName}
-                      onChange={(e) => setFormData({...formData, approachName: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(e) => setFormData({ ...formData, approachName: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="e.g., Reverse String - Two Pointer Approach"
+                      disabled={loading}
                     />
                   </div>
 
@@ -453,10 +532,11 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
                     <textarea
                       required
                       value={formData.approachDesc}
-                      onChange={(e) => setFormData({...formData, approachDesc: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, approachDesc: e.target.value })}
                       rows="3"
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="Describe the approach, its advantages, and when to use it..."
+                      disabled={loading}
                     />
                   </div>
                 </div>
@@ -471,9 +551,10 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
                       type="text"
                       required
                       value={formData.time_complexity}
-                      onChange={(e) => setFormData({...formData, time_complexity: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(e) => setFormData({ ...formData, time_complexity: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="e.g., O(n), O(n log n), O(1)"
+                      disabled={loading}
                     />
                   </div>
 
@@ -485,9 +566,10 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
                       type="text"
                       required
                       value={formData.space_complexity}
-                      onChange={(e) => setFormData({...formData, space_complexity: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(e) => setFormData({ ...formData, space_complexity: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       placeholder="e.g., O(1), O(n), O(n^2)"
+                      disabled={loading}
                     />
                   </div>
                 </div>
@@ -500,9 +582,10 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
                   <input
                     type="url"
                     value={formData.videoUrl}
-                    onChange={(e) => setFormData({...formData, videoUrl: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="https://www.youtube.com/embed/..."
+                    disabled={loading}
                   />
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     Use YouTube embed URLs (starts with https://www.youtube.com/embed/)
@@ -532,8 +615,9 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
                             }
                           })}
                           rows="6"
-                          className="w-full px-4 py-3 bg-transparent font-mono text-sm focus:outline-none resize-y"
+                          className="w-full px-4 py-3 bg-white dark:bg-gray-800 font-mono text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y disabled:opacity-50 disabled:cursor-not-allowed"
                           placeholder={`Enter ${lang.label} code here...`}
+                          disabled={loading}
                         />
                       </div>
                     ))}
@@ -545,15 +629,27 @@ const ApproachesContent = ({ questions, approaches, setApproaches }) => {
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
-                    className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={loading}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={loading}
                   >
-                    {editingApproach ? 'Update Approach' : 'Add Approach'}
+                    {loading ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        {editingApproach ? 'Updating...' : 'Saving...'}
+                      </>
+                    ) : (
+                      editingApproach ? 'Update Approach' : 'Add Approach'
+                    )}
                   </button>
                 </div>
               </form>

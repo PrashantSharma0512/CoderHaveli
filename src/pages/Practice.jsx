@@ -279,9 +279,20 @@ function Practice() {
 
                 {sortedEditorial.map((approach, i) => (
                   <div key={approach._id} className='bg-zinc-100 dark:bg-gray-800 p-4 rounded-lg space-y-4 shadow-sm'>
-                    <h3 className='text-xl font-semibold text-gray-800 dark:text-gray-100'>
-                      Approach {i + 1}: {approach.approachType}
-                    </h3>
+                    <div className="flex items-center justify-start gap-3 text-xl font-semibold text-gray-800 dark:text-gray-100">
+                      <span>
+                        Approach {i + 1}: {approach.approachName}
+                      </span>
+
+                      <span
+                        className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold
+               bg-indigo-100 text-indigo-700
+               dark:bg-indigo-900 dark:text-indigo-200"
+                      >
+                        {approach.approachType}
+                      </span>
+                    </div>
+
                     <p className='text-gray-600 dark:text-gray-300'>{approach.approachDesc}</p>
 
                     <CodeDisplay

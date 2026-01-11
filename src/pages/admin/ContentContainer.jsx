@@ -17,8 +17,8 @@ const ContentContainer = ({
   setQuestions,
   students,
   submissions,
-  approaches, // Add this prop
-  setApproaches // Add this prop
+  approaches, 
+  setApproaches 
 }) => {
   const renderContent = () => {
     if (loading && activeTab === 'dashboard') {

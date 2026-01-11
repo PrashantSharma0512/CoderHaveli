@@ -13,7 +13,8 @@ import {
   X
 } from 'lucide-react';
 
-const Sidebar = ({ activeTab, setActiveTab, mobileMenuOpen, user }) => {
+const 
+Sidebar = ({ activeTab, setActiveTab, mobileMenuOpen, user }) => {
   const menuItems = [
     { 
       id: 'dashboard', 

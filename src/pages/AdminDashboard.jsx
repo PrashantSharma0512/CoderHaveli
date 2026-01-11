@@ -10,17 +10,40 @@ import DashboardFooter from './admin/DashboardFooter';
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+
   // Data states
   const [dashboardData, setDashboardData] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [students, setStudents] = useState([]);
   const [submissions, setSubmissions] = useState([]);
-  
+  const [approaches, setApproaches] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { user } = useSelector(state => state.login);
 
+  // Add a separate useEffect to fetch questions on mount
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        // Fetch questions on initial load
+        const questionsResponse = await axiosInstance.get('/admin/questions');
+        setQuestions(questionsResponse.data.data || []);
+
+        // Fetch dashboard data
+        const dashboardResponse = await axiosInstance.get('/admin/dashboard');
+        setDashboardData(dashboardResponse.data.data);
+
+      } catch (error) {
+        console.error('Error fetching initial data:', error);
+        setError('Failed to load initial data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, []);
   // Fetch data based on active tab
   useEffect(() => {
     const fetchData = async () => {
@@ -28,14 +51,17 @@ const AdminDashboard = () => {
         dashboard: '/admin/dashboard',
         submissions: '/admin/submissions',
         questions: '/admin/questions',
-        students: '/admin/users'
+        students: '/admin/users',
+        // Approaches list
+        approaches: '/admin/approaches'
       };
 
       const stateSetters = {
         dashboard: setDashboardData,
         submissions: setSubmissions,
         questions: setQuestions,
-        students: setStudents
+        students: setStudents,
+        approaches: setApproaches
       };
 
       if (endpoints[activeTab]) {
@@ -43,7 +69,7 @@ const AdminDashboard = () => {
           setLoading(true);
           const response = await axiosInstance.get(endpoints[activeTab]);
           const data = response.data.data;
-          
+
           if (activeTab === 'dashboard') {
             setDashboardData(data);
           } else {
@@ -71,7 +97,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-      <MobileHeader 
+      <MobileHeader
         user={user}
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}
@@ -94,9 +120,11 @@ const AdminDashboard = () => {
           setQuestions={setQuestions}
           students={students}
           submissions={submissions}
+          approaches={approaches}
+          setApproaches={setApproaches}
         />
       </div>
-      
+
       <DashboardFooter />
     </div>
   );
