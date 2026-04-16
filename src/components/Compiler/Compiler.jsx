@@ -36,7 +36,7 @@ import {
 } from "@chakra-ui/react";
 import { useDispatch, useSelector } from "react-redux";
 import axiosInstance from "../helper/axiosInstance";
-import { CheckCircleIcon, PlayIcon, XCircleIcon } from "lucide-react";
+import { CheckCircleIcon, PlayIcon, XCircleIcon, ClockIcon, CpuIcon } from "lucide-react";
 import { MdCelebration as CelebrationIcon } from 'react-icons/md';
 import Confetti from "react-confetti";
 
@@ -196,14 +196,10 @@ function Compiler({ testcase, quesId }) {
       console.error(error);
       setLoading(false);
       setOutput({
+        error: error.response?.data?.message || error.message || "An error occurred while running the code",
         isFullyPassed: false,
         passedTestCases: 0,
-        totalTestCases: testcases.length,
-        failedTestCases: testcases.map(tc => ({
-          input: tc.input,
-          expectedOutput: tc.output,
-          actualOutput: "Error running code"
-        }))
+        totalTestCases: testcases.length
       });
     }
   };
@@ -228,14 +224,10 @@ function Compiler({ testcase, quesId }) {
       console.error(error);
       setLoading(false);
       setOutput({
+        error: error.response?.data?.message || error.message || "An error occurred while submitting the code",
         isFullyPassed: false,
         passedTestCases: 0,
-        totalTestCases: testcases.length,
-        failedTestCases: testcases.map(tc => ({
-          input: tc.input,
-          expectedOutput: tc.output,
-          actualOutput: "Error submitting code"
-        }))
+        totalTestCases: testcases.length
       });
     }
   };
@@ -263,6 +255,26 @@ function Compiler({ testcase, quesId }) {
     ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722'],
     ['#ff8a80', '#ff80ab', '#ea80fc', '#b388ff', '#8c9eff', '#82b1ff', '#80d8ff', '#84ffff', '#a7ffeb', '#b9f6ca', '#ccff90', '#f4ff81', '#ffff8d', '#ffe57f', '#ffd180', '#ff9e80']
   );
+
+  // Helper function to check if any test case has an error
+  const hasAnyError = (output) => {
+    if (!output) return false;
+    if (output.error) return true;
+    if (output.testResults) {
+      return output.testResults.some(test => test.error);
+    }
+    return false;
+  };
+
+  // Helper function to get the first error from test results
+  const getFirstError = (output) => {
+    if (output.error) return output.error;
+    if (output.testResults) {
+      const failedTest = output.testResults.find(test => test.error);
+      return failedTest?.error || null;
+    }
+    return null;
+  };
 
   return (
     <>
@@ -504,15 +516,12 @@ function Compiler({ testcase, quesId }) {
                     <div className="flex flex-col items-center justify-center h-32 space-y-3 text-indigo-600 dark:text-indigo-400">
                       <div className="relative">
                         <Spinner size="lg" />
-                        <span className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs font-bold">
-                          {Math.min(70, 100)}%
-                        </span>
                       </div>
                       <p className="text-sm font-medium text-center">Executing your code, please wait...</p>
                       <div className="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700 max-w-xs">
                         <div
-                          className="bg-indigo-600 h-1.5 rounded-full transition-all duration-300"
-                          style={{ width: `${70}%` }}
+                          className="bg-indigo-600 h-1.5 rounded-full transition-all duration-300 animate-pulse"
+                          style={{ width: `70%` }}
                         ></div>
                       </div>
                     </div>
@@ -521,8 +530,9 @@ function Compiler({ testcase, quesId }) {
                       {/* Status Badge */}
                       <div
                         className={`flex items-center gap-3 px-4 py-2 rounded-full text-sm font-semibold w-fit transition-colors duration-300
-            ${output.isFullyPassed
+                          ${output.isFullyPassed
                             ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 shadow-sm'
+                            : hasAnyError(output) ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300 shadow-sm'
                             : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 shadow-sm'
                           }`}
                       >
@@ -530,6 +540,11 @@ function Compiler({ testcase, quesId }) {
                           <>
                             <CheckCircleIcon className="h-5 w-5" />
                             Accepted
+                          </>
+                        ) : hasAnyError(output) ? (
+                          <>
+                            <XCircleIcon className="h-5 w-5" />
+                            Error
                           </>
                         ) : (
                           <>
@@ -539,99 +554,117 @@ function Compiler({ testcase, quesId }) {
                         )}
                       </div>
 
-                      {/* Testcase Summary */}
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                        <span className="font-medium text-base bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-md w-fit">
-                          {output.passedTestCases} / {output.totalTestCases}
-                        </span>
-                        <span>test cases passed</span>
-                      </div>
-
-                      {/* Execution Metrics */}
-                      {(output.executionTime || output.memoryUsage) && (
-                        <div className="flex flex-wrap gap-4 text-xs text-gray-600 dark:text-gray-400">
-                          {output.executionTime && (
-                            <div className="flex items-center gap-1">
-                              <ClockIcon className="h-4 w-4" />
-                              <span>Time: {output.executionTime}ms</span>
+                      {/* Error Display Section - Only show if there's an error */}
+                      {hasAnyError(output) && (
+                        <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800/50">
+                          <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0 mt-0.5">
+                              <svg className="h-5 w-5 text-yellow-600 dark:text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                              </svg>
                             </div>
-                          )}
-                          {output.memoryUsage && (
-                            <div className="flex items-center gap-1">
-                              <ChipIcon className="h-4 w-4" />
-                              <span>Memory: {output.memoryUsage}MB</span>
+                            <div className="flex-1">
+                              <h4 className="text-sm font-semibold text-yellow-800 dark:text-yellow-300 mb-2">Compilation/Runtime Error</h4>
+                              <pre className="text-xs bg-yellow-100 dark:bg-yellow-900/30 p-3 rounded overflow-x-auto whitespace-pre-wrap break-words text-yellow-800 dark:text-yellow-200 font-mono">
+                                {getFirstError(output)}
+                              </pre>
                             </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Test Case Details */}
-                      {output.totalTestCases !== output.passedTestCases && (
-                        <div className="space-y-3 mt-4">
-                          <h4 className="font-medium text-gray-700 dark:text-gray-300 text-sm">Failed Test Cases:</h4>
-                          <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-                            {output?.testResults?.filter(test => !test.passed).map((test, index) => (
-                              <div key={index} className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-100 dark:border-red-800/50">
-                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                                  <span className="font-medium text-red-700 dark:text-red-300 text-sm">
-                                    Test Case #{index + 1}
-                                  </span>
-                                  {test.executionTime && (
-                                    <span className="text-xs text-red-600 dark:text-red-400 sm:text-right">
-                                      {test.executionTime}ms
-                                    </span>
-                                  )}
-                                </div>
-
-                                {test.input && (
-                                  <div className="mt-2">
-                                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Input:</span>
-                                    <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded mt-1 overflow-x-auto whitespace-pre-wrap break-words">
-                                      {typeof test.input === 'object' ? JSON.stringify(test.input, null, 2) : test.input}
-                                    </pre>
-                                  </div>
-                                )}
-
-                                {test.expected && (
-                                  <div className="mt-2">
-                                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Expected:</span>
-                                    <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded mt-1 overflow-x-auto whitespace-pre-wrap break-words">
-                                      {typeof test.expected === 'object' ? JSON.stringify(test.expected, null, 2) : test.expected}
-                                    </pre>
-                                  </div>
-                                )}
-
-                                {test.actual && (
-                                  <div className="mt-2">
-                                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Your Output:</span>
-                                    <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded mt-1 overflow-x-auto whitespace-pre-wrap break-words">
-                                      {typeof test.actual === 'object' ? JSON.stringify(test.actual, null, 2) : test.actual}
-                                    </pre>
-                                  </div>
-                                )}
-
-                                {test.error && (
-                                  <div className="mt-2">
-                                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Error:</span>
-                                    <pre className="text-xs text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 p-2 rounded mt-1 overflow-x-auto whitespace-pre-wrap break-words">
-                                      {test.error}
-                                    </pre>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
                           </div>
                         </div>
                       )}
 
-                      {/* Success Celebration */}
-                      {output.isFullyPassed && (
-                        <div className="flex items-center gap-2 mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800/50">
-                          <CheckCircleIcon className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-                          <p className="text-sm text-green-700 dark:text-green-300">
-                            Congratulations! All test cases passed successfully.
-                          </p>
-                        </div>
+                      {/* Testcase Summary - Only show if no error */}
+                      {!hasAnyError(output) && (
+                        <>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                            <span className="font-medium text-base bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded-md w-fit">
+                              {output.passedTestCases || 0} / {output.totalTestCases || 0}
+                            </span>
+                            <span>test cases passed</span>
+                          </div>
+
+                          {/* Execution Metrics */}
+                          {(output.totalExecutionTime || output.memoryUsage) && (
+                            <div className="flex flex-wrap gap-4 text-xs text-gray-600 dark:text-gray-400">
+                              {output.totalExecutionTime && (
+                                <div className="flex items-center gap-1">
+                                  <ClockIcon className="h-4 w-4" />
+                                  <span>Time: {output.totalExecutionTime}ms</span>
+                                </div>
+                              )}
+                              {output.memoryUsage && (
+                                <div className="flex items-center gap-1">
+                                  <CpuIcon className="h-4 w-4" />
+                                  <span>Memory: {output.memoryUsage}MB</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Test Case Details - Failed Cases */}
+                          {output.testResults && output.testResults.some(test => !test.isPassed) && (
+                            <div className="space-y-3 mt-4">
+                              <h4 className="font-medium text-gray-700 dark:text-gray-300 text-sm">Failed Test Cases:</h4>
+                              <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                                {output.testResults.filter(test => !test.isPassed).map((test, index) => (
+                                  <div key={index} className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-800/50">
+                                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-3">
+                                      <span className="font-medium text-red-700 dark:text-red-300 text-sm">
+                                        Test Case #{index + 1} - Failed
+                                      </span>
+                                      {test.executionTime && (
+                                        <span className="text-xs text-red-600 dark:text-red-400">
+                                          {(test.executionTime).toFixed(1)}s
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {/* Input */}
+                                    <div className="mb-3">
+                                      <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Input</div>
+                                      <pre className="text-sm bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700 overflow-x-auto whitespace-pre-wrap break-words">
+                                        {typeof test.input === 'object' ? JSON.stringify(test.input, null, 2) : test.input}
+                                      </pre>
+                                    </div>
+
+                                    {/* Expected Output */}
+                                    <div className="mb-3">
+                                      <div className="text-xs font-semibold text-green-700 dark:text-green-300 mb-1">Expected Output</div>
+                                      <pre className="text-sm bg-green-50 dark:bg-green-900/20 p-3 rounded border border-green-200 dark:border-green-800/50 overflow-x-auto whitespace-pre-wrap break-words text-green-800 dark:text-green-200">
+                                        {typeof test.output === 'object' ? JSON.stringify(test.output, null, 2) : test.output}
+                                      </pre>
+                                    </div>
+
+                                    {/* Actual Output */}
+                                    <div>
+                                      <div className="text-xs font-semibold text-red-700 dark:text-red-300 mb-1"> Your Output:</div>
+                                      <pre className="text-sm bg-red-50 dark:bg-red-900/20 p-3 rounded border border-red-200 dark:border-red-800/50 overflow-x-auto whitespace-pre-wrap break-words text-red-800 dark:text-red-200">
+                                        {typeof test.actualOutput === 'object' ? JSON.stringify(test.actualOutput, null, 2) : test.actualOutput || 'No output'}
+                                      </pre>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Success Message */}
+                          {output.isFullyPassed && (
+                            <div className="flex items-center gap-3 mt-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800/50">
+                              <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400 flex-shrink-0" />
+                              <div>
+                                <p className="text-sm font-semibold text-green-800 dark:text-green-300">
+                                  🎉 Congratulations! All test cases passed successfully.
+                                </p>
+                                {output.totalExecutionTime && (
+                                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                                    Total execution time: {output.totalExecutionTime}ms
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   ) : (
@@ -686,9 +719,9 @@ function Compiler({ testcase, quesId }) {
           )}
 
           <ModalHeader
-            bg={output?.isFullyPassed ? 'green.50' : 'red.50'}
+            bg={output?.isFullyPassed ? 'green.50' : hasAnyError(output) ? 'yellow.50' : 'red.50'}
             borderBottomWidth="1px"
-            borderColor={output?.isFullyPassed ? 'green.100' : 'red.100'}
+            borderColor={output?.isFullyPassed ? 'green.100' : hasAnyError(output) ? 'yellow.100' : 'red.100'}
             py={3}
             px={4}
           >
@@ -697,8 +730,8 @@ function Compiler({ testcase, quesId }) {
                 mr={3}
                 p={1.5}
                 rounded="full"
-                bg={output?.isFullyPassed ? 'green.100' : 'red.100'}
-                color={output?.isFullyPassed ? 'green.600' : 'red.600'}
+                bg={output?.isFullyPassed ? 'green.100' : hasAnyError(output) ? 'yellow.100' : 'red.100'}
+                color={output?.isFullyPassed ? 'green.600' : hasAnyError(output) ? 'yellow.600' : 'red.600'}
               >
                 {output?.isFullyPassed ? (
                   <CheckCircleIcon className="h-5 w-5" />
@@ -709,7 +742,7 @@ function Compiler({ testcase, quesId }) {
               <Box>
                 <Text fontSize="lg" fontWeight="bold">Submission Result</Text>
                 <Text fontSize="xs" color="gray.500" noOfLines={1}>
-                  {output ? (output.isFullyPassed ? "All tests passed!" : "Some tests failed") : "Processing..."}
+                  {output ? (output.isFullyPassed ? "All tests passed!" : hasAnyError(output) ? "Error occurred" : "Some tests failed") : "Processing..."}
                 </Text>
               </Box>
             </Flex>
@@ -725,133 +758,147 @@ function Compiler({ testcase, quesId }) {
           <ModalBody py={4} px={4}>
             {output ? (
               <Box>
-                {/* Progress Section */}
-                <Flex
-                  direction={{ base: 'column', md: 'row' }}
-                  align="center"
-                  justify="space-between"
-                  mb={6}
-                  gap={4}
-                >
-                  <Box position="relative">
-                    <CircularProgress
-                      value={(output.passedTestCases / output.totalTestCases) * 100}
-                      color={output.isFullyPassed ? 'green.400' : 'red.400'}
-                      size={{ base: "90px", md: "120px" }}
-                      thickness="8px"
-                      trackColor="gray.100"
-                      capIsRound
-                    >
-                      <CircularProgressLabel>
-                        <Box textAlign="center">
-                          <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold">
-                            {output.passedTestCases}/{output.totalTestCases}
-                          </Text>
-                          <Text fontSize="2xs" color="gray.500">PASSED</Text>
-                        </Box>
-                      </CircularProgressLabel>
-                    </CircularProgress>
+                {/* Error Display in Modal - Only show if there's an error */}
+                {hasAnyError(output) && (
+                  <Box mb={4} p={4} bg="yellow.50" borderRadius="md" borderLeftWidth="4px" borderColor="yellow.400">
+                    <Text fontSize="sm" fontWeight="bold" color="yellow.800" mb={2}>Error:</Text>
+                    <Code p={2} fontSize="xs" borderRadius="md" bg="white" display="block" whiteSpace="pre-wrap">
+                      {getFirstError(output)}
+                    </Code>
                   </Box>
+                )}
 
-                  <Box flex={1} w="full">
-                    <Text fontSize={{ base: "md", md: "lg" }} mb={2}>
-                      {output.isFullyPassed ? "🎉 All tests passed!" : `Passed ${output.passedTestCases}/${output.totalTestCases}`}
-                    </Text>
-
-                    <Progress
-                      value={(output.passedTestCases / output.totalTestCases) * 100}
-                      size="sm"
-                      colorScheme={output.isFullyPassed ? 'green' : 'red'}
-                      borderRadius="full"
-                      mb={1}
-                    />
-
-                    <Flex justify="space-between" fontSize="xs" color="gray.600">
-                      <Text>Progress</Text>
-                      <Text fontWeight="medium">
-                        {Math.round((output.passedTestCases / output.totalTestCases) * 100)}%
-                      </Text>
-                    </Flex>
-                  </Box>
-                </Flex>
-
-                {/* Failed Test Cases */}
-                {output.failedTestCases && output.failedTestCases.length > 0 && (
-                  <Box
-                    borderTopWidth="1px"
-                    borderColor="gray.100"
-                    pt={4}
-                  >
-                    <Text fontSize="sm" fontWeight="bold" mb={3}>
-                      ❌ Failed Test Cases
-                    </Text>
-
-                    <Box
-                      maxH={{ base: "200px", md: "300px" }}
-                      overflowY="auto"
-                      pr={1}
-                      className="custom-scrollbar"
+                {/* Progress Section - Only show if no error */}
+                {!hasAnyError(output) && (
+                  <>
+                    <Flex
+                      direction={{ base: 'column', md: 'row' }}
+                      align="center"
+                      justify="space-between"
+                      mb={6}
+                      gap={4}
                     >
-                      {output.failedTestCases.map((testCase, index) => (
-                        <Box
-                          key={index}
-                          mb={3}
-                          p={3}
-                          bg="gray.50"
-                          borderRadius="md"
-                          borderLeftWidth="3px"
-                          borderColor="red.400"
+                      <Box position="relative">
+                        <CircularProgress
+                          value={(output.passedTestCases / output.totalTestCases) * 100}
+                          color={output.isFullyPassed ? 'green.400' : 'red.400'}
+                          size={{ base: "90px", md: "120px" }}
+                          thickness="8px"
+                          trackColor="gray.100"
+                          capIsRound
                         >
-                          <VStack align="stretch" spacing={2}>
-                            <Box>
-                              <Text fontSize="xs" color="gray.500" mb={1}>Input:</Text>
-                              <Code
-                                p={2}
-                                fontSize="xs"
-                                borderRadius="md"
-                                bg="white"
-                                display="block"
-                                whiteSpace="pre-wrap"
-                                overflowX="auto"
-                              >
-                                {testCase.input}
-                              </Code>
+                          <CircularProgressLabel>
+                            <Box textAlign="center">
+                              <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold">
+                                {output.passedTestCases}/{output.totalTestCases}
+                              </Text>
+                              <Text fontSize="2xs" color="gray.500">PASSED</Text>
                             </Box>
+                          </CircularProgressLabel>
+                        </CircularProgress>
+                      </Box>
 
-                            <Box>
-                              <Text fontSize="xs" color="gray.500" mb={1}>Expected:</Text>
-                              <Code
-                                p={2}
-                                fontSize="xs"
-                                borderRadius="md"
-                                bg="green.50"
-                                color="green.700"
-                                display="block"
-                                whiteSpace="pre-wrap"
-                              >
-                                {testCase.expectedOutput}
-                              </Code>
-                            </Box>
+                      <Box flex={1} w="full">
+                        <Text fontSize={{ base: "md", md: "lg" }} mb={2}>
+                          {output.isFullyPassed ? "🎉 All tests passed!" : `Passed ${output.passedTestCases}/${output.totalTestCases}`}
+                        </Text>
 
-                            <Box>
-                              <Text fontSize="xs" color="gray.500" mb={1}>Actual:</Text>
-                              <Code
-                                p={2}
-                                fontSize="xs"
-                                borderRadius="md"
-                                bg="red.50"
-                                color="red.700"
-                                display="block"
-                                whiteSpace="pre-wrap"
-                              >
-                                {testCase.actualOutput}
-                              </Code>
+                        <Progress
+                          value={(output.passedTestCases / output.totalTestCases) * 100}
+                          size="sm"
+                          colorScheme={output.isFullyPassed ? 'green' : 'red'}
+                          borderRadius="full"
+                          mb={1}
+                        />
+
+                        <Flex justify="space-between" fontSize="xs" color="gray.600">
+                          <Text>Progress</Text>
+                          <Text fontWeight="medium">
+                            {Math.round((output.passedTestCases / output.totalTestCases) * 100)}%
+                          </Text>
+                        </Flex>
+                      </Box>
+                    </Flex>
+
+                    {/* Failed Test Cases in Modal */}
+                    {output.testResults && output.testResults.some(test => !test.isPassed) && (
+                      <Box
+                        borderTopWidth="1px"
+                        borderColor="gray.100"
+                        pt={4}
+                      >
+                        <Text fontSize="sm" fontWeight="bold" mb={3}>
+                          ❌ Failed Test Cases
+                        </Text>
+
+                        <Box
+                          maxH={{ base: "200px", md: "300px" }}
+                          overflowY="auto"
+                          pr={1}
+                          className="custom-scrollbar"
+                        >
+                          {output.testResults.filter(test => !test.isPassed).map((testCase, index) => (
+                            <Box
+                              key={index}
+                              mb={3}
+                              p={3}
+                              bg="gray.50"
+                              borderRadius="md"
+                              borderLeftWidth="3px"
+                              borderColor="red.400"
+                            >
+                              <VStack align="stretch" spacing={2}>
+                                <Box>
+                                  <Text fontSize="xs" color="gray.500" mb={1}>Input:</Text>
+                                  <Code
+                                    p={2}
+                                    fontSize="xs"
+                                    borderRadius="md"
+                                    bg="white"
+                                    display="block"
+                                    whiteSpace="pre-wrap"
+                                    overflowX="auto"
+                                  >
+                                    {testCase.input}
+                                  </Code>
+                                </Box>
+
+                                <Box>
+                                  <Text fontSize="xs" color="gray.500" mb={1}>Expected:</Text>
+                                  <Code
+                                    p={2}
+                                    fontSize="xs"
+                                    borderRadius="md"
+                                    bg="green.50"
+                                    color="green.700"
+                                    display="block"
+                                    whiteSpace="pre-wrap"
+                                  >
+                                    {testCase.output || testCase.expected}
+                                  </Code>
+                                </Box>
+
+                                <Box>
+                                  <Text fontSize="xs" color="gray.500" mb={1}>Actual:</Text>
+                                  <Code
+                                    p={2}
+                                    fontSize="xs"
+                                    borderRadius="md"
+                                    bg="red.50"
+                                    color="red.700"
+                                    display="block"
+                                    whiteSpace="pre-wrap"
+                                  >
+                                    {testCase.actualOutput || testCase.actual || 'No output'}
+                                  </Code>
+                                </Box>
+                              </VStack>
                             </Box>
-                          </VStack>
+                          ))}
                         </Box>
-                      ))}
-                    </Box>
-                  </Box>
+                      </Box>
+                    )}
+                  </>
                 )}
               </Box>
             ) : (
