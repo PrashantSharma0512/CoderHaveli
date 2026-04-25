@@ -8,6 +8,7 @@ import Header from './components/Header/Header';
 import Footer from './components/footer/Footer';
 import axiosInstance from './components/helper/axiosInstance';
 import axios from 'axios';
+import { Analytics } from "@vercel/analytics/react"
 
 const mathJaxConfig = {
   loader: { load: ["[tex]/ams"] },
@@ -31,6 +32,7 @@ function App() {
         {!hideFooter && <Footer />}
         <Toaster />
       </div>
+      <Analytics />
     </MathJaxContext>
   );
 }

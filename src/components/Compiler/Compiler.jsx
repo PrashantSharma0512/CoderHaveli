@@ -828,7 +828,7 @@ function Compiler({ testcase, quesId }) {
                         pt={4}
                       >
                         <Text fontSize="sm" fontWeight="bold" mb={3}>
-                          ❌ Failed Test Cases
+                           Failed Test Cases
                         </Text>
 
                         <Box
