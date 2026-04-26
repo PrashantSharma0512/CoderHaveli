@@ -7,6 +7,7 @@ import SubmissionsContent from './SubmissionContent';
 import AnalyticsContent from './AnalyticsContent';
 import UploadContent from './UploadContent';
 import ApproachesContent from './ApproachesContent'; // Add this import
+import AnalyticsTraffic from './AnalyticsTraffic';
 
 const ContentContainer = ({
   activeTab,
@@ -17,8 +18,8 @@ const ContentContainer = ({
   setQuestions,
   students,
   submissions,
-  approaches, 
-  setApproaches 
+  approaches,
+  setApproaches
 }) => {
   const renderContent = () => {
     if (loading && activeTab === 'dashboard') {
@@ -52,7 +53,8 @@ const ContentContainer = ({
         questions={questions}
         approaches={approaches}
         setApproaches={setApproaches}
-      /> // Add this component
+      />,
+      AnalyticsTraffic: () => <AnalyticsTraffic />,
     };
 
     return components[activeTab] ? components[activeTab]() : components.dashboard();

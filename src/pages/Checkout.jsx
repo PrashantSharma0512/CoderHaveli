@@ -63,7 +63,7 @@ function Checkout() {
         toast.error("Razorpay SDK failed to load.");
       }
 
-      const orderRes = await axios.post(
+      const orderRes = await axiosInstance.post(
         `${import.meta.env.VITE_BASE_URL || process.env.REACT_APP_BASE_URL}/api/payment/order`,
         {
           amount: course.price,
@@ -96,7 +96,7 @@ function Checkout() {
               amount: course.price,
             };
 
-            const verifyRes = await axios.post(
+            const verifyRes = await axiosInstance.post(
               `${import.meta.env.VITE_BASE_URL || process.env.REACT_APP_BASE_URL}/api/payment/verify`,
               payload
             );
