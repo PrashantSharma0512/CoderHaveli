@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState, useRef } from 'react';
 import Compiler from '../components/Compiler/Compiler';
 import {
   Accordion,
@@ -46,6 +46,12 @@ function Practice() {
   const dispatch = useDispatch();
   const toast = useToast();
   const userId = useSelector(state => state.login.userId)
+  
+  // Drag to resize state
+  const [leftPanelWidth, setLeftPanelWidth] = useState(40); // percentage
+  const [isDragging, setIsDragging] = useState(false);
+  const containerRef = useRef(null);
+  
   const previousSolutions = [
     {
       mode: 'python',
@@ -53,6 +59,14 @@ function Practice() {
       status: 'wrong'
     },
   ];
+
+  // Load saved width from localStorage
+  useEffect(() => {
+    const savedWidth = localStorage.getItem('editor-panel-width');
+    if (savedWidth) {
+      setLeftPanelWidth(parseFloat(savedWidth));
+    }
+  }, []);
 
   useEffect(() => {
     const fetchProblemData = async () => {
@@ -92,6 +106,62 @@ function Practice() {
     );
   }, [dispatch]);
 
+  // Drag handlers for resizing
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging || !containerRef.current) return;
+    
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const mouseX = e.clientX - containerRect.left;
+    const percentage = (mouseX / containerRect.width) * 100;
+    
+    // Limit the resize range (20% to 80%)
+    const newWidth = Math.min(Math.max(percentage, 20), 80);
+    setLeftPanelWidth(newWidth);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    // Save the width to localStorage
+    localStorage.setItem('editor-panel-width', leftPanelWidth);
+  };
+
+  // Reset to default on double click
+  const handleDoubleClick = () => {
+    setLeftPanelWidth(40);
+    localStorage.setItem('editor-panel-width', 40);
+  };
+
+  // Add and remove event listeners
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      
+      // Add cursor style to body while dragging
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    } else {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      
+      // Reset cursor style
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isDragging]);
+
   if (loading) return <Loading />;
 
   const problem = problemList[0] || {};
@@ -110,6 +180,7 @@ function Practice() {
     return <MathJax inline>{`\\(${content}\\)`}</MathJax>;
   };
   const comments = [1]
+  
   return (
     <MathJaxContext
       config={{
@@ -127,9 +198,20 @@ function Practice() {
         }
       }}
     >
-      <div className='flex flex-col md:flex-row w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 overflow-hidden'>
-        {/* Problem Description Panel */}
-        <div className='w-full md:w-2/5 overflow-hidden border-r border-gray-200 dark:border-gray-700'>
+      <div 
+        ref={containerRef}
+        className='flex flex-row w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 overflow-hidden'
+        style={{ height: '100vh' }}
+      >
+        {/* Problem Description Panel - Draggable width */}
+        <div 
+          className='relative overflow-hidden border-r border-gray-200 dark:border-gray-700'
+          style={{ 
+            width: `${leftPanelWidth}%`,
+            minWidth: '20%',
+            maxWidth: '80%'
+          }}
+        >
           <Tabs variant='unstyled' isLazy>
             <TabList className='sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 overflow-x-auto' style={{
               overflowY: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none'
@@ -346,8 +428,37 @@ function Practice() {
           </Tabs>
         </div>
 
-        {/* Compiler Panel */}
-        <div className='w-full md:w-3/5 border-l border-gray-200 dark:border-gray-700'>
+        {/* Resizable Drag Handle - Pure Tailwind CSS */}
+        <div
+          className={`
+            relative w-1.5 
+            bg-gray-300 dark:bg-gray-600 
+            hover:bg-amber-500 dark:hover:bg-indigo-500 
+            transition-all duration-150 
+            cursor-col-resize 
+            group
+            ${isDragging ? 'bg-amber-500 dark:bg-indigo-500' : ''}
+          `}
+          onMouseDown={handleMouseDown}
+          onDoubleClick={handleDoubleClick}
+          style={{ cursor: 'col-resize' }}
+        >
+          {/* Visual indicator dots */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div className="flex gap-1">
+              <div className="w-1 h-6 bg-amber-500 dark:bg-indigo-500 rounded-full"></div>
+              <div className="w-1 h-6 bg-amber-500 dark:bg-indigo-500 rounded-full"></div>
+            </div>
+          </div>
+          
+          {/* Dragging overlay effect */}
+          {isDragging && (
+            <div className="absolute inset-0 bg-amber-500 dark:bg-indigo-500 opacity-20"></div>
+          )}
+        </div>
+
+        {/* Compiler Panel - Takes remaining width */}
+        <div className='flex-1 min-w-0'>
           <Compiler testcase={testcases} quesId={problem.quesId} />
         </div>
       </div >
