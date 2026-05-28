@@ -41,21 +41,22 @@ function Practice() {
   const [editorialData, setEditorialData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [testcases, setTestcases] = useState([])
+  const [testcases, setTestcases] = useState([]);
+  const [isBookmarked, setIsBookmarked] = useState(false);
   const slug = useParams();
-  const id = slug['*']
+  const id = slug['*'];
   const dispatch = useDispatch();
   const toast = useToast();
-  const userId = useSelector(state => state.login.userId)
-  
+  const userId = useSelector(state => state.login.userId);
+
   // Check if mobile view
   const isMobile = useBreakpointValue({ base: true, md: false });
-  
+
   // Drag to resize state (only for desktop)
   const [leftPanelWidth, setLeftPanelWidth] = useState(40);
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef(null);
-  
+
   const previousSolutions = [
     {
       mode: 'python',
@@ -74,6 +75,34 @@ function Practice() {
     }
   }, [isMobile]);
 
+  // Load bookmark status from localStorage
+  useEffect(() => {
+    const bookmarks = JSON.parse(localStorage.getItem('bookmarkedProblems') || '{}');
+    setIsBookmarked(!!bookmarks[id]);
+  }, [id]);
+
+  // Toggle bookmark
+  const toggleBookmark = () => {
+    const bookmarks = JSON.parse(localStorage.getItem('bookmarkedProblems') || '{}');
+    if (bookmarks[id]) {
+      delete bookmarks[id];
+      toast({
+        title: 'Removed from bookmarks',
+        status: 'info',
+        duration: 2000,
+      });
+    } else {
+      bookmarks[id] = true;
+      toast({
+        title: 'Added to bookmarks',
+        status: 'success',
+        duration: 2000,
+      });
+    }
+    localStorage.setItem('bookmarkedProblems', JSON.stringify(bookmarks));
+    setIsBookmarked(!isBookmarked);
+  };
+
   useEffect(() => {
     const fetchProblemData = async () => {
       try {
@@ -84,7 +113,7 @@ function Practice() {
         ]);
         setProblemList(problemRes.data);
         setEditorialData(editorialRes.data.sort((a, b) => a.order - b.order));
-        setTestcases(problemRes?.data[0]?.problemExample)
+        setTestcases(problemRes?.data[0]?.problemExample);
       } catch (err) {
         setError(err);
         toast({
@@ -120,7 +149,7 @@ function Practice() {
 
   const handleMouseMove = (e) => {
     if (!isDragging || !containerRef.current || isMobile) return;
-    
+
     const containerRect = containerRef.current.getBoundingClientRect();
     const mouseX = e.clientX - containerRect.left;
     const percentage = (mouseX / containerRect.width) * 100;
@@ -174,7 +203,7 @@ function Practice() {
     if (!content) return null;
     return <MathJax inline>{`\\(${content}\\)`}</MathJax>;
   };
-  
+
   return (
     <MathJaxContext
       config={{
@@ -198,16 +227,18 @@ function Practice() {
           <div className="flex flex-col w-full">
             {/* Problem Description Panel - Full width on mobile */}
             <div className="w-full border-b border-gray-200 dark:border-gray-700">
-              <ProblemDescriptionPanel 
+              <ProblemDescriptionPanel
                 problem={problem}
                 solved={solved}
                 sortedEditorial={sortedEditorial}
                 renderMathJax={renderMathJax}
                 renderInlineMathJax={renderInlineMathJax}
                 quesId={problem.quesId}
+                isBookmarked={isBookmarked}
+                toggleBookmark={toggleBookmark}
               />
             </div>
-            
+
             {/* Compiler Panel - Full width on mobile */}
             <div className="w-full">
               <Compiler testcase={testcases} quesId={problem.quesId} />
@@ -215,27 +246,29 @@ function Practice() {
           </div>
         ) : (
           /* Desktop Layout: Horizontal Split with Resize Handle */
-          <div 
+          <div
             ref={containerRef}
             className='flex flex-row w-full'
             style={{ height: '100vh' }}
           >
             {/* Problem Description Panel */}
-            <div 
+            <div
               className='relative overflow-hidden border-r border-gray-200 dark:border-gray-700'
-              style={{ 
+              style={{
                 width: `${leftPanelWidth}%`,
                 minWidth: '20%',
                 maxWidth: '80%'
               }}
             >
-              <ProblemDescriptionPanel 
+              <ProblemDescriptionPanel
                 problem={problem}
                 solved={solved}
                 sortedEditorial={sortedEditorial}
                 renderMathJax={renderMathJax}
                 renderInlineMathJax={renderInlineMathJax}
                 quesId={problem.quesId}
+                isBookmarked={isBookmarked}
+                toggleBookmark={toggleBookmark}
               />
             </div>
 
@@ -275,13 +308,23 @@ function Practice() {
   );
 }
 
-// Separate component for Problem Description panel to avoid code duplication
-function ProblemDescriptionPanel({ problem, solved, sortedEditorial, renderMathJax, renderInlineMathJax, quesId }) {
+// Separate component for Problem Description panel - Dark mode fully optimized
+function ProblemDescriptionPanel({ problem, solved, sortedEditorial, renderMathJax, renderInlineMathJax, quesId, isBookmarked, toggleBookmark }) {
+  // Refs for scrolling
+  const hintsRef = useRef(null);
+  const topicsRef = useRef(null);
+
+  const scrollToHints = () => {
+    hintsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const scrollToTopics = () => {
+    topicsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <Tabs variant='unstyled' isLazy>
-      <TabList className='sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 overflow-x-auto' style={{
-        overflowY: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none'
-      }}>
+      <TabList className='sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 overflow-x-auto'>
         {[
           { icon: <TiDocumentText size={20} />, label: 'Description' },
           { icon: <MdOndemandVideo size={20} />, label: 'Editorial' },
@@ -295,7 +338,7 @@ function ProblemDescriptionPanel({ problem, solved, sortedEditorial, renderMathJ
               borderBottom: '2px solid',
               borderColor: 'amber.600 dark:indigo.400'
             }}
-            className='flex items-center gap-2 py-4 px-6 text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400 transition-colors text-sm md:text-base'
+            className='flex items-center gap-2 py-4 px-6 text-gray-600 dark:text-gray-300 hover:text-amber-600 dark:hover:text-indigo-400 transition-colors text-sm md:text-base font-medium'
           >
             {tab.icon}
             <span className="hidden sm:inline">{tab.label}</span>
@@ -303,64 +346,87 @@ function ProblemDescriptionPanel({ problem, solved, sortedEditorial, renderMathJ
         ))}
       </TabList>
 
-      <TabPanels className='max-h-[calc(100vh-56px)] overflow-y-auto p-4 md:p-6 space-y-6' style={{
-        overflowY: 'auto', scrollbarWidth: 'thin', msOverflowStyle: 'none'
-      }}>
+      <TabPanels className='max-h-[calc(100vh-56px)] overflow-y-auto p-4 md:p-6 space-y-6 bg-white dark:bg-gray-900'>
         {/* Description Tab */}
         <TabPanel className='p-0 space-y-6'>
           <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4'>
-            <h1 className='text-xl md:text-2xl font-bold flex items-center gap-2'>
-              <button onClick={() => window.history.back()} className='cursor-pointer'><IoIosArrowRoundBack size={35} /></button>
+            <h1 className='text-xl md:text-2xl font-bold flex items-center gap-2 text-gray-900 dark:text-gray-100'>
+              <button onClick={() => window.history.back()} className='cursor-pointer'>
+                <IoIosArrowRoundBack size={35} className='text-gray-700 dark:text-gray-300' />
+              </button>
               {problem.quesId}.&nbsp;{problem.quesName}
             </h1>
-            {solved && (
-              <span className='flex items-center gap-2 text-green-500 dark:text-green-400'>
-                <FiCheckCircle size={20} />
-                Solved
-              </span>
-            )}
+            <div className='flex items-center gap-3'>
+              {solved && (
+                <span className='flex items-center gap-2 text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 px-3 py-1 rounded-full text-sm'>
+                  <FiCheckCircle size={18} />
+                  Solved
+                </span>
+              )}
+              {/* Bookmark Button */}
+              <button
+                onClick={toggleBookmark}
+                className='p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors'
+                aria-label={isBookmarked ? 'Remove bookmark' : 'Add bookmark'}
+              >
+                <svg
+                  className={`w-5 h-5 ${isBookmarked ? 'text-amber-500 dark:text-indigo-400 fill-current' : 'text-gray-400 dark:text-gray-500 fill-none'}`}
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path d="M5 3h14a2 2 0 0 1 2 2v16l-7-4-7 4V5a2 2 0 0 1 2-2z" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <div className='flex flex-wrap gap-2'>
-            <span className={`px-4 py-1 rounded-full text-sm font-medium ${problem.difficulty === 'easy' ?
-              'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-              problem.difficulty === 'medium' ?
-                'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' :
-                'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-              }`}>
+            <span className={`px-4 py-1 rounded-full text-sm font-medium ${
+              problem.difficulty === 'easy'
+                ? 'bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-200'
+                : problem.difficulty === 'medium'
+                ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
+                : 'bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-200'
+            }`}>
               {problem.difficulty}
             </span>
-            <button className='flex items-center gap-2 cursor-pointer px-4 py-1 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors'>
+            <button
+              onClick={scrollToHints}
+              className='flex items-center gap-2 cursor-pointer px-4 py-1 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300'
+            >
               <HiOutlineLightBulb size={16} className='text-amber-600 dark:text-indigo-400' />
               Hints
             </button>
-            <button className='flex items-center gap-2 px-4 py-1 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors'>
+            <button
+              onClick={scrollToTopics}
+              className='flex items-center gap-2 px-4 py-1 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300'
+            >
               <FaTag size={16} className='text-amber-600 dark:text-indigo-400' />
               Topics
             </button>
           </div>
 
-          <div className='prose prose-gray dark:prose-invert max-w-none break-words'>
+          {/* Problem description content - dark mode text contrast fixed */}
+          <div className='prose prose-gray dark:prose-invert max-w-none break-words text-gray-800 dark:text-gray-200'>
             {renderMathJax(problem.quesDesc)}
           </div>
 
           {problem.problemExample?.map((exmp, i) => (
-            <div key={i} className='bg-zinc-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto'>
-              <h3 className='text-lg font-medium mb-2'>Example {i + 1}</h3>
-              <div className='space-y-2'>
-                <p><span className='font-semibold'>Input:</span> <code className="break-all">{exmp.input}</code></p>
-                <p><span className='font-semibold'>Output:</span> <code className="break-all">{exmp.output}</code></p>
-                {exmp.explaination && (
-                  <p><span className='font-semibold'>Explanation:</span> {exmp.explaination}</p>
-                )}
+            <div key={i} className='bg-gray-50 dark:bg-gray-800/90 p-4 rounded-lg border border-gray-200 dark:border-gray-700 overflow-x-auto'>
+              <h3 className='text-lg font-medium mb-2 text-gray-800 dark:text-gray-200'>Example {i + 1}</h3>
+              <div className='space-y-2 text-gray-700 dark:text-gray-300'>
+                <p><span className='font-semibold'>Input:</span> <code className="break-all bg-gray-100 dark:bg-gray-900 px-1 rounded">{exmp.input}</code></p>
+                <p><span className='font-semibold'>Output:</span> <code className="break-all bg-gray-100 dark:bg-gray-900 px-1 rounded">{exmp.output}</code></p>
+                {exmp.explaination && <p><span className='font-semibold'>Explanation:</span> {exmp.explaination}</p>}
               </div>
             </div>
           ))}
 
           {problem.constraints?.length > 0 && (
             <div>
-              <h3 className='text-lg font-medium mb-2'>Constraints</h3>
-              <ul className='list-disc pl-5 space-y-1'>
+              <h3 className='text-lg font-medium mb-2 text-gray-800 dark:text-gray-200'>Constraints</h3>
+              <ul className='list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300'>
                 {problem.constraints.map((c, i) => (
                   <li className='break-words' key={i}>{c}</li>
                 ))}
@@ -369,11 +435,11 @@ function ProblemDescriptionPanel({ problem, solved, sortedEditorial, renderMathJ
           )}
 
           {problem.tags?.length > 0 && (
-            <div>
-              <h3 className='text-lg font-medium mb-2'>Topics</h3>
+            <div ref={topicsRef}>
+              <h3 className='text-lg font-medium mb-2 text-gray-800 dark:text-gray-200'>Topics</h3>
               <div className='flex flex-wrap gap-2'>
                 {problem.tags.map((tag, i) => (
-                  <span key={i} className='px-3 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-700'>
+                  <span key={i} className='px-3 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'>
                     {tag}
                   </span>
                 ))}
@@ -382,19 +448,19 @@ function ProblemDescriptionPanel({ problem, solved, sortedEditorial, renderMathJ
           )}
 
           {problem.hints?.length > 0 && (
-            <div>
-              <h3 className='text-lg font-medium mb-2' id='hint'>Hints</h3>
+            <div ref={hintsRef}>
+              <h3 className='text-lg font-medium mb-2 text-gray-800 dark:text-gray-200' id='hint'>Hints</h3>
               <Accordion allowToggle>
                 {problem.hints.map((hint, i) => (
                   <AccordionItem key={i} border='none' className='mb-2'>
-                    <AccordionButton className='flex justify-between items-center p-3 bg-zinc-100 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg'>
+                    <AccordionButton className='flex justify-between items-center p-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg'>
                       <div className='flex items-center gap-2'>
                         <RiLightbulbLine size={18} className='text-amber-600 dark:text-indigo-400' />
-                        <span>Hint {i + 1}</span>
+                        <span className='text-gray-800 dark:text-gray-200'>Hint {i + 1}</span>
                       </div>
-                      <AccordionIcon />
+                      <AccordionIcon className='text-gray-600 dark:text-gray-400' />
                     </AccordionButton>
-                    <AccordionPanel pb={4} className='bg-gray-50 dark:bg-gray-800 rounded-b-lg mt-1 p-4'>
+                    <AccordionPanel pb={4} className='bg-gray-50 dark:bg-gray-800/60 rounded-b-lg mt-1 p-4 text-gray-700 dark:text-gray-300'>
                       {renderMathJax(hint)}
                     </AccordionPanel>
                   </AccordionItem>
@@ -406,7 +472,7 @@ function ProblemDescriptionPanel({ problem, solved, sortedEditorial, renderMathJ
 
         {/* Editorial Tab */}
         <TabPanel className='p-0 space-y-6'>
-          <h2 className='text-2xl font-bold'>Editorial</h2>
+          <h2 className='text-2xl font-bold text-gray-800 dark:text-gray-100'>Editorial</h2>
           {sortedEditorial[0]?.videoUrl && (
             <div className='aspect-w-16 aspect-h-9'>
               <iframe
@@ -419,23 +485,23 @@ function ProblemDescriptionPanel({ problem, solved, sortedEditorial, renderMathJ
             </div>
           )}
           {sortedEditorial.map((approach, i) => (
-            <div key={approach._id} className='bg-zinc-100 dark:bg-gray-800 p-4 rounded-lg space-y-4'>
-              <div className="flex flex-wrap items-center gap-3 text-xl font-semibold">
+            <div key={approach._id} className='bg-gray-50 dark:bg-gray-800/90 p-4 rounded-lg border border-gray-200 dark:border-gray-700 space-y-4'>
+              <div className="flex flex-wrap items-center gap-3 text-xl font-semibold text-gray-800 dark:text-gray-200">
                 <span>Approach {i + 1}: {approach.approachName}</span>
-                <span className="inline-flex rounded-full px-3 py-1 text-xs font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200">
+                <span className="inline-flex rounded-full px-3 py-1 text-xs font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300">
                   {approach.approachType}
                 </span>
               </div>
-              <p className='text-gray-600 dark:text-gray-300'>{approach.approachDesc}</p>
+              <p className='text-gray-700 dark:text-gray-300'>{approach.approachDesc}</p>
               <CodeDisplay code={approach.code} language={approach.language || 'python'} />
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                 <div>
-                  <h4 className='font-medium'>Time Complexity:</h4>
-                  <div>{renderInlineMathJax(approach.time_complexity)}</div>
+                  <h4 className='font-medium text-gray-800 dark:text-gray-200'>Time Complexity:</h4>
+                  <div className='text-gray-700 dark:text-gray-300'>{renderInlineMathJax(approach.time_complexity)}</div>
                 </div>
                 <div>
-                  <h4 className='font-medium'>Space Complexity:</h4>
-                  <div>{renderInlineMathJax(approach.space_complexity)}</div>
+                  <h4 className='font-medium text-gray-800 dark:text-gray-200'>Space Complexity:</h4>
+                  <div className='text-gray-700 dark:text-gray-300'>{renderInlineMathJax(approach.space_complexity)}</div>
                 </div>
               </div>
             </div>

@@ -13,6 +13,7 @@ import Practice from './pages/Practice.jsx';
 import AboutUs from './pages/About.jsx';
 import ProblemList from './pages/ProblemList.jsx';
 import TutorialPage from './pages/TutorialPage.jsx';
+import Contest from './pages/Contest.jsx';
 
 // Auth
 import Login from './components/auth/Login.jsx';
@@ -63,6 +64,7 @@ createRoot(document.getElementById('root')).render(
               <Route path="problem/*" element={<AuthLayout><Practice /></AuthLayout>} />
               <Route path="practice" element={<ProblemList />} />
               <Route path="tutorial" element={<AuthLayout><TutorialPage /></AuthLayout>} />
+              <Route path="contest" element={<AuthLayout><Contest /></AuthLayout>} />
               <Route path="about" element={<AboutUs />} />
               <Route path="profile" element={<AuthLayout><ProfilePage /></AuthLayout>} />
               <Route path="tutorial-page/*" element={<AuthLayout><DetailedPage /></AuthLayout>} />

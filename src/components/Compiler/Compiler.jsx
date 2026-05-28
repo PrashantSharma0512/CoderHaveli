@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import AceEditor from "react-ace";
 import { CgFormatLeft } from "react-icons/cg";
 import { LuFullscreen } from "react-icons/lu";
@@ -144,6 +144,22 @@ function Compiler({ testcase, quesId }) {
   const [loading, setLoading] = useState(false);
   const [isEditorLoading, setIsEditorLoading] = useState(true);
   const fontSizes = [12, 14, 16, 18, 20, 22, 24, 26, 28, 30];
+
+  const [editorInstance, setEditorInstance] = useState(null);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (!containerRef.current || !editorInstance) return;
+    const resizeObserver = new ResizeObserver(() => {
+      if (editorInstance) {
+        editorInstance.editor.resize();
+      }
+    });
+    resizeObserver.observe(containerRef.current);
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [editorInstance]);
 
   const handleEdit = (index) => {
     setEditIndex(index);
@@ -358,7 +374,7 @@ function Compiler({ testcase, quesId }) {
         </div>
 
         {/* Code Editor */}
-        <div className="flex-1">
+        <div className="flex-1" ref={containerRef}>
           <ErrorBoundary>
             {isEditorLoading ? (
               <div className="flex items-center justify-center h-64">
@@ -366,6 +382,7 @@ function Compiler({ testcase, quesId }) {
               </div>
             ) : (
               <AceEditor
+                onLoad={(editor) => setEditorInstance(editor)}
                 mode={selectedLang === "cpp" ? "c_cpp" : selectedLang}
                 theme={selectedTheme || "monokai"}
                 value={code || ""}
