@@ -39,6 +39,7 @@ import axiosInstance from "../helper/axiosInstance";
 import { CheckCircleIcon, PlayIcon, XCircleIcon, ClockIcon, CpuIcon } from "lucide-react";
 import { MdCelebration as CelebrationIcon } from 'react-icons/md';
 import Confetti from "react-confetti";
+import SubmissionReportModal from "./SubmissionModal";
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -550,7 +551,7 @@ function Compiler({ testcase, quesId }) {
                           ${output.isFullyPassed
                             ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 shadow-sm'
                             : hasAnyError(output) ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300 shadow-sm'
-                            : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 shadow-sm'
+                              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 shadow-sm'
                           }`}
                       >
                         {output.isFullyPassed ? (
@@ -697,259 +698,13 @@ function Compiler({ testcase, quesId }) {
         </div>
       </div>
 
-      {/* Submission Modal */}
-      <Modal
-        isCentered
+      <SubmissionReportModal
         isOpen={isOpen}
         onClose={onClose}
-        size={{ base: "full", md: "xl" }}
-        motionPreset="slideInBottom"
-        scrollBehavior="inside"
-      >
-        {overlay}
-        <ModalContent
-          bg="white"
-          borderRadius={{ base: 0, md: "xl" }}
-          boxShadow={{ base: "none", md: "xl" }}
-          minH={{ base: "100vh", md: "auto" }}
-          maxH={{ base: "100vh", md: "90vh" }}
-        >
-          {output?.isFullyPassed && (
-            <Confetti
-              width={window.innerWidth}
-              height={window.innerHeight}
-              recycle={false}
-              numberOfPieces={40}
-              gravity={0.15}
-              colors={confettiColors}
-              opacity={0.8}
-              tweenDuration={2000}
-              confettiSource={{
-                x: window.innerWidth / 4,
-                y: window.innerHeight / 3,
-                w: 10,
-                h: 5
-              }}
-              initialVelocityX={10}
-              initialVelocityY={15}
-            />
-          )}
-
-          <ModalHeader
-            bg={output?.isFullyPassed ? 'green.50' : hasAnyError(output) ? 'yellow.50' : 'red.50'}
-            borderBottomWidth="1px"
-            borderColor={output?.isFullyPassed ? 'green.100' : hasAnyError(output) ? 'yellow.100' : 'red.100'}
-            py={3}
-            px={4}
-          >
-            <Flex align="center">
-              <Box
-                mr={3}
-                p={1.5}
-                rounded="full"
-                bg={output?.isFullyPassed ? 'green.100' : hasAnyError(output) ? 'yellow.100' : 'red.100'}
-                color={output?.isFullyPassed ? 'green.600' : hasAnyError(output) ? 'yellow.600' : 'red.600'}
-              >
-                {output?.isFullyPassed ? (
-                  <CheckCircleIcon className="h-5 w-5" />
-                ) : (
-                  <XCircleIcon className="h-5 w-5" />
-                )}
-              </Box>
-              <Box>
-                <Text fontSize="lg" fontWeight="bold">Submission Result</Text>
-                <Text fontSize="xs" color="gray.500" noOfLines={1}>
-                  {output ? (output.isFullyPassed ? "All tests passed!" : hasAnyError(output) ? "Error occurred" : "Some tests failed") : "Processing..."}
-                </Text>
-              </Box>
-            </Flex>
-          </ModalHeader>
-
-          <ModalCloseButton
-            size="md"
-            top={3}
-            right={3}
-            _hover={{ bg: 'gray.100' }}
-          />
-
-          <ModalBody py={4} px={4}>
-            {output ? (
-              <Box>
-                {/* Error Display in Modal - Only show if there's an error */}
-                {hasAnyError(output) && (
-                  <Box mb={4} p={4} bg="yellow.50" borderRadius="md" borderLeftWidth="4px" borderColor="yellow.400">
-                    <Text fontSize="sm" fontWeight="bold" color="yellow.800" mb={2}>Error:</Text>
-                    <Code p={2} fontSize="xs" borderRadius="md" bg="white" display="block" whiteSpace="pre-wrap">
-                      {getFirstError(output)}
-                    </Code>
-                  </Box>
-                )}
-
-                {/* Progress Section - Only show if no error */}
-                {!hasAnyError(output) && (
-                  <>
-                    <Flex
-                      direction={{ base: 'column', md: 'row' }}
-                      align="center"
-                      justify="space-between"
-                      mb={6}
-                      gap={4}
-                    >
-                      <Box position="relative">
-                        <CircularProgress
-                          value={(output.passedTestCases / output.totalTestCases) * 100}
-                          color={output.isFullyPassed ? 'green.400' : 'red.400'}
-                          size={{ base: "90px", md: "120px" }}
-                          thickness="8px"
-                          trackColor="gray.100"
-                          capIsRound
-                        >
-                          <CircularProgressLabel>
-                            <Box textAlign="center">
-                              <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold">
-                                {output.passedTestCases}/{output.totalTestCases}
-                              </Text>
-                              <Text fontSize="2xs" color="gray.500">PASSED</Text>
-                            </Box>
-                          </CircularProgressLabel>
-                        </CircularProgress>
-                      </Box>
-
-                      <Box flex={1} w="full">
-                        <Text fontSize={{ base: "md", md: "lg" }} mb={2}>
-                          {output.isFullyPassed ? "🎉 All tests passed!" : `Passed ${output.passedTestCases}/${output.totalTestCases}`}
-                        </Text>
-
-                        <Progress
-                          value={(output.passedTestCases / output.totalTestCases) * 100}
-                          size="sm"
-                          colorScheme={output.isFullyPassed ? 'green' : 'red'}
-                          borderRadius="full"
-                          mb={1}
-                        />
-
-                        <Flex justify="space-between" fontSize="xs" color="gray.600">
-                          <Text>Progress</Text>
-                          <Text fontWeight="medium">
-                            {Math.round((output.passedTestCases / output.totalTestCases) * 100)}%
-                          </Text>
-                        </Flex>
-                      </Box>
-                    </Flex>
-
-                    {/* Failed Test Cases in Modal */}
-                    {output.testResults && output.testResults.some(test => !test.isPassed) && (
-                      <Box
-                        borderTopWidth="1px"
-                        borderColor="gray.100"
-                        pt={4}
-                      >
-                        <Text fontSize="sm" fontWeight="bold" mb={3}>
-                           Failed Test Cases
-                        </Text>
-
-                        <Box
-                          maxH={{ base: "200px", md: "300px" }}
-                          overflowY="auto"
-                          pr={1}
-                          className="custom-scrollbar"
-                        >
-                          {output.testResults.filter(test => !test.isPassed).map((testCase, index) => (
-                            <Box
-                              key={index}
-                              mb={3}
-                              p={3}
-                              bg="gray.50"
-                              borderRadius="md"
-                              borderLeftWidth="3px"
-                              borderColor="red.400"
-                            >
-                              <VStack align="stretch" spacing={2}>
-                                <Box>
-                                  <Text fontSize="xs" color="gray.500" mb={1}>Input:</Text>
-                                  <Code
-                                    p={2}
-                                    fontSize="xs"
-                                    borderRadius="md"
-                                    bg="white"
-                                    display="block"
-                                    whiteSpace="pre-wrap"
-                                    overflowX="auto"
-                                  >
-                                    {testCase.input}
-                                  </Code>
-                                </Box>
-
-                                <Box>
-                                  <Text fontSize="xs" color="gray.500" mb={1}>Expected:</Text>
-                                  <Code
-                                    p={2}
-                                    fontSize="xs"
-                                    borderRadius="md"
-                                    bg="green.50"
-                                    color="green.700"
-                                    display="block"
-                                    whiteSpace="pre-wrap"
-                                  >
-                                    {testCase.output || testCase.expected}
-                                  </Code>
-                                </Box>
-
-                                <Box>
-                                  <Text fontSize="xs" color="gray.500" mb={1}>Actual:</Text>
-                                  <Code
-                                    p={2}
-                                    fontSize="xs"
-                                    borderRadius="md"
-                                    bg="red.50"
-                                    color="red.700"
-                                    display="block"
-                                    whiteSpace="pre-wrap"
-                                  >
-                                    {testCase.actualOutput || testCase.actual || 'No output'}
-                                  </Code>
-                                </Box>
-                              </VStack>
-                            </Box>
-                          ))}
-                        </Box>
-                      </Box>
-                    )}
-                  </>
-                )}
-              </Box>
-            ) : (
-              <Flex direction="column" align="center" justify="center" py={8}>
-                <Spinner
-                  size="lg"
-                  color="blue.500"
-                  thickness="3px"
-                  speed="0.65s"
-                  mb={3}
-                />
-                <Text fontSize="md" color="gray.600">Evaluating solution...</Text>
-              </Flex>
-            )}
-          </ModalBody>
-
-          <ModalFooter
-            borderTopWidth="1px"
-            borderColor="gray.100"
-            py={3}
-            px={4}
-          >
-            <Button
-              colorScheme={output?.isFullyPassed ? 'green' : 'blue'}
-              size="md"
-              onClick={onClose}
-              width="full"
-              rightIcon={output?.isFullyPassed ? <CelebrationIcon className="h-4 w-4" /> : null}
-            >
-              {output?.isFullyPassed ? "Done" : "Close"}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+        output={output}
+        loading={loading}
+        onSubmitAgain={() => setCode(code)} // or whatever "submit again" should do
+      />
     </>
   );
 }
