@@ -8,7 +8,7 @@ export default function NotFound() {
       </div>
       <h2 className="text-2xl font-semibold mb-2">Oops! Page Not Found</h2>
       <p className="text-gray-400 mb-6">The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
-      <Link to="/" className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-all">Go Home</Link>
+      <Link to="/" className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-all shadow-md">Go Home</Link>
     </div>
   );
 }

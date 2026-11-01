@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from "react";
 import { SlArrowRight, SlArrowLeft } from "react-icons/sl";
 

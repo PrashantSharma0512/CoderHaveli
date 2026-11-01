@@ -54,19 +54,20 @@ const Header = () => {
         console.error("Error fetching cart count:", error);
       }
     };
-
-    fetchUser();
-    fetchCartCount();
+    if (userId) {
+      fetchUser();
+      fetchCartCount();
+    }
   }, [userId])
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white shadow-md dark:bg-gray-900 transition-colors duration-300 dark:border-b dark:border-white">
+      <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-xs dark:shadow-none">
         <nav className="container mx-auto px-4 py-3 flex justify-between items-center">
           {/* Logo - Centered on mobile */}
           <Link
             to="/"
-            className="text-4xl font-bold text-amber-600 dark:text-indigo-400 max-md:mx-auto"
+            className="text-4xl font-bold text-amber-600 dark:text-amber-400 max-md:mx-auto"
             aria-label="CoderHaveli Home"
             style={{ fontFamily: "'Dancing Script', cursive" }}
           >
@@ -89,8 +90,8 @@ const Header = () => {
                     className={({ isActive }) =>
                       `text-lg font-medium transition-colors duration-200
      ${isActive
-                        ? "text-amber-600 dark:text-indigo-400 font-semibold"
-                        : "text-gray-700 dark:text-gray-200 hover:text-amber-600 dark:hover:text-indigo-400"
+                        ? "text-amber-600 dark:text-amber-400 font-semibold"
+                        : "text-gray-700 dark:text-gray-200 hover:text-amber-600 dark:hover:text-amber-400"
                       }`
                     }
                   >
@@ -104,16 +105,16 @@ const Header = () => {
           {/* Desktop Right Side Items */}
           <div className="hidden md:flex items-center space-x-6">
             <button
-              className="text-gray-700 dark:text-gray-200 hover:text-amber-600 dark:hover:text-indigo-400 transition-colors duration-200 relative"
+              className="text-gray-700 dark:text-gray-200 hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-200 relative"
               aria-label="Notifications"
             >
               <IoMdNotificationsOutline size={26} />
             </button>
 
             <div className="flex items-center space-x-4 " onClick={() => navigate('/addtocart')}>
-              <button className="p-2 rounded-full bg-amber-100 dark:bg-indigo-900 text-amber-700 dark:text-indigo-300 relative cursor-pointer">
+              <button className="p-2 rounded-full bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 relative cursor-pointer">
                 <FaShoppingCart className="text-lg" />
-                <span className="absolute -top-1 -right-1 bg-amber-500 dark:bg-indigo-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-amber-500 dark:bg-amber-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                   {cartCount}
                 </span>
               </button>
@@ -125,7 +126,7 @@ const Header = () => {
                 <div className="relative">
                   <button
                     onClick={toggleAccountMenu}
-                    className="flex items-center text-gray-700 dark:text-gray-200 hover:text-amber-600 dark:hover:text-indigo-400 transition-colors duration-200"
+                    className="flex items-center text-gray-700 dark:text-gray-200 hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-200"
                     aria-label="Account"
                   >
                     {user?.avatar ? (
@@ -177,7 +178,7 @@ const Header = () => {
                           onClick={() => setShowAccountMenu(false)}
                         >
                           <div className="p-1.5 mr-2 rounded-md bg-amber-100/50 dark:bg-gray-700">
-                            <FaUser className="text-amber-600 dark:text-indigo-400 text-xs" />
+                            <FaUser className="text-amber-600 dark:text-amber-400 text-xs" />
                           </div>
                           <span>Profile</span>
                           <span className="ml-auto text-xs text-gray-400 dark:text-gray-500">↗</span>
@@ -190,7 +191,7 @@ const Header = () => {
                           onClick={() => setShowAccountMenu(false)}
                         >
                           <div className="p-1.5 mr-2 rounded-md bg-amber-100/50 dark:bg-gray-700">
-                            <FaLaptopCode className="text-amber-600 dark:text-indigo-400 text-xs" />
+                            <FaLaptopCode className="text-amber-600 dark:text-amber-400 text-xs" />
                           </div>
                           <span>My Course</span>
                           <span className="ml-auto text-xs text-gray-400 dark:text-gray-500">↗</span>
@@ -203,7 +204,7 @@ const Header = () => {
                           onClick={() => setShowAccountMenu(false)}
                         >
                           <div className="p-1.5 mr-2 rounded-md bg-amber-100/50 dark:bg-gray-700">
-                            <FaSignOutAlt className="text-amber-600 dark:text-indigo-400 text-xs" />
+                            <FaSignOutAlt className="text-amber-600 dark:text-amber-400 text-xs" />
                           </div>
                           <span>Logout</span>
                         </Logout>
@@ -215,7 +216,7 @@ const Header = () => {
                 <div className="relative">
                   <button
                     onClick={toggleAccountMenu}
-                    className="flex items-center text-gray-700 dark:text-gray-200 hover:text-amber-600 dark:hover:text-indigo-400 transition-colors duration-200"
+                    className="flex items-center text-gray-700 dark:text-gray-200 hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-200"
                     aria-label="Account"
                   >
                     {user?.avatar ? (
@@ -234,7 +235,7 @@ const Header = () => {
                     <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl py-1 z-50 border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-200 origin-top-right">
                       <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-amber-50/30 dark:bg-gray-700/50">
                         <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Welcome to CoderHaveli</p>
-                        <p className="text-sm text-amber-600 dark:text-indigo-400 mt-1">Sign in to continue</p>
+                        <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">Sign in to continue</p>
                       </div>
 
                       <Link
@@ -242,7 +243,7 @@ const Header = () => {
                         className="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-50/50 dark:hover:bg-gray-700 transition-colors"
                         onClick={() => setShowAccountMenu(false)}
                       >
-                        <FaUser className="mr-3 text-amber-500 dark:text-indigo-400" />
+                        <FaUser className="mr-3 text-amber-500 dark:text-amber-400" />
                         <div>
                           <p className="font-medium">Login</p>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Access your account</p>
@@ -255,7 +256,7 @@ const Header = () => {
                           className="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-amber-50/50 dark:hover:bg-gray-700 transition-colors"
                           onClick={() => setShowAccountMenu(false)}
                         >
-                          <svg className="mr-3 text-amber-500 dark:text-indigo-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="mr-3 text-amber-500 dark:text-amber-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                           </svg>
                           <div>
@@ -290,7 +291,7 @@ const Header = () => {
       <Drawer placement="left" onClose={onClose} isOpen={isOpen} size="xs">
         <DrawerContent className="bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
           <DrawerHeader className="border-b border-gray-200 dark:border-gray-700 flex justify-between items-center p-4 bg-white dark:bg-gray-900">
-            <span className="text-2xl font-bold text-amber-600 dark:text-indigo-400" style={{ fontFamily: "'Dancing Script', cursive" }}>CoderHaveli</span>
+            <span className="text-2xl font-bold text-amber-600 dark:text-amber-400" style={{ fontFamily: "'Dancing Script', cursive" }}>CoderHaveli</span>
             <button
               onClick={onClose}
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors"
@@ -315,7 +316,7 @@ const Header = () => {
                       className={({ isActive }) =>
                         `flex items-center px-4 py-3 transition-colors duration-200
        ${isActive
-                          ? "bg-amber-100/50 dark:bg-gray-800 text-amber-600 dark:text-indigo-400"
+                          ? "bg-amber-100/50 dark:bg-gray-800 text-amber-600 dark:text-amber-400"
                           : "text-gray-700 dark:text-gray-200 hover:bg-amber-50/50 dark:hover:bg-gray-800"
                         }`
                       }
@@ -341,7 +342,7 @@ const Header = () => {
                       />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-gray-700 flex items-center justify-center mr-3">
-                        <RiAccountCircleLine className="text-amber-600 dark:text-indigo-400 text-2xl" />
+                        <RiAccountCircleLine className="text-amber-600 dark:text-amber-400 text-2xl" />
                       </div>
                     )}
                     <div>
@@ -355,7 +356,7 @@ const Header = () => {
                     <Link
                       to="/profile"
                       onClick={onClose}
-                      className="flex items-center justify-center py-3 px-4 rounded-lg bg-amber-50 dark:bg-gray-800 hover:bg-amber-100 dark:hover:bg-gray-700 transition-colors duration-200 text-amber-600 dark:text-indigo-400"
+                      className="flex items-center justify-center py-3 px-4 rounded-lg bg-amber-50 dark:bg-gray-800 hover:bg-amber-100 dark:hover:bg-gray-700 transition-colors duration-200 text-amber-600 dark:text-amber-400"
                     >
                       <FaUser className="mr-2 flex-shrink-0" />
                       <span className="truncate">Profile</span>
@@ -363,14 +364,14 @@ const Header = () => {
                     <Link
                       to="/mycourse"
                       onClick={onClose}
-                      className="flex items-center justify-center py-3 px-4 rounded-lg bg-amber-50 dark:bg-gray-800 hover:bg-amber-100 dark:hover:bg-gray-700 transition-colors duration-200 text-amber-600 dark:text-indigo-400"
+                      className="flex items-center justify-center py-3 px-4 rounded-lg bg-amber-50 dark:bg-gray-800 hover:bg-amber-100 dark:hover:bg-gray-700 transition-colors duration-200 text-amber-600 dark:text-amber-400"
                     >
                       <FaLaptopCode className="mr-2 flex-shrink-0" />
                       <span className="truncate">My Courses</span>
                     </Link>
                     <Logout
                       onClick={onClose}
-                      className="flex items-center justify-center py-3 px-4 rounded-lg bg-amber-50 dark:bg-gray-800 hover:bg-amber-100 dark:hover:bg-gray-700 transition-colors duration-200 text-amber-600 dark:text-indigo-400 sm:col-span-2"
+                      className="flex items-center justify-center py-3 px-4 rounded-lg bg-amber-50 dark:bg-gray-800 hover:bg-amber-100 dark:hover:bg-gray-700 transition-colors duration-200 text-amber-600 dark:text-amber-400 sm:col-span-2"
                     >
                       <FaSignOutAlt className="mr-2 flex-shrink-0" />
                       <span className="truncate">Logout</span>
@@ -382,14 +383,14 @@ const Header = () => {
                   <Link
                     to="/login"
                     onClick={onClose}
-                    className="block w-full py-2.5 px-4 rounded-lg bg-amber-600 dark:bg-indigo-600 hover:bg-amber-700 dark:hover:bg-indigo-700 text-white text-center font-medium transition-colors duration-200"
+                    className="block w-full py-2.5 px-4 rounded-lg bg-amber-600 dark:bg-amber-500 hover:bg-amber-700 dark:hover:bg-amber-600 text-white dark:text-gray-950 font-bold text-center transition-colors duration-200"
                   >
                     Sign In
                   </Link>
                   <Link
                     to="/register"
                     onClick={onClose}
-                    className="block w-full py-2.5 px-4 rounded-lg border border-amber-600 dark:border-indigo-600 text-amber-600 dark:text-indigo-400 hover:bg-amber-50/50 dark:hover:bg-gray-800 text-center font-medium transition-colors duration-200"
+                    className="block w-full py-2.5 px-4 rounded-lg border border-amber-600 dark:border-amber-500 text-amber-600 dark:text-amber-400 hover:bg-amber-50/50 dark:hover:bg-gray-800 text-center font-medium transition-colors duration-200"
                   >
                     Create Account
                   </Link>

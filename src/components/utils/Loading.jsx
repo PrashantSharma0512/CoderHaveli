@@ -13,16 +13,16 @@ const Loading = () => {
       >
         <div className="relative flex items-center justify-center">
           <motion.div
-            className="w-32 h-32 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 dark:from-indigo-500 dark:to-indigo-700 animate-pulse"
+            className="w-32 h-32 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 dark:from-amber-500 dark:to-amber-600 animate-pulse"
             animate={{ rotate: 360 }}
             transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
           />
-          <div className="absolute flex  space-x-2 animate-bounce text-xl font-bold text-amber-600 dark:text-indigo-400">
+          <div className="absolute flex  space-x-2 animate-bounce text-xl font-bold text-amber-600 dark:text-amber-400">
             <span>Coder</span>
             <span>Haveli</span>
           </div>
         </div>
-        <p className="mt-6 text-lg font-medium tracking-wide text-amber-500 dark:text-indigo-300 flex items-center gap-2">
+        <p className="mt-6 text-lg font-medium tracking-wide text-amber-500 dark:text-amber-300 flex items-center gap-2">
           <motion.span
             animate={{ rotate: 360 }}
             transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}

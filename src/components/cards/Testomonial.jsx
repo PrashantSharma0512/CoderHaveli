@@ -1,3 +1,4 @@
+'use client';
 
 import { useState } from 'react';
 import { FaQuoteLeft } from 'react-icons/fa';
@@ -17,17 +18,17 @@ export default function TestimonialSection() {
     };
 
     return (
-        <section className='flex flex-col items-center gap-8 py-16 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-200 transition-colors duration-300'>
+        <section className='flex flex-col items-center gap-8 py-16 bg-slate-50 dark:bg-gray-950 text-gray-800 dark:text-gray-200'>
             <h2 className='text-3xl font-semibold'>What Our Users Say</h2>
-            <div className='bg-white dark:bg-gray-700 p-8 rounded-xl shadow-lg w-[90%] md:w-[60%] text-center border border-gray-200 dark:border-gray-600 transition-all duration-300 hover:shadow-xl'>
-                <FaQuoteLeft className='text-amber-500 dark:text-indigo-400 text-3xl mx-auto mb-4' />
+            <div className='bg-white dark:bg-gray-900 p-8 rounded-xl shadow-xs dark:shadow-none w-[90%] md:w-[60%] text-center border border-gray-200 dark:border-gray-800'>
+                <FaQuoteLeft className='text-amber-500 dark:text-amber-400 text-3xl mx-auto mb-4' />
                 <p className='text-lg italic'>"{testimonials[currentIndex].feedback}"</p>
-                <h4 className='mt-6 font-bold text-amber-600 dark:text-indigo-400'>{testimonials[currentIndex].name}</h4>
+                <h4 className='mt-6 font-bold text-amber-600 dark:text-amber-400'>{testimonials[currentIndex].name}</h4>
                 <p className='text-sm text-gray-500 dark:text-gray-400'>{testimonials[currentIndex].role}</p>
             </div>
             <button 
                 onClick={nextTestimonial} 
-                className='text-white bg-amber-600 hover:bg-amber-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 px-6 py-3 rounded-lg font-semibold transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg'
+                className='text-white bg-amber-500 hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-600 px-6 py-3 rounded-lg font-semibold cursor-pointer shadow-xs dark:shadow-none'
             >
                 Next Testimonial
             </button>

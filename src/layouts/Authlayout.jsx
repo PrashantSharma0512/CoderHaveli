@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { useSelector } from 'react-redux';
@@ -6,30 +8,33 @@ function AuthLayout({ children }) {
     const location = useLocation();
     const { isAuthenticated, loading, initialized } = useSelector(state => state.login);
     const navigate = useNavigate();
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        if (initialized && !isAuthenticated) {
+        setMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (mounted && initialized && !isAuthenticated) {
             navigate('/login', {
                 replace: true,
                 state: { from: location.pathname }
             });
         }
-    }, [isAuthenticated, initialized, navigate, location.pathname]);
+    }, [mounted, isAuthenticated, initialized, navigate, location.pathname]);
 
-
-    
-    if (loading || !initialized) {
+    if (!mounted || loading || !initialized) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[300px] bg-gray-50 dark:bg-gray-900 space-y-4 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div className="relative">
                     {/* Animated code brackets */}
-                    <div className="absolute -left-6 top-0 text-4xl text-indigo-500 dark:text-indigo-400 animate-bounce">
+                    <div className="absolute -left-6 top-0 text-4xl text-amber-500 dark:text-amber-400 animate-bounce">
                         {'{'}
                     </div>
                     <div className="flex items-center justify-center h-16 w-16 bg-white dark:bg-gray-800 rounded-full shadow-md">
-                        <div className="animate-spin h-8 w-8 border-4 border-indigo-500 dark:border-indigo-400 border-t-transparent rounded-full"></div>
+                        <div className="animate-spin h-8 w-8 border-4 border-amber-500 dark:border-amber-400 border-t-transparent rounded-full"></div>
                     </div>
-                    <div className="absolute -right-6 top-0 text-4xl text-indigo-500 dark:text-indigo-400 animate-bounce delay-100">
+                    <div className="absolute -right-6 top-0 text-4xl text-amber-500 dark:text-amber-400 animate-bounce delay-100">
                         {'}'}
                     </div>
                 </div>
@@ -46,7 +51,7 @@ function AuthLayout({ children }) {
                 {/* Simulated progress bar with coding-themed animation */}
                 <div className="w-full max-w-xs bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-4 overflow-hidden">
                     <div
-                        className="bg-indigo-500 dark:bg-indigo-400 h-2 rounded-full animate-pulse"
+                        className="bg-amber-500 dark:bg-amber-400 h-2 rounded-full animate-pulse"
                         style={{
                             width: '65%',
                             animationDuration: '2s',

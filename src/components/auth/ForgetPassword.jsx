@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from "react";
 import axiosInstance from "../helper/axiosInstance";
 import { useNavigate } from "react-router";

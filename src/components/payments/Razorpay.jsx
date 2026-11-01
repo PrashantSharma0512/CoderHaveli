@@ -11,9 +11,9 @@ export default function PaymentButton({ amount }) {
 
       // Step 2: Configure Razorpay checkout
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID, // your public key (from .env)
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '', // your public key (from .env)
         amount: order.amount || 999,
-        currency: order.currency || INR,
+        currency: order.currency || "INR",
         name: "CoderHaveli",
         description: "Course Purchase",
         order_id: order.id || "testing",
@@ -32,7 +32,7 @@ export default function PaymentButton({ amount }) {
           contact: "9999999999",
         },
         theme: {
-          color: "#6366f1",
+          color: "#f59e0b",
         },
       };
 
@@ -47,7 +47,7 @@ export default function PaymentButton({ amount }) {
   return (
     <button
       onClick={handlePayment}
-      className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+      className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600"
     >
       Pay ₹{amount}
     </button>

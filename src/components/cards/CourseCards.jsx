@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from "react";
 import { FiShoppingCart, FiStar, FiClock, FiShoppingBag } from "react-icons/fi";
 import { Link } from "react-router";
@@ -6,7 +8,7 @@ import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import { addItem } from "../../store/slice/cartSlice";
 
-export default function CourseCard({ imageUrl, title, price, category, duration, rating = 4.0, _id, cart, setCart }) {
+export default function CourseCard({ imageUrl, title, price, category, duration, rating = 4.0, _id, cart, setCart, description, ...props }) {
   const [isInCart, setIsInCart] = useState(false);
   const userId = useSelector(state => state.login.userId);
   const dispatch = useDispatch();
@@ -57,10 +59,10 @@ export default function CourseCard({ imageUrl, title, price, category, duration,
   };
 
   return (
-    <div className="w-full max-w-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+    <div className="w-full max-w-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-xs hover:shadow-md dark:shadow-none hover:border-amber-400 dark:hover:border-amber-500/50 overflow-hidden">
       <Link to={`/tutorial-page?id=${_id}&type=course`}>
         {/* Product Image */}
-        <div className="relative bg-gray-100 dark:bg-gray-700">
+        <div className="relative bg-gray-50 dark:bg-gray-950">
           <img
             className="w-full h-24 sm:h-32 md:h-40 lg:h-48 object-contain p-2 sm:p-4 md:p-6"
             src={imageUrl}
@@ -69,7 +71,7 @@ export default function CourseCard({ imageUrl, title, price, category, duration,
           />
           {/* Category Badge */}
           {category && (
-            <span className="absolute top-1 sm:top-2 md:top-3 left-1 sm:left-2 md:left-3 bg-amber-500 dark:bg-indigo-600 text-white text-xs font-semibold px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 rounded-full max-w-[45%] truncate">
+            <span className="absolute top-1 sm:top-2 md:top-3 left-1 sm:left-2 md:left-3 bg-amber-500 dark:bg-amber-500 text-white text-xs font-semibold px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 rounded-full max-w-[45%] truncate">
               {category}
             </span>
           )}
@@ -134,14 +136,14 @@ export default function CourseCard({ imageUrl, title, price, category, duration,
               <div className="flex gap-1">
                 <Link
                   to={`/checkout?id=${_id}&type=course`}
-                  className="w-full sm:w-auto flex items-center justify-center text-white bg-green-600 hover:bg-amber-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 font-medium rounded-lg px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm transition-colors duration-200 cursor-pointer"
+                  className="w-full sm:w-auto flex items-center justify-center text-white bg-green-600 hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-600 font-medium rounded-lg px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm transition-colors duration-200 cursor-pointer"
                 >
                   <FiShoppingBag className="mr-1 sm:mr-2" size={12} />
                   Buy Now
                 </Link>
                 <button
                   onClick={addToCart} // Fixed: removed parameter since we're using the component's _id
-                  className="w-full sm:w-auto flex items-center justify-center text-white bg-amber-500 hover:bg-amber-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 font-medium rounded-lg px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm transition-colors duration-200 cursor-pointer"
+                  className="w-full sm:w-auto flex items-center justify-center text-white bg-amber-500 hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-600 font-medium rounded-lg px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm transition-colors duration-200 cursor-pointer"
                 >
                   <FiShoppingCart className="mr-1 sm:mr-2" size={12} />
                   Add to Cart

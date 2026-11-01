@@ -10,18 +10,18 @@ export default function FAQSection({faqs, heading}) {
     };
 
     return (
-        <section className='flex flex-col items-center gap-8 py-16 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300'>
+        <section className='flex flex-col items-center gap-8 py-16 bg-white dark:bg-gray-950 text-gray-800 dark:text-gray-200'>
             {heading && <h2 className='text-3xl font-semibold'>Frequently Asked Questions</h2>}
             <div className='w-[90%] md:w-[60%]'>
                 {faqs.map((faq, index) => (
-                    <div key={index} className='mb-4 border-b border-gray-200 dark:border-gray-700 last:border-0'>
+                    <div key={index} className='mb-4 border-b border-gray-200 dark:border-gray-800 last:border-0'>
                         <button 
-                            className='w-full flex justify-between items-center p-4 text-left focus:outline-none hover:bg-amber-50 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200' 
+                            className='w-full flex justify-between items-center p-4 text-left focus:outline-none hover:bg-amber-50/50 dark:hover:bg-gray-900 rounded-lg' 
                             onClick={() => toggleFAQ(index)}
                         >
                             <span className='text-lg font-medium text-gray-900 dark:text-white'>{faq.question}</span>
                             {openIndex === index ? 
-                                <FaChevronUp className='text-amber-500 dark:text-indigo-400' /> : 
+                                <FaChevronUp className='text-amber-500 dark:text-amber-400' /> : 
                                 <FaChevronDown className='text-gray-500 dark:text-gray-400' />
                             }
                         </button>

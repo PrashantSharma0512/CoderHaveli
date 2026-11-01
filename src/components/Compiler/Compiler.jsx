@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+'use client';
+
+import React, { useEffect, useState, useRef } from "react";
 import AceEditor from "react-ace";
 import { CgFormatLeft } from "react-icons/cg";
 import { LuFullscreen } from "react-icons/lu";
@@ -39,6 +41,7 @@ import axiosInstance from "../helper/axiosInstance";
 import { CheckCircleIcon, PlayIcon, XCircleIcon, ClockIcon, CpuIcon } from "lucide-react";
 import { MdCelebration as CelebrationIcon } from 'react-icons/md';
 import Confetti from "react-confetti";
+import SubmissionReportModal from "./SubmissionModal";
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -102,7 +105,7 @@ ace.config.set(
   "https://cdn.jsdelivr.net/npm/ace-builds@1.32.3/src-noconflict/"
 );
 
-function Compiler({ testcase, quesId }) {
+function Compiler({ testcase, quesId, starterCodes }) {
   // Language options
   const options = [
     { name: "JavaScript", value: "javascript" },
@@ -128,8 +131,14 @@ function Compiler({ testcase, quesId }) {
 
   // Test cases
   const [testcases, setTestcases] = useState(
-    testcase.map((tc, index) => ({ ...tc, id: index }))
+    (testcase || []).map((tc, index) => ({ ...tc, id: index }))
   );
+
+  useEffect(() => {
+    if (Array.isArray(testcase) && testcase.length > 0) {
+      setTestcases(testcase.map((tc, index) => ({ ...tc, id: index })));
+    }
+  }, [testcase]);
 
   const [selectedLang, setSelectedLang] = useState('javascript');
   const [selectedFont, setSelectedFont] = useState(18);
@@ -144,6 +153,24 @@ function Compiler({ testcase, quesId }) {
   const [loading, setLoading] = useState(false);
   const [isEditorLoading, setIsEditorLoading] = useState(true);
   const fontSizes = [12, 14, 16, 18, 20, 22, 24, 26, 28, 30];
+
+  const [editorInstance, setEditorInstance] = useState(null);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (!containerRef.current || !editorInstance) return;
+    const resizeObserver = new ResizeObserver(() => {
+      if (typeof editorInstance?.resize === 'function') {
+        editorInstance.resize();
+      } else if (typeof editorInstance?.editor?.resize === 'function') {
+        editorInstance.editor.resize();
+      }
+    });
+    resizeObserver.observe(containerRef.current);
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [editorInstance]);
 
   const handleEdit = (index) => {
     setEditIndex(index);
@@ -233,23 +260,42 @@ function Compiler({ testcase, quesId }) {
   };
 
   useEffect(() => {
+    if (!quesId) return;
+
+    // Fast path: Use embedded starter code immediately (0ms latency, 0 network requests)
+    const langKey = selectedLang?.toLowerCase();
+    if (starterCodes && starterCodes[langKey]) {
+      setCode(starterCodes[langKey]);
+      setIsEditorLoading(false);
+      return;
+    }
+
+    let isCancelled = false;
     const fetchStarterCode = async () => {
       setIsEditorLoading(true);
       try {
         const response = await axiosInstance.get(
           `/api/problem/get-starter-code?quesId=${quesId}&language=${selectedLang}`
         );
-        setCode(response.data.code || "");
-
+        if (!isCancelled) {
+          setCode(response.data.code || "");
+        }
       } catch (error) {
         console.error("Error in Fetching Starter Code", error);
-        setCode("");
+        if (!isCancelled) {
+          setCode("");
+        }
       } finally {
-        setIsEditorLoading(false);
+        if (!isCancelled) {
+          setIsEditorLoading(false);
+        }
       }
     };
     fetchStarterCode();
-  }, [quesId, selectedLang]);
+    return () => {
+      isCancelled = true;
+    };
+  }, [quesId, selectedLang, starterCodes]);
 
   const confettiColors = useColorModeValue(
     ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722'],
@@ -282,13 +328,13 @@ function Compiler({ testcase, quesId }) {
         {/* Editor Header */}
         <div className="flex justify-between items-center p-2 bg-gray-100 dark:bg-gray-800">
           <div className="flex items-center gap-4">
-            <HiOutlineCode size={24} className="text-amber-600 dark:text-indigo-400" />
+            <HiOutlineCode size={24} className="text-amber-600 dark:text-amber-400" />
 
             {/* Language Selector */}
             <select
               value={selectedLang}
               onChange={(e) => setSelectedLang(e.target.value)}
-              className="p-1.5 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-indigo-500"
+              className="p-1.5 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-500"
             >
               {options.map((option) => (
                 <option
@@ -305,7 +351,7 @@ function Compiler({ testcase, quesId }) {
             <select
               value={selectedTheme}
               onChange={(e) => setSelectedTheme(e.target.value)}
-              className="p-1.5 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-indigo-500 hidden md:block"
+              className="p-1.5 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-500 hidden md:block"
             >
               {aceThemes.map((t) => (
                 <option
@@ -322,7 +368,7 @@ function Compiler({ testcase, quesId }) {
             <select
               value={selectedFont}
               onChange={(e) => setSelectedFont(Number(e.target.value))}
-              className="p-1.5 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-indigo-500 hidden md:block"
+              className="p-1.5 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-500 hidden md:block"
             >
               {fontSizes.map((size) => (
                 <option
@@ -358,7 +404,7 @@ function Compiler({ testcase, quesId }) {
         </div>
 
         {/* Code Editor */}
-        <div className="flex-1">
+        <div className="flex-1" ref={containerRef}>
           <ErrorBoundary>
             {isEditorLoading ? (
               <div className="flex items-center justify-center h-64">
@@ -366,6 +412,7 @@ function Compiler({ testcase, quesId }) {
               </div>
             ) : (
               <AceEditor
+                onLoad={(editor) => setEditorInstance(editor)}
                 mode={selectedLang === "cpp" ? "c_cpp" : selectedLang}
                 theme={selectedTheme || "monokai"}
                 value={code || ""}
@@ -414,7 +461,7 @@ function Compiler({ testcase, quesId }) {
                   borderBottom: '2px solid',
                   borderColor: 'amber.600'
                 }}
-                className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400"
+                className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-400"
               >
                 <GrTest /> Test Cases
               </Tab>
@@ -424,7 +471,7 @@ function Compiler({ testcase, quesId }) {
                   borderBottom: '2px solid',
                   borderColor: 'amber.600'
                 }}
-                className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-indigo-400"
+                className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-400"
               >
                 <HiOutlineCode /> Results
               </Tab>
@@ -471,7 +518,7 @@ function Compiler({ testcase, quesId }) {
                               </button>
                               <button
                                 onClick={handleUpdate}
-                                className="px-3 py-1 text-sm bg-amber-500 dark:bg-indigo-600 text-white rounded flex items-center gap-1"
+                                className="px-3 py-1 text-sm bg-amber-500 dark:bg-amber-500 text-white rounded flex items-center gap-1"
                               >
                                 <FiSave size={14} /> Save
                               </button>
@@ -487,7 +534,7 @@ function Compiler({ testcase, quesId }) {
                               <div className="flex gap-1">
                                 <button
                                   onClick={() => handleEdit(index)}
-                                  className="p-1 text-gray-500 hover:text-amber-600 dark:hover:text-indigo-400"
+                                  className="p-1 text-gray-500 hover:text-amber-600 dark:hover:text-amber-400"
                                 >
                                   <GrFormEdit size={18} />
                                 </button>
@@ -513,14 +560,14 @@ function Compiler({ testcase, quesId }) {
               <TabPanel>
                 <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-4 md:p-6 min-h-32 shadow-md transition-all duration-300 border border-gray-200 dark:border-gray-700">
                   {loading ? (
-                    <div className="flex flex-col items-center justify-center h-32 space-y-3 text-indigo-600 dark:text-indigo-400">
+                    <div className="flex flex-col items-center justify-center h-32 space-y-3 text-amber-600 dark:text-amber-400">
                       <div className="relative">
                         <Spinner size="lg" />
                       </div>
                       <p className="text-sm font-medium text-center">Executing your code, please wait...</p>
                       <div className="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700 max-w-xs">
                         <div
-                          className="bg-indigo-600 h-1.5 rounded-full transition-all duration-300 animate-pulse"
+                          className="bg-amber-600 h-1.5 rounded-full transition-all duration-300 animate-pulse"
                           style={{ width: `70%` }}
                         ></div>
                       </div>
@@ -533,7 +580,7 @@ function Compiler({ testcase, quesId }) {
                           ${output.isFullyPassed
                             ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 shadow-sm'
                             : hasAnyError(output) ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300 shadow-sm'
-                            : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 shadow-sm'
+                              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 shadow-sm'
                           }`}
                       >
                         {output.isFullyPassed ? (
@@ -669,7 +716,7 @@ function Compiler({ testcase, quesId }) {
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center h-24 text-gray-500 dark:text-gray-400 italic space-y-2">
-                      <PlayIcon className="h-6 w-6 text-indigo-400" />
+                      <PlayIcon className="h-6 w-6 text-amber-400" />
                       <p className="text-center">Run your code to see results</p>
                     </div>
                   )}
@@ -680,259 +727,13 @@ function Compiler({ testcase, quesId }) {
         </div>
       </div>
 
-      {/* Submission Modal */}
-      <Modal
-        isCentered
+      <SubmissionReportModal
         isOpen={isOpen}
         onClose={onClose}
-        size={{ base: "full", md: "xl" }}
-        motionPreset="slideInBottom"
-        scrollBehavior="inside"
-      >
-        {overlay}
-        <ModalContent
-          bg="white"
-          borderRadius={{ base: 0, md: "xl" }}
-          boxShadow={{ base: "none", md: "xl" }}
-          minH={{ base: "100vh", md: "auto" }}
-          maxH={{ base: "100vh", md: "90vh" }}
-        >
-          {output?.isFullyPassed && (
-            <Confetti
-              width={window.innerWidth}
-              height={window.innerHeight}
-              recycle={false}
-              numberOfPieces={40}
-              gravity={0.15}
-              colors={confettiColors}
-              opacity={0.8}
-              tweenDuration={2000}
-              confettiSource={{
-                x: window.innerWidth / 4,
-                y: window.innerHeight / 3,
-                w: 10,
-                h: 5
-              }}
-              initialVelocityX={10}
-              initialVelocityY={15}
-            />
-          )}
-
-          <ModalHeader
-            bg={output?.isFullyPassed ? 'green.50' : hasAnyError(output) ? 'yellow.50' : 'red.50'}
-            borderBottomWidth="1px"
-            borderColor={output?.isFullyPassed ? 'green.100' : hasAnyError(output) ? 'yellow.100' : 'red.100'}
-            py={3}
-            px={4}
-          >
-            <Flex align="center">
-              <Box
-                mr={3}
-                p={1.5}
-                rounded="full"
-                bg={output?.isFullyPassed ? 'green.100' : hasAnyError(output) ? 'yellow.100' : 'red.100'}
-                color={output?.isFullyPassed ? 'green.600' : hasAnyError(output) ? 'yellow.600' : 'red.600'}
-              >
-                {output?.isFullyPassed ? (
-                  <CheckCircleIcon className="h-5 w-5" />
-                ) : (
-                  <XCircleIcon className="h-5 w-5" />
-                )}
-              </Box>
-              <Box>
-                <Text fontSize="lg" fontWeight="bold">Submission Result</Text>
-                <Text fontSize="xs" color="gray.500" noOfLines={1}>
-                  {output ? (output.isFullyPassed ? "All tests passed!" : hasAnyError(output) ? "Error occurred" : "Some tests failed") : "Processing..."}
-                </Text>
-              </Box>
-            </Flex>
-          </ModalHeader>
-
-          <ModalCloseButton
-            size="md"
-            top={3}
-            right={3}
-            _hover={{ bg: 'gray.100' }}
-          />
-
-          <ModalBody py={4} px={4}>
-            {output ? (
-              <Box>
-                {/* Error Display in Modal - Only show if there's an error */}
-                {hasAnyError(output) && (
-                  <Box mb={4} p={4} bg="yellow.50" borderRadius="md" borderLeftWidth="4px" borderColor="yellow.400">
-                    <Text fontSize="sm" fontWeight="bold" color="yellow.800" mb={2}>Error:</Text>
-                    <Code p={2} fontSize="xs" borderRadius="md" bg="white" display="block" whiteSpace="pre-wrap">
-                      {getFirstError(output)}
-                    </Code>
-                  </Box>
-                )}
-
-                {/* Progress Section - Only show if no error */}
-                {!hasAnyError(output) && (
-                  <>
-                    <Flex
-                      direction={{ base: 'column', md: 'row' }}
-                      align="center"
-                      justify="space-between"
-                      mb={6}
-                      gap={4}
-                    >
-                      <Box position="relative">
-                        <CircularProgress
-                          value={(output.passedTestCases / output.totalTestCases) * 100}
-                          color={output.isFullyPassed ? 'green.400' : 'red.400'}
-                          size={{ base: "90px", md: "120px" }}
-                          thickness="8px"
-                          trackColor="gray.100"
-                          capIsRound
-                        >
-                          <CircularProgressLabel>
-                            <Box textAlign="center">
-                              <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold">
-                                {output.passedTestCases}/{output.totalTestCases}
-                              </Text>
-                              <Text fontSize="2xs" color="gray.500">PASSED</Text>
-                            </Box>
-                          </CircularProgressLabel>
-                        </CircularProgress>
-                      </Box>
-
-                      <Box flex={1} w="full">
-                        <Text fontSize={{ base: "md", md: "lg" }} mb={2}>
-                          {output.isFullyPassed ? "🎉 All tests passed!" : `Passed ${output.passedTestCases}/${output.totalTestCases}`}
-                        </Text>
-
-                        <Progress
-                          value={(output.passedTestCases / output.totalTestCases) * 100}
-                          size="sm"
-                          colorScheme={output.isFullyPassed ? 'green' : 'red'}
-                          borderRadius="full"
-                          mb={1}
-                        />
-
-                        <Flex justify="space-between" fontSize="xs" color="gray.600">
-                          <Text>Progress</Text>
-                          <Text fontWeight="medium">
-                            {Math.round((output.passedTestCases / output.totalTestCases) * 100)}%
-                          </Text>
-                        </Flex>
-                      </Box>
-                    </Flex>
-
-                    {/* Failed Test Cases in Modal */}
-                    {output.testResults && output.testResults.some(test => !test.isPassed) && (
-                      <Box
-                        borderTopWidth="1px"
-                        borderColor="gray.100"
-                        pt={4}
-                      >
-                        <Text fontSize="sm" fontWeight="bold" mb={3}>
-                           Failed Test Cases
-                        </Text>
-
-                        <Box
-                          maxH={{ base: "200px", md: "300px" }}
-                          overflowY="auto"
-                          pr={1}
-                          className="custom-scrollbar"
-                        >
-                          {output.testResults.filter(test => !test.isPassed).map((testCase, index) => (
-                            <Box
-                              key={index}
-                              mb={3}
-                              p={3}
-                              bg="gray.50"
-                              borderRadius="md"
-                              borderLeftWidth="3px"
-                              borderColor="red.400"
-                            >
-                              <VStack align="stretch" spacing={2}>
-                                <Box>
-                                  <Text fontSize="xs" color="gray.500" mb={1}>Input:</Text>
-                                  <Code
-                                    p={2}
-                                    fontSize="xs"
-                                    borderRadius="md"
-                                    bg="white"
-                                    display="block"
-                                    whiteSpace="pre-wrap"
-                                    overflowX="auto"
-                                  >
-                                    {testCase.input}
-                                  </Code>
-                                </Box>
-
-                                <Box>
-                                  <Text fontSize="xs" color="gray.500" mb={1}>Expected:</Text>
-                                  <Code
-                                    p={2}
-                                    fontSize="xs"
-                                    borderRadius="md"
-                                    bg="green.50"
-                                    color="green.700"
-                                    display="block"
-                                    whiteSpace="pre-wrap"
-                                  >
-                                    {testCase.output || testCase.expected}
-                                  </Code>
-                                </Box>
-
-                                <Box>
-                                  <Text fontSize="xs" color="gray.500" mb={1}>Actual:</Text>
-                                  <Code
-                                    p={2}
-                                    fontSize="xs"
-                                    borderRadius="md"
-                                    bg="red.50"
-                                    color="red.700"
-                                    display="block"
-                                    whiteSpace="pre-wrap"
-                                  >
-                                    {testCase.actualOutput || testCase.actual || 'No output'}
-                                  </Code>
-                                </Box>
-                              </VStack>
-                            </Box>
-                          ))}
-                        </Box>
-                      </Box>
-                    )}
-                  </>
-                )}
-              </Box>
-            ) : (
-              <Flex direction="column" align="center" justify="center" py={8}>
-                <Spinner
-                  size="lg"
-                  color="blue.500"
-                  thickness="3px"
-                  speed="0.65s"
-                  mb={3}
-                />
-                <Text fontSize="md" color="gray.600">Evaluating solution...</Text>
-              </Flex>
-            )}
-          </ModalBody>
-
-          <ModalFooter
-            borderTopWidth="1px"
-            borderColor="gray.100"
-            py={3}
-            px={4}
-          >
-            <Button
-              colorScheme={output?.isFullyPassed ? 'green' : 'blue'}
-              size="md"
-              onClick={onClose}
-              width="full"
-              rightIcon={output?.isFullyPassed ? <CelebrationIcon className="h-4 w-4" /> : null}
-            >
-              {output?.isFullyPassed ? "Done" : "Close"}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+        output={output}
+        loading={loading}
+        onSubmitAgain={() => setCode(code)} // or whatever "submit again" should do
+      />
     </>
   );
 }

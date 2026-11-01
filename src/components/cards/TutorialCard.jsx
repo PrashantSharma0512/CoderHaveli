@@ -1,3 +1,5 @@
+'use client';
+
 import React from "react";
 import { FiExternalLink } from "react-icons/fi";
 import { Link } from "react-router";
@@ -14,10 +16,10 @@ const TutorialCard = ({
 
   return (
     <Link to={tutorialUrl} className="block w-full max-w-[320px]">
-      <div className="relative border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-white dark:bg-gray-800 group cursor-pointer min-h-[280px] sm:min-h-[350px] md:min-h-[420px] flex flex-col">
+      <div className="relative border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-xs hover:shadow-md dark:shadow-none hover:border-amber-400 dark:hover:border-amber-500/50 bg-white dark:bg-gray-900 group cursor-pointer min-h-[280px] sm:min-h-[350px] md:min-h-[420px] flex flex-col">
         
         {/* Image */}
-        <div className="relative h-24 sm:h-32 md:h-40 lg:h-48 overflow-hidden bg-gray-100 dark:bg-gray-700">
+        <div className="relative h-24 sm:h-32 md:h-40 lg:h-48 overflow-hidden bg-gray-50 dark:bg-gray-950">
           <img
             src={image?.url}
             alt={title}
@@ -26,7 +28,7 @@ const TutorialCard = ({
           />
 
           {category && (
-            <span className="absolute top-2 left-2 bg-amber-500 dark:bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded-full truncate max-w-[85%]">
+            <span className="absolute top-2 left-2 bg-amber-500 dark:bg-amber-500 text-white text-xs font-semibold px-2 py-1 rounded-full truncate max-w-[85%]">
               {category.name}
             </span>
           )}
@@ -67,7 +69,7 @@ const TutorialCard = ({
           {/* Action (NOT a Link) */}
           <button
             type="button"
-            className="mt-4 w-full flex items-center justify-center px-4 py-2 bg-amber-500 hover:bg-amber-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors duration-200 text-xs sm:text-sm"
+            className="mt-4 w-full flex items-center justify-center px-4 py-2 bg-amber-500 hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-600 text-white font-medium rounded-lg transition-colors duration-200 text-xs sm:text-sm"
           >
             Learn More
             <FiExternalLink className="ml-2" size={14} />

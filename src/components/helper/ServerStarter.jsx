@@ -30,8 +30,7 @@ function ServerStarter() {
             title="Wake up Compiler Server"
             disabled={loading}
             className={`fixed bottom-20 right-6 z-50 p-3 rounded-full text-white shadow-lg transition-all duration-300
-                ${started ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
-                dark:bg-indigo-500 dark:hover:bg-indigo-600
+                ${started ? 'bg-green-600 hover:bg-green-700' : 'bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600'}
                 ${loading ? 'opacity-60 cursor-not-allowed' : ''}
             `}
         >
