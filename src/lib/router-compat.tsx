@@ -49,7 +49,9 @@ export function useNavigate() {
 
 export function useLocation() {
   const pathname = usePathname() || '/';
-  const [search, setSearch] = React.useState('');
+  const [search, setSearch] = React.useState(() =>
+    typeof window !== 'undefined' ? window.location.search || '' : ''
+  );
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {

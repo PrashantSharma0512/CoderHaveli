@@ -1002,7 +1002,10 @@ const CourseDetail = () => {
                 width="100%"
                 height="100%"
                 controls={true}
-                playing={true}
+                playing={false}
+                onError={(err) => {
+                  console.warn('Preview video playback issue:', err);
+                }}
               />
             </div>
 

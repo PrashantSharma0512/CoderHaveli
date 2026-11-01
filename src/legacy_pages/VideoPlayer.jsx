@@ -85,6 +85,7 @@ const VideoPlayer = () => {
   const videoRef = useRef(null);
   const playerContainerRef = useRef(null);
   const controlsTimeoutRef = useRef(null);
+  const playPromiseRef = useRef(null);
 
   // URL query params
   const searchParams = new URLSearchParams(location.search);
@@ -162,17 +163,32 @@ const VideoPlayer = () => {
     }, 3500);
   }, [isPlaying]);
 
-  // Handle Play/Pause
-  const togglePlay = useCallback(() => {
+  // Handle Play/Pause safely with Promise synchronization
+  const togglePlay = useCallback(async () => {
     if (!videoRef.current || youtubeData.isYouTube) return;
 
     if (videoRef.current.paused) {
-      videoRef.current
-        .play()
-        .then(() => setIsPlaying(true))
-        .catch((err) => console.error('Play error:', err));
+      try {
+        const promise = videoRef.current.play();
+        playPromiseRef.current = promise;
+        await promise;
+        setIsPlaying(true);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.warn('Playback error:', err);
+        }
+      } finally {
+        playPromiseRef.current = null;
+      }
     } else {
-      videoRef.current.pause();
+      if (playPromiseRef.current) {
+        try {
+          await playPromiseRef.current;
+        } catch (_) {}
+      }
+      if (videoRef.current) {
+        videoRef.current.pause();
+      }
       setIsPlaying(false);
     }
     resetControlsTimer();
@@ -522,6 +538,9 @@ const VideoPlayer = () => {
                   onEnded={handleVideoEnded}
                   onLoadedMetadata={handleTimeUpdate}
                   onClick={togglePlay}
+                  onError={() => {
+                    setIsBuffering(false);
+                  }}
                   className="w-full h-full object-contain cursor-pointer"
                   playsInline
                 >

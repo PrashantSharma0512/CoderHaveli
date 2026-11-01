@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Carousel from '@/components/utils/Carousel';
+import InteractiveHero from '@/components/home/InteractiveHero';
 import TutorialCard from '@/components/cards/TutorialCard';
 import CourseCard from '@/components/cards/CourseCards';
 import TestimonialSection from '@/components/cards/Testomonial';
@@ -104,11 +105,8 @@ export default function HomeClient({
 
   return (
     <div className="bg-white text-gray-800 dark:bg-gray-950 dark:text-gray-100 min-h-screen">
-      {carouselImages.length > 0 && (
-        <div className="w-full py-8">
-          <Carousel IMAGES={carouselImages as any} />
-        </div>
-      )}
+      {/* 3D Interactive Hero */}
+      <InteractiveHero />
 
       {/* Tutorials Section */}
       <section className="relative py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">

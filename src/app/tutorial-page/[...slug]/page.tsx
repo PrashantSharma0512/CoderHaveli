@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { constructMetadata } from '@/lib/seo';
-import TutorialDetailClient from './TutorialDetailClient';
+import TutorialDetailClient from '../TutorialDetailClient';
 
 export const metadata: Metadata = constructMetadata({
   title: 'Tutorial Lesson & Curriculum',
