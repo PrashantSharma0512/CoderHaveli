@@ -138,17 +138,60 @@ const VideoPlayer = () => {
   }, [paramLessonIndex, lessons, currentLessonIndex, dispatch]);
 
   // Determine if video is YouTube
+  const effectiveVideoUrl = useMemo(() => {
+    if (videoUrl) return videoUrl;
+    const l = lessons[currentLessonIndex] || currentLesson;
+    return (
+      l?.videoUrl ||
+      l?.url ||
+      l?.video?.url ||
+      (typeof l?.video === 'string' ? l.video : null) ||
+      l?.video_url ||
+      l?.link ||
+      null
+    );
+  }, [videoUrl, lessons, currentLessonIndex, currentLesson]);
+
   const youtubeData = useMemo(() => {
-    if (!videoUrl) return { isYouTube: false, id: null };
-    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/;
-    if (youtubeRegex.test(videoUrl)) {
-      const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
-      const match = videoUrl.match(regExp);
-      const id = match && match[7].length === 11 ? match[7] : null;
+    if (!effectiveVideoUrl || typeof effectiveVideoUrl !== 'string') return { isYouTube: false, id: null };
+    const trimmed = effectiveVideoUrl.trim();
+    if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) {
+      const match = trimmed.match(
+        /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/
+      );
+      const id = match ? match[1] : null;
       return { isYouTube: true, id };
     }
     return { isYouTube: false, id: null };
-  }, [videoUrl]);
+  }, [effectiveVideoUrl]);
+
+  // Video source change auto-load and auto-play
+  useEffect(() => {
+    if (!effectiveVideoUrl) return;
+    setCurrentTime(0);
+    setIsBuffering(false);
+    cancelAutoAdvance();
+
+    if (videoRef.current && !youtubeData.isYouTube) {
+      try {
+        videoRef.current.load();
+        if (playbackSpeed !== 1) {
+          videoRef.current.playbackRate = playbackSpeed;
+        }
+        const promise = videoRef.current.play();
+        if (promise !== undefined) {
+          promise
+            .then(() => setIsPlaying(true))
+            .catch((err) => {
+              console.warn('Playback autoplay note:', err.message);
+              setIsPlaying(false);
+            });
+        }
+      } catch (err) {
+        console.warn('Video load error:', err);
+      }
+    }
+  }, [effectiveVideoUrl, currentLessonIndex, youtubeData.isYouTube, playbackSpeed]);
 
   // Reset controls timer on interaction
   const resetControlsTimer = useCallback(() => {
@@ -217,9 +260,11 @@ const VideoPlayer = () => {
   }, [currentLessonIndex, courseId, dispatch, navigate]);
 
   const handleSelectLesson = (idx) => {
+    if (idx < 0 || idx >= lessons.length) return;
     dispatch(setCurrentLessonIndex(idx));
     navigate(`/video?courseId=${courseId}&lessonIndex=${idx}`, { replace: true });
     setShowMobileSidebar(false);
+    setIsPlaying(true);
   };
 
   // Video playback speed
@@ -520,18 +565,22 @@ const VideoPlayer = () => {
             {youtubeData.isYouTube && youtubeData.id ? (
               <div className="w-full h-full">
                 <iframe
+                  key={`yt-${youtubeData.id}-${currentLessonIndex}`}
                   src={`https://www.youtube.com/embed/${youtubeData.id}?autoplay=1&enablejsapi=1&rel=0&modestbranding=1`}
                   className="w-full h-full"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
-                  title="Lecture Video Player"
+                  title={activeLesson?.title || 'Lecture Video Player'}
                 />
               </div>
-            ) : videoUrl ? (
+            ) : effectiveVideoUrl ? (
               <div className="w-full h-full relative flex items-center justify-center">
                 <video
+                  key={`video-${currentLessonIndex}-${effectiveVideoUrl}`}
                   ref={videoRef}
+                  src={effectiveVideoUrl}
+                  autoPlay
                   onTimeUpdate={handleTimeUpdate}
                   onWaiting={() => setIsBuffering(true)}
                   onPlaying={() => setIsBuffering(false)}
@@ -544,7 +593,7 @@ const VideoPlayer = () => {
                   className="w-full h-full object-contain cursor-pointer"
                   playsInline
                 >
-                  <source src={videoUrl} type="video/mp4" />
+                  <source src={effectiveVideoUrl} type="video/mp4" />
                   Your browser does not support HTML5 video.
                 </video>
 
@@ -944,25 +993,30 @@ const VideoPlayer = () => {
                   No matching lessons found.
                 </div>
               ) : (
-                filteredPlaylist.map((lesson, idx) => {
-                  const isActive = idx === currentLessonIndex;
-                  const isCompleted = completedLessons.includes(idx);
+                filteredPlaylist.map((lesson, fIdx) => {
+                  const realIdx = lessons.findIndex((l, i) =>
+                    (l._id && lesson._id ? l._id === lesson._id : l.title === lesson.title && i === fIdx) ||
+                    l === lesson
+                  );
+                  const effectiveIdx = realIdx !== -1 ? realIdx : fIdx;
+                  const isActive = effectiveIdx === currentLessonIndex;
+                  const isCompleted = completedLessons.includes(effectiveIdx);
 
                   return (
                     <div
-                      key={idx}
+                      key={lesson._id || effectiveIdx}
                       className={`group p-3 rounded-xl transition duration-150 flex items-start space-x-3 cursor-pointer ${
                         isActive
                           ? 'bg-amber-100/70 border border-amber-400 text-amber-950 shadow-xs dark:bg-amber-500/20 dark:border-amber-500/50 dark:text-white'
                           : 'hover:bg-amber-50/70 border border-transparent text-gray-700 dark:hover:bg-gray-800/60 dark:text-gray-300'
                       }`}
-                      onClick={() => handleSelectLesson(idx)}
+                      onClick={() => handleSelectLesson(effectiveIdx)}
                     >
                       {/* Checkbox */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleToggleComplete(idx);
+                          handleToggleComplete(effectiveIdx);
                         }}
                         className="mt-0.5 text-gray-400 hover:text-emerald-500 transition flex-shrink-0"
                         title={isCompleted ? 'Mark incomplete' : 'Mark complete'}
@@ -982,7 +1036,7 @@ const VideoPlayer = () => {
                               isActive ? 'text-amber-700 dark:text-amber-400' : 'text-gray-500'
                             }`}
                           >
-                            Lesson {idx + 1}
+                            Lesson {effectiveIdx + 1}
                           </span>
                           {lesson.duration && (
                             <span className="text-[10px] text-gray-500 font-mono">

@@ -88,7 +88,8 @@ export default function AdminContestPasses() {
     const timer = setTimeout(async () => {
       try {
         setSearchingUsers(true);
-        const res = await axiosInstance.get(`/api/contests/friends/search?search=${encodeURIComponent(grantModal.userSearch.trim())}`);
+        const queryVal = encodeURIComponent(grantModal.userSearch.trim());
+        const res = await axiosInstance.get(`/api/contests/friends/search?q=${queryVal}&search=${queryVal}`);
         if (res.data?.success) {
           setUserSearchResults(res.data.users || []);
         }

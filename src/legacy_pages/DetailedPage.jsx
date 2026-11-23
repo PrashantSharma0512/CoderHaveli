@@ -23,7 +23,6 @@ import {
   FiArrowRight,
   FiCheckSquare
 } from 'react-icons/fi';
-import ReactPlayer from 'react-player';
 import axiosInstance from '../components/helper/axiosInstance';
 import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
@@ -131,14 +130,69 @@ const CourseDetail = () => {
     return `${mins} mins`;
   }, [course, totalDurationMinutes]);
 
-  const firstLesson = lessons[0];
-  const hasDemoVideo = Boolean(firstLesson?.videoUrl);
+  const isFreeCourse = useMemo(() => {
+    return urlType === 'tutorial' || course?.type === 'tutorial' || !course?.price || course?.price === 0;
+  }, [urlType, course]);
+
+  const previewLesson = useMemo(() => {
+    if (!lessons || lessons.length === 0) return null;
+    return (
+      lessons.find((l) => Boolean(l.videoUrl || l.url || l.video || l.video_url || l.link)) ||
+      lessons[0] ||
+      null
+    );
+  }, [lessons]);
+
+  const previewVideoUrl = useMemo(() => {
+    if (previewLesson) {
+      const url =
+        previewLesson.videoUrl ||
+        previewLesson.url ||
+        previewLesson.video?.url ||
+        (typeof previewLesson.video === 'string' ? previewLesson.video : null) ||
+        previewLesson.video_url ||
+        previewLesson.link;
+      if (url) return url;
+    }
+    return course?.demoVideo || course?.previewVideo || course?.videoUrl || null;
+  }, [previewLesson, course]);
+
+  const previewYoutubeId = useMemo(() => {
+    if (!previewVideoUrl || typeof previewVideoUrl !== 'string') return null;
+    const trimmed = previewVideoUrl.trim();
+    if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) {
+      const match = trimmed.match(
+        /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/
+      );
+      return match ? match[1] : null;
+    }
+    return null;
+  }, [previewVideoUrl]);
+
+  const hasDemoVideo = Boolean(previewVideoUrl);
+  const firstLesson = lessons[0] || previewLesson;
+
+  const checkIsUnlocked = (lesson, index) => {
+    if (isEnrolled || isFreeCourse) return true;
+    if (index === 0) return true;
+    return Boolean(lesson?.free || lesson?.preview || lesson?.isFreePreview);
+  };
 
   const handleWatchChapter = (lesson, lessonIndex = 0) => {
-    if (!isEnrolled && lessonIndex > 0) {
+    const isUnlocked = checkIsUnlocked(lesson, lessonIndex);
+    if (!isUnlocked) {
       toast.error('Enroll in this course to access this lecture.');
       return;
     }
+
+    const resolvedVideoUrl =
+      lesson?.videoUrl ||
+      lesson?.url ||
+      lesson?.video?.url ||
+      (typeof lesson?.video === 'string' ? lesson.video : null) ||
+      lesson?.video_url ||
+      lesson?.link ||
+      null;
 
     dispatch(
       setPlaybackSession({
@@ -149,7 +203,7 @@ const CourseDetail = () => {
         lessons: lessons,
         currentLessonIndex: lessonIndex,
         currentLesson: lesson,
-        videoUrl: lesson.videoUrl,
+        videoUrl: resolvedVideoUrl,
       })
     );
     navigate(`/video?courseId=${course._id}&lessonIndex=${lessonIndex}`);
@@ -708,7 +762,7 @@ const CourseDetail = () => {
                   ) : (
                     filteredLessons.map((lesson, index) => {
                       const isCompleted = completedLessons.includes(index);
-                      const isUnlocked = isEnrolled || index === 0;
+                      const isUnlocked = checkIsUnlocked(lesson, index);
                       const isExpanded = Boolean(expandedModules[index]);
 
                       return (
@@ -751,7 +805,7 @@ const CourseDetail = () => {
                                   <span className="text-xs font-bold text-amber-700 dark:text-amber-400">
                                     Lesson {index + 1}
                                   </span>
-                                  {index === 0 && !isEnrolled && (
+                                  {index === 0 && !isEnrolled && !isFreeCourse && (
                                     <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/80 dark:text-amber-300 dark:border-amber-500/20">
                                       Free Preview
                                     </span>
@@ -806,7 +860,7 @@ const CourseDetail = () => {
                                     className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 dark:from-amber-500 dark:to-amber-600 shadow-sm flex items-center space-x-2 transition cursor-pointer"
                                   >
                                     <FiPlay className="fill-current text-xs" />
-                                    <span>{index === 0 && !isEnrolled ? 'Play Free Preview' : 'Play Lecture'}</span>
+                                    <span>{index === 0 && !isEnrolled && !isFreeCourse ? 'Play Free Preview' : 'Play Lecture'}</span>
                                   </button>
                                 ) : (
                                   <button
@@ -984,7 +1038,7 @@ const CourseDetail = () => {
                   Preview
                 </span>
                 <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate max-w-md">
-                  {firstLesson.title}
+                  {previewLesson?.title || course?.title || 'Course Preview'}
                 </h3>
               </div>
               <button
@@ -996,40 +1050,51 @@ const CourseDetail = () => {
             </div>
 
             {/* Player Container */}
-            <div className="aspect-video bg-black relative">
-              <ReactPlayer
-                url={firstLesson.videoUrl}
-                width="100%"
-                height="100%"
-                controls={true}
-                playing={false}
-                onError={(err) => {
-                  console.warn('Preview video playback issue:', err);
-                }}
-              />
+            <div className="aspect-video bg-black relative flex items-center justify-center">
+              {previewYoutubeId ? (
+                <iframe
+                  key={previewYoutubeId}
+                  src={`https://www.youtube.com/embed/${previewYoutubeId}?autoplay=1&enablejsapi=1&rel=0&modestbranding=1`}
+                  className="w-full h-full"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="Course Preview Video"
+                />
+              ) : previewVideoUrl ? (
+                <video
+                  key={previewVideoUrl}
+                  src={previewVideoUrl}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="w-full h-full object-contain"
+                >
+                  <source src={previewVideoUrl} type="video/mp4" />
+                  Your browser does not support HTML5 video.
+                </video>
+              ) : (
+                <div className="text-center p-8 text-gray-400">
+                  <FiFilm className="text-4xl mx-auto mb-2 opacity-60" />
+                  <p className="text-sm">Preview video is currently unavailable for this course.</p>
+                </div>
+              )}
             </div>
 
             {/* Modal Footer */}
             <div className="p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-3 bg-amber-50/60 dark:bg-gray-950/80">
               <p className="text-xs text-gray-600 dark:text-gray-400">
-                Watching Preview Lesson 1 of {lessons.length}. Enroll to unlock the full course curriculum.
+                Watching Preview Lesson 1 of {lessons.length}. {isFreeCourse || isEnrolled ? 'All lectures are available to watch.' : 'Enroll to unlock all course lectures.'}
               </p>
               <button
                 onClick={() => {
                   setShowDemoVideo(false);
-                  if (!isEnrolled) {
-                    if (urlType === 'tutorial' || !course.price) {
-                      handleEnroll(course._id);
-                    } else {
-                      navigate(`/checkout?courseId=${course._id}`);
-                    }
-                  } else {
-                    handleWatchChapter(firstLesson, 0);
-                  }
+                  handleWatchChapter(previewLesson || lessons[0], 0);
                 }}
-                className="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 dark:from-amber-500 dark:to-amber-600 text-white transition flex-shrink-0 cursor-pointer shadow-amber-500/20"
+                className="px-5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 dark:from-amber-500 dark:to-amber-600 text-white transition flex items-center space-x-1.5 cursor-pointer shadow-amber-500/20"
               >
-                {isEnrolled ? 'Open in Player' : 'Enroll Now to Continue'}
+                <FiPlay className="fill-current text-xs" />
+                <span>Play in Full Video Player</span>
               </button>
             </div>
           </div>

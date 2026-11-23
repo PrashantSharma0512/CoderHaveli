@@ -21,7 +21,8 @@ import {
   FileText,
   Sparkles,
   Check,
-  Copy
+  Copy,
+  Code2
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
@@ -431,13 +432,23 @@ function ContestDetail() {
                   </button>
                 )
               ) : contest.status === 'ended' ? (
-                <Link
-                  to={`/contests/${contest._id}/leaderboard`}
-                  className="w-full py-3.5 px-4 rounded-xl font-black text-white bg-gray-900 hover:bg-black dark:bg-gray-700 dark:hover:bg-gray-600 shadow-md transition-all flex items-center justify-center gap-2"
-                >
-                  <Trophy className="w-5 h-5 text-amber-400" />
-                  <span>View Leaderboard</span>
-                </Link>
+                <div className="space-y-2 w-full">
+                  <a
+                    href="#contest-problems"
+                    className="w-full py-3.5 px-4 rounded-xl font-black text-white bg-gradient-to-r from-amber-500 to-amber-600 hover:opacity-95 shadow-md shadow-amber-500/25 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Code2 className="w-5 h-5" />
+                    <span>Solve Contest Problems</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </a>
+                  <Link
+                    to={`/contests/${contest._id}/leaderboard`}
+                    className="w-full py-2.5 px-4 rounded-xl font-bold text-gray-700 dark:text-gray-300 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-all flex items-center justify-center gap-2 text-xs"
+                  >
+                    <Trophy className="w-4 h-4 text-amber-400" />
+                    <span>View Leaderboard</span>
+                  </Link>
+                </div>
               ) : contest.isUserRegistered ? (
                 <div className="space-y-2">
                   <div className="py-3 px-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 text-xs font-bold flex items-center justify-center gap-2">
@@ -485,58 +496,87 @@ function ContestDetail() {
           {/* Main Info (Overview & Problems) */}
           <div className="lg:col-span-8 space-y-6">
             {/* Problems Section */}
-            <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm space-y-4">
+            <div id="contest-problems" className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm space-y-4 scroll-mt-6">
               <div className="flex items-center justify-between">
                 <h3 className="font-extrabold text-lg flex items-center gap-2">
-                  <HelpCircle className="w-5 h-5 text-amber-500" />
+                  <Code2 className="w-5 h-5 text-amber-500" />
                   <span>Contest Problems</span>
                 </h3>
-                <span className="text-xs font-bold text-gray-500 dark:text-gray-400">
-                  {contest.problems?.length || 0} Challenges
-                </span>
+                <div className="flex items-center gap-2">
+                  {contest.status === 'ended' && (
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+                      Upsolve Open
+                    </span>
+                  )}
+                  <span className="text-xs font-bold text-gray-500 dark:text-gray-400">
+                    {contest.problems?.length || 0} Challenges
+                  </span>
+                </div>
               </div>
 
               <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                {contest.problems?.map((p, idx) => (
-                  <div key={idx} className="py-3.5 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <span className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-black text-gray-600 dark:text-gray-300">
-                        {p.order || idx + 1}
-                      </span>
-                      <div>
-                        <div className="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-2">
-                          <span>{p.title}</span>
-                          {p.locked && <Lock className="w-3.5 h-3.5 text-gray-400" />}
+                {contest.problems?.map((p, idx) => {
+                  const targetId = p.problemId || p._id || p.quesId;
+                  const canSolve = (contest.status === 'ended' || contest.status === 'live') && targetId && !p.locked;
+                  return (
+                    <div key={idx} className="py-3.5 flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <span className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-black text-gray-600 dark:text-gray-300">
+                          {p.order || idx + 1}
+                        </span>
+                        <div>
+                          <div className="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-2">
+                            {canSolve ? (
+                              <Link
+                                to={`/problem/${targetId}`}
+                                className="hover:text-amber-500 transition-colors"
+                              >
+                                {p.title}
+                              </Link>
+                            ) : (
+                              <span>{p.title}</span>
+                            )}
+                            {p.locked && <Lock className="w-3.5 h-3.5 text-gray-400" />}
+                          </div>
+                          <span className="text-xs text-gray-400">{p.difficulty}</span>
                         </div>
-                        <span className="text-xs text-gray-400">{p.difficulty}</span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <span className="px-2.5 py-1 rounded-md text-xs font-extrabold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400">
+                          {p.points} Pts
+                        </span>
+                        {contest.status === 'ended' && canSolve && (
+                          <Link
+                            to={`/problem/${targetId}`}
+                            className="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:opacity-95 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1"
+                          >
+                            <span>Solve</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </Link>
+                        )}
+                        {contest.status === 'live' && (
+                          contest.isUserRegistered ? (
+                            <Link
+                              to={`/contests/${contest._id}/arena`}
+                              className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold"
+                            >
+                              Solve
+                            </Link>
+                          ) : (
+                            <button
+                              onClick={() => handleRegister(true)}
+                              disabled={registering}
+                              className="px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white rounded-lg text-xs font-bold cursor-pointer"
+                            >
+                              Register to Solve
+                            </button>
+                          )
+                        )}
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-3">
-                      <span className="px-2.5 py-1 rounded-md text-xs font-extrabold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400">
-                        {p.points} Pts
-                      </span>
-                      {contest.status === 'live' && (
-                        contest.isUserRegistered ? (
-                          <Link
-                            to={`/contests/${contest._id}/arena`}
-                            className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold"
-                          >
-                            Solve
-                          </Link>
-                        ) : (
-                          <button
-                            onClick={() => handleRegister(true)}
-                            disabled={registering}
-                            className="px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white rounded-lg text-xs font-bold cursor-pointer"
-                          >
-                            Register to Solve
-                          </button>
-                        )
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

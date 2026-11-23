@@ -43,3 +43,31 @@ html.dark body {
   background-color: #f59e0b;
   color: #030712;
 }
+
+/* Hide scrollbar across all major browsers while keeping scrolling fully functional */
+.no-scrollbar {
+  -ms-overflow-style: none !important; /* IE and Edge */
+  scrollbar-width: none !important; /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari and Opera */
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Sleek minimalist scrollbar for Ace editor and any fallback elements */
+.ace_scrollbar {
+  scrollbar-width: thin;
+}
+.ace_scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.ace_scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.35);
+  border-radius: 9999px;
+}
+.ace_scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}

@@ -35,11 +35,29 @@ export function useToast() {
 }
 
 export function useBreakpointValue(values: Record<string, any> | any[]) {
+  const [windowWidth, setWindowWidth] = useState<number>(() => {
+    if (typeof window !== 'undefined') return window.innerWidth;
+    return 1024;
+  });
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (Array.isArray(values)) {
     return values[values.length - 1];
   }
   if (typeof values === 'object' && values !== null) {
-    return values.lg ?? values.md ?? values.sm ?? values.base ?? Object.values(values)[0];
+    if (windowWidth >= 1280 && values.xl !== undefined) return values.xl;
+    if (windowWidth >= 1024 && values.lg !== undefined) return values.lg;
+    if (windowWidth >= 768 && values.md !== undefined) return values.md;
+    if (windowWidth >= 640 && values.sm !== undefined) return values.sm;
+    if (values.base !== undefined) return values.base;
+    return Object.values(values)[0];
   }
   return values;
 }
@@ -216,43 +234,68 @@ export function DrawerBody({ children, className = '' }: any) {
 }
 
 // Modal components
-export function Modal({ isOpen, onClose, children }: any) {
+const ModalContext = createContext<{ onClose?: () => void }>({});
+
+export function Modal({ isOpen, onClose, children, size }: any) {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-xs" onClick={onClose} />
-      <div className="relative z-10 max-w-lg w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-2xl">
-        {children}
+    <ModalContext.Provider value={{ onClose }}>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity" onClick={onClose} />
+        <div className="relative z-10 w-full flex items-center justify-center my-auto">
+          {children}
+        </div>
       </div>
+    </ModalContext.Provider>
+  );
+}
+
+export function ModalOverlay({ bg, backdropFilter }: any) {
+  return null;
+}
+
+export function ModalContent({ children, className = '', ...props }: any) {
+  return (
+    <div
+      className={`relative w-full max-w-4xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[88vh] ${className}`}
+      {...props}
+    >
+      {children}
     </div>
   );
 }
 
-export function ModalOverlay() {
-  return null;
-}
-
-export function ModalContent({ children, className = '' }: any) {
-  return <div className={className}>{children}</div>;
-}
-
 export function ModalHeader({ children, className = '' }: any) {
-  return <div className={`text-lg font-bold border-b border-gray-200 dark:border-gray-800 pb-3 mb-4 ${className}`}>{children}</div>;
+  return (
+    <div className={`px-4 sm:px-6 py-3.5 sm:py-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 sticky top-0 z-10 flex-shrink-0 ${className}`}>
+      {children}
+    </div>
+  );
 }
 
 export function ModalBody({ children, className = '' }: any) {
-  return <div className={className}>{children}</div>;
+  return (
+    <div className={`flex-1 overflow-y-auto p-4 sm:p-6 overscroll-contain ${className}`}>
+      {children}
+    </div>
+  );
 }
 
 export function ModalFooter({ children, className = '' }: any) {
-  return <div className={`border-t border-gray-200 dark:border-gray-800 pt-3 mt-4 flex justify-end gap-2 ${className}`}>{children}</div>;
+  return (
+    <div className={`px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/90 sticky bottom-0 z-10 flex flex-wrap items-center justify-end gap-2.5 flex-shrink-0 ${className}`}>
+      {children}
+    </div>
+  );
 }
 
-export function ModalCloseButton({ onClick }: any) {
+export function ModalCloseButton({ onClick, className = '' }: any) {
+  const ctx = useContext(ModalContext);
   return (
     <button
-      onClick={onClick}
-      className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer text-xl"
+      onClick={onClick || ctx.onClose}
+      className={`absolute top-3.5 right-3.5 sm:top-4 sm:right-4 w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-xl font-medium ${className}`}
+      aria-label="Close modal"
     >
       ×
     </button>

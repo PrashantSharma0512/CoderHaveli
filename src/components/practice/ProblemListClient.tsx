@@ -35,6 +35,7 @@ export default function ProblemListClient({
   initialCounts = null,
 }: ProblemListClientProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
   const [selectedTopic, setSelectedTopic] = useState('All');
   const [questions, setQuestions] = useState<any[]>(initialQuestions);
@@ -68,6 +69,14 @@ export default function ProblemListClient({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Debounce search keystrokes by 300ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   // Fetch topics & stats on mount
   useEffect(() => {
     const fetchTopicsAndCounts = async () => {
@@ -86,7 +95,7 @@ export default function ProblemListClient({
     fetchTopicsAndCounts();
   }, []);
 
-  // Fetch from backend with debouncing for search
+  // Fetch from backend whenever filters or debounced search changes
   const isInitialMount = useRef(true);
   useEffect(() => {
     // Skip first run if we already have initialQuestions from SSR and on default page 1
@@ -95,7 +104,8 @@ export default function ProblemListClient({
       if (initialQuestions.length > 0) return;
     }
 
-    const timer = setTimeout(async () => {
+    let isCancelled = false;
+    const fetchProblems = async () => {
       try {
         setIsFetching(true);
         const params = new URLSearchParams();
@@ -109,12 +119,12 @@ export default function ProblemListClient({
         if (selectedTopic !== 'All') {
           params.set('topic', selectedTopic);
         }
-        if (searchTerm.trim()) {
-          params.set('search', searchTerm.trim());
+        if (debouncedSearchTerm.trim()) {
+          params.set('search', debouncedSearchTerm.trim());
         }
 
         const res = await axiosInstance.get(`/api/problem?${params.toString()}`);
-        if (res.data) {
+        if (!isCancelled && res.data) {
           if (Array.isArray(res.data)) {
             setQuestions(res.data);
             setTotalProblems(res.data.length);
@@ -129,30 +139,44 @@ export default function ProblemListClient({
           }
         }
       } catch (error) {
-        console.error('Error fetching filtered problems:', error);
+        if (!isCancelled) {
+          console.error('Error fetching filtered problems:', error);
+        }
       } finally {
-        setIsFetching(false);
-        setLoading(false);
+        if (!isCancelled) {
+          setIsFetching(false);
+          setLoading(false);
+        }
       }
-    }, 300);
+    };
 
-    return () => clearTimeout(timer);
-  }, [searchTerm, selectedDifficulty, selectedTopic, currentPage, pageSize]);
+    fetchProblems();
 
-  // Reset page to 1 when filters change
+    return () => {
+      isCancelled = true;
+    };
+  }, [debouncedSearchTerm, selectedDifficulty, selectedTopic, currentPage, pageSize]);
+
+  // Reset page to 1 and trigger immediate loading when filters change
   const handleDifficultyChange = (diff: string) => {
+    if (diff === selectedDifficulty) return;
+    setIsFetching(true);
     setSelectedDifficulty(diff);
     setCurrentPage(1);
   };
 
   const handleTopicChange = (topicName: string) => {
+    if (topicName === selectedTopic) return;
+    setIsFetching(true);
     setSelectedTopic(topicName);
     setCurrentPage(1);
     setTopicDropdownOpen(false);
   };
 
   const resetAllFilters = () => {
+    setIsFetching(true);
     setSearchTerm('');
+    setDebouncedSearchTerm('');
     setSelectedDifficulty('All');
     setSelectedTopic('All');
     setCurrentPage(1);
@@ -161,7 +185,7 @@ export default function ProblemListClient({
   // Instant client-side filter fallback on the current set of problems
   const displayedQuestions = useMemo(() => {
     return questions.filter((q) => {
-      const term = searchTerm.toLowerCase().trim();
+      const term = debouncedSearchTerm.toLowerCase().trim();
       const matchesSearch =
         !term ||
         q?.quesName?.toLowerCase().includes(term) ||
@@ -179,7 +203,7 @@ export default function ProblemListClient({
 
       return matchesSearch && matchesDifficulty && matchesTopic;
     });
-  }, [questions, searchTerm, selectedDifficulty, selectedTopic]);
+  }, [questions, debouncedSearchTerm, selectedDifficulty, selectedTopic]);
 
   // Extracted unique topic list (supports string[] or { name, count }[])
   const normalizedTopics = useMemo(() => {
@@ -296,10 +320,12 @@ export default function ProblemListClient({
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
             {difficultyFilters.map((diff) => {
               const isSelected = selectedDifficulty.toLowerCase() === diff.value.toLowerCase();
+              const isLoadingCurrent = isSelected && isFetching;
               return (
                 <button
                   key={diff.value}
                   onClick={() => handleDifficultyChange(diff.value)}
+                  disabled={isFetching && isSelected}
                   className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                     isSelected
                       ? diff.value === 'Easy'
@@ -313,7 +339,9 @@ export default function ProblemListClient({
                   }`}
                 >
                   <span>{diff.label}</span>
-                  {diff.count !== undefined && diff.count !== null && (
+                  {isLoadingCurrent ? (
+                    <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : diff.count !== undefined && diff.count !== null ? (
                     <span
                       className={`text-[10px] px-1.5 py-0.2 rounded-full font-semibold ${
                         isSelected
@@ -323,7 +351,7 @@ export default function ProblemListClient({
                     >
                       {diff.count}
                     </span>
-                  )}
+                  ) : null}
                 </button>
               );
             })}
@@ -468,7 +496,14 @@ export default function ProblemListClient({
       </div>
 
       {/* Problems Table */}
-      <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-xs">
+      <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-xs relative">
+        {/* Subtle animated loading line at top of table while fetching */}
+        {isFetching && (
+          <div className="absolute top-0 left-0 right-0 h-1 bg-amber-500/20 overflow-hidden z-20">
+            <div className="w-full h-full bg-amber-500 animate-pulse" />
+          </div>
+        )}
+
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 dark:bg-gray-800/60 text-xs font-bold uppercase text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-800">
@@ -481,7 +516,31 @@ export default function ProblemListClient({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {displayedQuestions.map((q, idx) => (
+              {isFetching ? (
+                Array.from({ length: Math.min(pageSize, 8) }).map((_, idx) => (
+                  <tr key={`skeleton-${idx}`} className="animate-pulse">
+                    <td className="px-6 py-4">
+                      <div className="h-4 w-6 bg-gray-200 dark:bg-gray-800 rounded" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 w-48 sm:w-64 bg-gray-200 dark:bg-gray-800 rounded mb-1" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-5 w-16 bg-gray-200 dark:bg-gray-800 rounded-full" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1.5">
+                        <div className="h-5 w-16 bg-gray-200 dark:bg-gray-800 rounded-md" />
+                        <div className="h-5 w-20 bg-gray-200 dark:bg-gray-800 rounded-md hidden sm:block" />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="h-7 w-16 bg-gray-200 dark:bg-gray-800 rounded-lg ml-auto" />
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                displayedQuestions.map((q, idx) => (
                 <tr
                   key={q._id || idx}
                   className="hover:bg-slate-50/70 dark:hover:bg-gray-800/40 transition-colors group"
@@ -541,13 +600,13 @@ export default function ProblemListClient({
                     </Link>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>
 
         {/* Empty State */}
-        {displayedQuestions.length === 0 && !loading && (
+        {displayedQuestions.length === 0 && !loading && !isFetching && (
           <div className="p-12 text-center space-y-4">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-500">
               <SlidersHorizontal className="w-6 h-6" />
@@ -582,6 +641,7 @@ export default function ProblemListClient({
               <select
                 value={pageSize}
                 onChange={(e) => {
+                  setIsFetching(true);
                   setPageSize(Number(e.target.value));
                   setCurrentPage(1);
                 }}
@@ -597,7 +657,10 @@ export default function ProblemListClient({
           {/* Page Buttons */}
           <div className="flex items-center gap-1">
             <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              onClick={() => {
+                setIsFetching(true);
+                setCurrentPage((p) => Math.max(1, p - 1));
+              }}
               disabled={currentPage <= 1 || isFetching}
               className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
               aria-label="Previous Page"
@@ -622,7 +685,10 @@ export default function ProblemListClient({
               return (
                 <button
                   key={pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
+                  onClick={() => {
+                    setIsFetching(true);
+                    setCurrentPage(pageNum);
+                  }}
                   disabled={isFetching}
                   className={`w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     isActive
@@ -636,7 +702,10 @@ export default function ProblemListClient({
             })}
 
             <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              onClick={() => {
+                setIsFetching(true);
+                setCurrentPage((p) => Math.min(totalPages, p + 1));
+              }}
               disabled={currentPage >= totalPages || isFetching}
               className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
               aria-label="Next Page"

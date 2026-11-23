@@ -21,7 +21,7 @@ import { TiDocumentText } from "react-icons/ti";
 import { MdOndemandVideo } from "react-icons/md";
 import { RxCountdownTimer } from "react-icons/rx";
 import { TfiCommentAlt } from "react-icons/tfi";
-import { HiOutlineLightBulb } from "react-icons/hi";
+import { HiOutlineLightBulb, HiOutlineCode } from "react-icons/hi";
 import { FiCheckCircle } from "react-icons/fi";
 import { RiLightbulbLine } from "react-icons/ri";
 import { IoIosArrowRoundBack } from "react-icons/io";
@@ -52,6 +52,7 @@ function Practice() {
 
   // Check if mobile view
   const isMobile = useBreakpointValue({ base: true, md: false });
+  const [mobileTab, setMobileTab] = useState('problem');
 
   // Drag to resize state (only for desktop)
   const [leftPanelWidth, setLeftPanelWidth] = useState(40);
@@ -211,38 +212,80 @@ function Practice() {
 
   return (
     <div className="bg-white dark:bg-gray-900 min-h-screen">
-        {/* Mobile Layout: Vertical Stack */}
+        {/* Mobile Layout: Segmented Tabs Switcher + Responsive Panels */}
         {isMobile ? (
-          <div className="flex flex-col w-full">
-            {/* Problem Description Panel - Full width on mobile */}
-            <div className="w-full border-b border-gray-200 dark:border-gray-700">
-              <ProblemDescriptionPanel
-                problem={problem}
-                solved={solved}
-                sortedEditorial={sortedEditorial}
-                renderMathJax={renderMathJax}
-                renderInlineMathJax={renderInlineMathJax}
-                quesId={problem.quesId}
-                isBookmarked={isBookmarked}
-                toggleBookmark={toggleBookmark}
-              />
+          <div className="flex flex-col w-full min-h-screen">
+            {/* Mobile Workspace Tabs Header */}
+            <div className="sticky top-0 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 p-2 shadow-xs">
+              <div className="flex items-center gap-1.5 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setMobileTab('problem')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 text-xs sm:text-sm font-semibold rounded-lg transition-all cursor-pointer ${
+                    mobileTab === 'problem'
+                      ? 'bg-white dark:bg-gray-700 text-amber-600 dark:text-amber-400 shadow-xs'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                  }`}
+                >
+                  <TiDocumentText size={18} />
+                  <span>Problem</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileTab('code')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 text-xs sm:text-sm font-semibold rounded-lg transition-all cursor-pointer ${
+                    mobileTab === 'code'
+                      ? 'bg-white dark:bg-gray-700 text-amber-600 dark:text-amber-400 shadow-xs'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                  }`}
+                >
+                  <HiOutlineCode size={18} />
+                  <span>Code & Run</span>
+                </button>
+              </div>
             </div>
 
-            {/* Compiler Panel - Full width on mobile */}
-            <div className="w-full">
-              <Compiler testcase={testcases} quesId={problem.quesId} starterCodes={problem.starterCodes} />
-            </div>
+            {/* Mobile Workspace Content */}
+            {mobileTab === 'problem' ? (
+              <div className="w-full pb-20">
+                <ProblemDescriptionPanel
+                  problem={problem}
+                  solved={solved}
+                  sortedEditorial={sortedEditorial}
+                  renderMathJax={renderMathJax}
+                  renderInlineMathJax={renderInlineMathJax}
+                  quesId={problem.quesId}
+                  isBookmarked={isBookmarked}
+                  toggleBookmark={toggleBookmark}
+                />
+                {/* Floating Bottom Quick CTA Button on mobile */}
+                <div className="fixed bottom-4 right-4 left-4 z-20 sm:hidden">
+                  <button
+                    type="button"
+                    onClick={() => setMobileTab('code')}
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-amber-500 hover:bg-amber-600 active:scale-98 text-white rounded-xl font-semibold shadow-lg shadow-amber-500/30 transition-all cursor-pointer"
+                  >
+                    <HiOutlineCode size={20} />
+                    <span>Open Code Editor & Run →</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="w-full">
+                <Compiler testcase={testcases} quesId={problem.quesId} starterCodes={problem.starterCodes} />
+              </div>
+            )}
           </div>
         ) : (
           /* Desktop Layout: Horizontal Split with Resize Handle */
           <div
             ref={containerRef}
-            className='flex flex-row w-full'
+            className='flex flex-row w-full h-screen overflow-hidden'
             style={{ height: '100vh' }}
           >
             {/* Problem Description Panel */}
             <div
-              className='relative overflow-hidden border-r border-gray-200 dark:border-gray-700'
+              className='relative border-r border-gray-200 dark:border-gray-700 h-full flex flex-col overflow-hidden no-scrollbar'
               style={{
                 width: `${leftPanelWidth}%`,
                 minWidth: '20%',
@@ -287,7 +330,7 @@ function Practice() {
             </div>
 
             {/* Compiler Panel */}
-            <div className='flex-1 min-w-0'>
+            <div className='flex-1 min-w-0 h-full overflow-y-auto no-scrollbar'>
               <Compiler testcase={testcases} quesId={problem.quesId} starterCodes={problem.starterCodes} />
             </div>
           </div>
@@ -311,8 +354,8 @@ function ProblemDescriptionPanel({ problem, solved, sortedEditorial, renderMathJ
   };
 
   return (
-    <Tabs variant='unstyled' isLazy>
-      <TabList className='sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 overflow-x-auto'>
+    <Tabs variant='unstyled' isLazy className="h-full flex flex-col overflow-hidden">
+      <TabList className='sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 overflow-x-auto no-scrollbar flex-shrink-0'>
         {[
           { icon: <TiDocumentText size={20} />, label: 'Description' },
           { icon: <MdOndemandVideo size={20} />, label: 'Editorial' },
@@ -326,7 +369,7 @@ function ProblemDescriptionPanel({ problem, solved, sortedEditorial, renderMathJ
               borderBottom: '2px solid',
               borderColor: 'amber.500'
             }}
-            className='flex items-center gap-2 py-4 px-6 text-gray-600 dark:text-gray-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors text-sm md:text-base font-medium'
+            className='flex items-center gap-2 py-3.5 px-4 md:px-5 text-gray-600 dark:text-gray-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors text-sm md:text-base font-medium flex-shrink-0 cursor-pointer'
           >
             {tab.icon}
             <span className="hidden sm:inline">{tab.label}</span>
@@ -334,7 +377,7 @@ function ProblemDescriptionPanel({ problem, solved, sortedEditorial, renderMathJ
         ))}
       </TabList>
 
-      <TabPanels className='max-h-[calc(100vh-56px)] overflow-y-auto p-4 md:p-6 space-y-6 bg-white dark:bg-gray-900'>
+      <TabPanels className='flex-1 overflow-y-auto no-scrollbar p-4 md:p-6 space-y-6 bg-white dark:bg-gray-900'>
         {/* Description Tab */}
         <TabPanel className='p-0 space-y-6'>
           <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4'>

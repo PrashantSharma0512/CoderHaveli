@@ -49,15 +49,15 @@ export function useNavigate() {
 
 export function useLocation() {
   const pathname = usePathname() || '/';
-  const [search, setSearch] = React.useState(() =>
-    typeof window !== 'undefined' ? window.location.search || '' : ''
-  );
-
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setSearch(window.location.search || '');
+  const searchParams = useSearchParams();
+  const search = React.useMemo(() => {
+    const s = searchParams?.toString();
+    if (s) return `?${s}`;
+    if (typeof window !== 'undefined' && window.location.search) {
+      return window.location.search;
     }
-  }, [pathname]);
+    return '';
+  }, [searchParams]);
 
   return {
     pathname,

@@ -23,6 +23,7 @@ import {
   Sparkles,
   Check,
   Copy,
+  Code2,
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
@@ -256,13 +257,23 @@ export default function ContestDetailClient({
                 </button>
               )
             ) : isEnded ? (
-              <Link
-                href={`/contests/${contestId}/leaderboard`}
-                className="px-8 py-4 rounded-2xl font-black text-white bg-gray-900 dark:bg-gray-800 hover:bg-black transition-all flex items-center gap-2"
-              >
-                <Trophy className="w-5 h-5 text-amber-400" />
-                <span>View Final Leaderboard</span>
-              </Link>
+              <div className="flex flex-wrap items-center gap-3">
+                <a
+                  href="#contest-problems"
+                  className="px-8 py-4 rounded-2xl font-black text-white bg-gradient-to-r from-amber-500 to-amber-600 hover:opacity-95 shadow-lg shadow-amber-500/20 transition-all flex items-center gap-2"
+                >
+                  <Code2 className="w-5 h-5" />
+                  <span>Solve Contest Problems</span>
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+                <Link
+                  href={`/contests/${contestId}/leaderboard`}
+                  className="px-6 py-4 rounded-2xl font-bold text-white bg-gray-900 dark:bg-gray-800 hover:bg-black transition-all flex items-center gap-2"
+                >
+                  <Trophy className="w-5 h-5 text-amber-400" />
+                  <span>View Leaderboard</span>
+                </Link>
+              </div>
             ) : isRegistered ? (
               <div className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 font-bold">
                 <CheckCircle className="w-5 h-5" />
@@ -279,13 +290,181 @@ export default function ContestDetailClient({
               </button>
             )}
 
-            <Link
-              href={`/contests/${contestId}/leaderboard`}
-              className="px-6 py-4 rounded-2xl font-bold bg-slate-100 dark:bg-gray-800 hover:bg-slate-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors"
-            >
-              Leaderboard
-            </Link>
+            {!isEnded && (
+              <Link
+                href={`/contests/${contestId}/leaderboard`}
+                className="px-6 py-4 rounded-2xl font-bold bg-slate-100 dark:bg-gray-800 hover:bg-slate-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors"
+              >
+                Leaderboard
+              </Link>
+            )}
           </div>
+        </div>
+
+        {/* Contest Problems Section */}
+        <div id="contest-problems" className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl p-6 sm:p-8 space-y-6 scroll-mt-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-gray-800">
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl">
+                  <Code2 className="w-5 h-5" />
+                </div>
+                <h2 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">
+                  Contest Problems
+                </h2>
+                {isEnded && (
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+                    Upsolve & Practice Open
+                  </span>
+                )}
+                {isLive && (
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-300 dark:border-red-800 animate-pulse">
+                    Live Arena
+                  </span>
+                )}
+              </div>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                {isEnded
+                  ? 'The contest has ended. All problems are available to solve and practice with full compiler support, custom test cases, and solutions.'
+                  : isLive
+                  ? 'Contest is live! Compete and solve problems in the arena.'
+                  : 'Problems will unlock as soon as the contest starts.'}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0">
+              <span className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-600 dark:text-gray-300">
+                {contest?.problems?.length || 0} Challenges
+              </span>
+            </div>
+          </div>
+
+          {/* Problems List */}
+          {contest?.problems && contest.problems.length > 0 ? (
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+              {contest.problems.map((prob: any, idx: number) => {
+                const targetId = prob.problemId || prob._id || prob.quesId;
+                const isLocked = Boolean(prob.locked);
+                const difficultyColor =
+                  prob.difficulty?.toLowerCase() === 'easy'
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
+                    : prob.difficulty?.toLowerCase() === 'medium'
+                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'
+                    : 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400';
+
+                return (
+                  <div
+                    key={prob.problemId || prob._id || idx}
+                    className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group hover:bg-slate-50/60 dark:hover:bg-gray-800/40 px-3 -mx-3 rounded-2xl transition-colors"
+                  >
+                    <div className="flex items-start sm:items-center gap-3.5">
+                      <span className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-xs font-black text-gray-700 dark:text-gray-300 shrink-0">
+                        {prob.order || idx + 1}
+                      </span>
+
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          {isLocked ? (
+                            <span className="font-bold text-sm sm:text-base text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                              <span>{prob.title || `Problem ${idx + 1}`}</span>
+                              <Lock className="w-3.5 h-3.5 text-gray-400" />
+                            </span>
+                          ) : targetId ? (
+                            <Link
+                              href={`/problem/${targetId}`}
+                              className="font-bold text-sm sm:text-base text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors flex items-center gap-1.5"
+                            >
+                              <span>{prob.title || `Problem ${idx + 1}`}</span>
+                            </Link>
+                          ) : (
+                            <span className="font-bold text-sm sm:text-base text-gray-900 dark:text-white">
+                              {prob.title || `Problem ${idx + 1}`}
+                            </span>
+                          )}
+
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${difficultyColor}`}>
+                            {prob.difficulty || 'Easy'}
+                          </span>
+
+                          {prob.points && (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                              {prob.points} Pts
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Tags */}
+                        {Array.isArray(prob.tags) && prob.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 pt-0.5">
+                            {prob.tags.map((tag: string, tIdx: number) => (
+                              <span
+                                key={tIdx}
+                                className="text-[10px] px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Problem Actions */}
+                    <div className="flex items-center gap-2 sm:shrink-0 self-end sm:self-center">
+                      {isLocked ? (
+                        <span className="px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-400 bg-gray-100 dark:bg-gray-800 flex items-center gap-1">
+                          <Lock className="w-3 h-3" /> Locked
+                        </span>
+                      ) : isEnded && targetId ? (
+                        <Link
+                          href={`/problem/${targetId}`}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-amber-500 to-amber-600 hover:opacity-95 text-white shadow-sm shadow-amber-500/20 transition-all hover:scale-[1.02]"
+                        >
+                          <span>Solve Problem</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      ) : isLive ? (
+                        isRegistered ? (
+                          <Link
+                            href={`/contests/${contestId}/arena`}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-red-600 to-amber-600 hover:opacity-95 text-white shadow-sm transition-all"
+                          >
+                            <span>Arena</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </Link>
+                        ) : (
+                          <button
+                            onClick={() => handleRegister(true)}
+                            disabled={registering}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer"
+                          >
+                            <span>Register & Solve</span>
+                          </button>
+                        )
+                      ) : targetId ? (
+                        <Link
+                          href={`/problem/${targetId}`}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white transition-all"
+                        >
+                          <span>Solve</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      ) : null}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="p-8 text-center bg-slate-50 dark:bg-gray-800/40 rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 space-y-2">
+              <HelpCircle className="w-8 h-8 text-gray-400 mx-auto" />
+              <p className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                {isEnded
+                  ? 'No problems were recorded for this contest.'
+                  : 'Problems will appear here once published by the organizer.'}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Contest Rules & Guidelines */}

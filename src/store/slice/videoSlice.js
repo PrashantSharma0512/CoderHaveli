@@ -32,6 +32,20 @@ const saveSession = (state) => {
     }
 };
 
+const extractVideoUrl = (lesson) => {
+    if (!lesson) return null;
+    if (typeof lesson === 'string') return lesson;
+    return (
+        lesson.videoUrl ||
+        lesson.url ||
+        lesson.video?.url ||
+        (typeof lesson.video === 'string' ? lesson.video : null) ||
+        lesson.video_url ||
+        lesson.link ||
+        null
+    );
+};
+
 const saved = loadSession();
 
 const initialState = {
@@ -73,7 +87,7 @@ const videoSlice = createSlice({
 
             const resolvedLesson = currentLesson || (state.lessons[currentLessonIndex] ?? null);
             state.currentLesson = resolvedLesson;
-            state.videoUrl = videoUrl || (resolvedLesson?.videoUrl ?? null);
+            state.videoUrl = videoUrl || extractVideoUrl(resolvedLesson);
 
             saveSession(state);
         },
@@ -90,7 +104,9 @@ const videoSlice = createSlice({
                 if (Array.isArray(action.payload.lessons)) state.lessons = action.payload.lessons;
                 if (typeof action.payload.currentLessonIndex === 'number') {
                     state.currentLessonIndex = action.payload.currentLessonIndex;
-                    state.currentLesson = state.lessons[action.payload.currentLessonIndex] || null;
+                    const l = state.lessons[action.payload.currentLessonIndex] || null;
+                    state.currentLesson = l;
+                    if (!state.videoUrl) state.videoUrl = extractVideoUrl(l);
                 }
             }
             saveSession(state);
@@ -101,7 +117,7 @@ const videoSlice = createSlice({
                 state.currentLessonIndex = index;
                 const lesson = state.lessons[index];
                 state.currentLesson = lesson;
-                state.videoUrl = lesson?.videoUrl || null;
+                state.videoUrl = extractVideoUrl(lesson);
                 saveSession(state);
             }
         },
