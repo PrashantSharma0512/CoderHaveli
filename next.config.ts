@@ -32,12 +32,6 @@ const nextConfig: NextConfig = {
       "react-router-dom": "./src/lib/router-compat",
       "@chakra-ui/react": "./src/lib/chakra-compat",
     },
-    rules: {
-      "*.css": {
-        loaders: ["@tailwindcss/turbopack"],
-        as: "*.css",
-      },
-    },
   },
 };
 

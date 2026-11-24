@@ -56,6 +56,12 @@ export function constructMetadata({
     creator: 'CoderHaveli',
     publisher: 'CoderHaveli',
     metadataBase: new URL(SITE_URL),
+    manifest: '/site.webmanifest',
+    icons: {
+      icon: '/lo.jpeg',
+      shortcut: '/lo.jpeg',
+      apple: '/lo.jpeg',
+    },
     alternates: {
       canonical: canonicalUrl,
     },

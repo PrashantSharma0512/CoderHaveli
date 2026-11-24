@@ -147,11 +147,11 @@ function AdminLayout({ children }) {
                     </div>
                 </div>
 
-                <div className="absolute bottom-8 left-8 text-sm text-gray-400 dark:text-gray-500 hidden md:block">
-                    <p>Access Log: Unauthorized attempt • {new Date().toLocaleTimeString()}</p>
+                <div className="absolute bottom-8 left-8 text-sm text-gray-400 dark:text-gray-500 hidden md:block" suppressHydrationWarning>
+                    <p>Access Log: Unauthorized attempt</p>
                 </div>
-                <div className="absolute bottom-8 right-8 text-sm text-gray-400 dark:text-gray-500 hidden md:block">
-                    <p>Request ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
+                <div className="absolute bottom-8 right-8 text-sm text-gray-400 dark:text-gray-500 hidden md:block" suppressHydrationWarning>
+                    <p>Security Perimeter Active</p>
                 </div>
             </div>
         );

@@ -301,6 +301,7 @@ export default function CodeTapasyaCalendar({
             return (
               <div
                 key={dateStr}
+                suppressHydrationWarning
                 onMouseEnter={() => !isFuture && setActiveDate(dateStr)}
                 onClick={() => handleCellClick(dateStr, isFuture, prob)}
                 className={`relative group h-7 sm:h-8 rounded-lg flex flex-col items-center justify-center transition-all ${cellStyle} ${

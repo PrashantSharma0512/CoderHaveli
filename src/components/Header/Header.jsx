@@ -4,7 +4,6 @@ import { IoMdNotificationsOutline } from "react-icons/io";
 import { RiAccountCircleLine, RiMenu3Fill } from "react-icons/ri";
 import { Drawer, DrawerBody, DrawerContent, DrawerHeader, useDisclosure } from '@chakra-ui/react';
 import { Link, NavLink, useNavigate } from 'react-router';
-import ThemeToggle from '../theme/themeToggler';
 import ServerStarter from '../helper/ServerStarter';
 import Logout from '../auth/Logout';
 import { FaUser, FaSignOutAlt, FaLaptopCode, FaShoppingCart } from "react-icons/fa";
@@ -73,9 +72,6 @@ const Header = () => {
           >
             CoderHaveli
           </Link>
-
-          {/* theme toggler */}
-          <ThemeToggle />
 
           {/* Server Restarter */}
           <ServerStarter />

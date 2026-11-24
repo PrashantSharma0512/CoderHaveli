@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import './globals.css';
 import { Providers } from '@/components/providers';
 import ClientLayout from '@/components/layout/ClientLayout';
@@ -33,16 +34,37 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap"
-          rel="stylesheet"
-        />
         <link rel="search" type="application/opensearchdescription+xml" title="CoderHaveli" href="/opensearch.xml" />
-        <link rel="manifest" href="/site.webmanifest" />
-        <script src="https://checkout.razorpay.com/v1/checkout.js" async />
+        {/* Anti-FOUC theme initializer to set dark class before render */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem('theme');
+                  var isDark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                  if (isDark) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body
+        suppressHydrationWarning
+        className="min-h-screen bg-slate-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased font-sans"
+      >
+        {/* External SDKs loaded asynchronously after hydration */}
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="lazyOnload"
+        />
+
+        {/* Structured Data (Schema.org) for SEO & Brand Disambiguation */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
@@ -55,8 +77,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppJsonLd) }}
         />
-      </head>
-      <body className="min-h-screen bg-slate-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased font-sans">
+
         <Providers>
           <ClientLayout>{children}</ClientLayout>
         </Providers>

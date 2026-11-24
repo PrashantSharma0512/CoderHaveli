@@ -144,8 +144,9 @@ export default function ProblemList() {
       <div className="space-y-3 h-[70vh] overflow-auto">
         {filteredQuestions?.length > 0 ? (
           filteredQuestions.map((q) => {
-            const rate = (Math.random() * 100).toFixed(2);
-            const timeEstimate = Math.round(Math.random() * 30) + 5;
+            const numId = Number(q.quesId) || (q._id ? parseInt(q._id.slice(-4), 16) : 1);
+            const rate = (((numId * 37) % 60) + 35).toFixed(1);
+            const timeEstimate = ((numId * 13) % 25) + 10;
             
             return (
               <Link

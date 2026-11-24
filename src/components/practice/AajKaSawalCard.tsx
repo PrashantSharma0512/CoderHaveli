@@ -202,7 +202,9 @@ export default function AajKaSawalCard({
                 <span className="text-[10px] uppercase text-gray-400 mr-1 hidden sm:inline">
                   Next Challenge:
                 </span>
-                <span className="text-amber-600 dark:text-amber-400">{formatTime(secondsLeft)}</span>
+                <span className="text-amber-600 dark:text-amber-400" suppressHydrationWarning>
+                  {formatTime(secondsLeft)}
+                </span>
               </div>
             </div>
           </div>
