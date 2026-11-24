@@ -28,6 +28,7 @@ import { IoIosArrowRoundBack } from "react-icons/io";
 import { useDispatch, useSelector } from 'react-redux';
 import CodeDisplay from '../components/utils/CodeDisplay';
 import Submission from '../components/utils/Submission';
+import ProblemEditorialTab from '../components/practice/ProblemEditorialTab';
 import { Katex, RenderMathText } from '../components/utils/KatexRenderer';
 import { useParams } from 'react-router';
 import Loading from '../components/utils/Loading';
@@ -504,41 +505,13 @@ function ProblemDescriptionPanel({ problem, solved, sortedEditorial, renderMathJ
         </TabPanel>
 
         {/* Editorial Tab */}
-        <TabPanel className='p-0 space-y-6'>
-          <h2 className='text-2xl font-bold text-gray-800 dark:text-gray-100'>Editorial</h2>
-          {sortedEditorial[0]?.videoUrl && (
-            <div className='aspect-w-16 aspect-h-9'>
-              <iframe
-                className='w-full rounded-lg shadow-md'
-                height='400'
-                src={sortedEditorial[0].videoUrl}
-                title='Solution Video'
-                allowFullScreen
-              />
-            </div>
-          )}
-          {sortedEditorial.map((approach, i) => (
-            <div key={approach._id} className='bg-gray-50 dark:bg-gray-800/90 p-4 rounded-lg border border-gray-200 dark:border-gray-700 space-y-4'>
-              <div className="flex flex-wrap items-center gap-3 text-xl font-semibold text-gray-800 dark:text-gray-200">
-                <span>Approach {i + 1}: {approach.approachName}</span>
-                <span className="inline-flex rounded-full px-3 py-1 text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800/40">
-                  {approach.approachType}
-                </span>
-              </div>
-              <p className='text-gray-700 dark:text-gray-300'>{approach.approachDesc}</p>
-              <CodeDisplay code={approach.code} language={approach.language || 'python'} />
-              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                <div>
-                  <h4 className='font-medium text-gray-800 dark:text-gray-200'>Time Complexity:</h4>
-                  <div className='text-gray-700 dark:text-gray-300'>{renderInlineMathJax(approach.time_complexity)}</div>
-                </div>
-                <div>
-                  <h4 className='font-medium text-gray-800 dark:text-gray-200'>Space Complexity:</h4>
-                  <div className='text-gray-700 dark:text-gray-300'>{renderInlineMathJax(approach.space_complexity)}</div>
-                </div>
-              </div>
-            </div>
-          ))}
+        <TabPanel className='p-0'>
+          <ProblemEditorialTab
+            problem={problem}
+            sortedEditorial={sortedEditorial}
+            renderMathJax={renderMathJax}
+            renderInlineMathJax={renderInlineMathJax}
+          />
         </TabPanel>
 
         {/* Submissions Tab */}

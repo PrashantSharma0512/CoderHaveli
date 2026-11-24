@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { ArrowRight, Flame } from 'lucide-react';
 import Carousel from '@/components/utils/Carousel';
 import InteractiveHero from '@/components/home/InteractiveHero';
 import TutorialCard from '@/components/cards/TutorialCard';
@@ -9,6 +11,7 @@ import TestimonialSection from '@/components/cards/Testomonial';
 import FAQSection from '@/components/utils/FAQ';
 import axiosInstance from '@/components/helper/axiosInstance';
 import { useSelector } from 'react-redux';
+import AajKaSawalCard from '@/components/practice/AajKaSawalCard';
 
 const faqs = [
   {
@@ -107,6 +110,37 @@ export default function HomeClient({
     <div className="bg-white text-gray-800 dark:bg-gray-950 dark:text-gray-100 min-h-screen">
       {/* 3D Interactive Hero */}
       <InteractiveHero />
+
+      {/* Aaj Ka Sawal & Code Tapasya Daily Tracker */}
+      <section className="relative py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                <Flame className="w-5 h-5 fill-amber-500 text-amber-600" />
+              </span>
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                Daily Coding Challenge
+              </span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 dark:text-white">
+              Problem of the Day • <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-600">Code Tapasya</span>
+            </h2>
+            <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-2xl mt-1">
+              Build an unstoppable coding habit. Solve today&apos;s challenge and maintain your streak.
+            </p>
+          </div>
+          <Link
+            href="/practice"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 font-bold text-sm border border-amber-300/80 dark:border-amber-800/60 transition-all group shrink-0"
+          >
+            <span>Explore Practice Page & Calendar</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
+
+        <AajKaSawalCard userId={userId} />
+      </section>
 
       {/* Tutorials Section */}
       <section className="relative py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">

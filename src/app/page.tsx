@@ -4,10 +4,21 @@ import { serverFetch } from '@/lib/api';
 import { constructMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'CoderHaveli — Live Coding Contests, DSA & Learning Platform',
+  title: 'CoderHaveli — India\'s Premier Coding Contests, DSA Practice & Code Tapasya',
   description:
-    'Master Data Structures & Algorithms, compete in real-time coding contests, climb leaderboards, and elevate your programming career with CoderHaveli.',
+    'CoderHaveli (coderhaveli.com) is India\'s leading online coding platform. Master Data Structures & Algorithms (DSA), solve Code Tapasya daily challenges, compete in live contests, and crack top tech interviews.',
   canonical: '/',
+  keywords: [
+    'CoderHaveli',
+    'coderhaveli.com',
+    'Coder Haveli',
+    'CoderHaveli Official',
+    'Code Tapasya',
+    'Aaj Ka Sawal CoderHaveli',
+    'DSA practice problems',
+    'competitive programming India',
+    'online coding contests',
+  ],
 });
 
 export const revalidate = 60; // ISR: revalidate every 60 seconds

@@ -15,6 +15,9 @@ import {
   ChevronDown
 } from 'lucide-react';
 import axiosInstance from '@/components/helper/axiosInstance';
+import { useSelector } from 'react-redux';
+import AajKaSawalCard from './AajKaSawalCard';
+import CodeTapasyaCalendar from './CodeTapasyaCalendar';
 
 interface ProblemListClientProps {
   initialQuestions?: any[];
@@ -34,6 +37,7 @@ export default function ProblemListClient({
   initialTopics = [],
   initialCounts = null,
 }: ProblemListClientProps) {
+  const userId = useSelector((state: any) => state?.login?.userId);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
@@ -284,6 +288,16 @@ export default function ProblemListClient({
             </span>
           </div>
         )}
+      </div>
+
+      {/* Aaj Ka Sawal & Code Tapasya Calendar Section (Always Open & Compact) */}
+      <div className="mb-8 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <div className="lg:col-span-7">
+          <AajKaSawalCard userId={userId} />
+        </div>
+        <div className="lg:col-span-5">
+          <CodeTapasyaCalendar userId={userId} />
+        </div>
       </div>
 
       {/* Main Filter Section */}

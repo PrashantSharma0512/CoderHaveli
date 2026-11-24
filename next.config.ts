@@ -2,6 +2,12 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // @ts-ignore
+    agentUpgrade: "security",
+    // @ts-ignore
+    cpus: 1,
+  },
   async rewrites() {
     const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
     return [

@@ -4,11 +4,20 @@ import { serverFetch } from '@/lib/api';
 import { constructMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Data Structures & Algorithms Practice Problems',
+  title: 'DSA Practice Problems & Code Tapasya',
   description:
-    'Explore curated DSA coding problems with multi-language code editors, test cases, and in-depth video solutions.',
+    'Explore curated DSA coding problems on CoderHaveli with multi-language code editors, test cases, video solutions, and daily Code Tapasya streak tracking.',
   canonical: '/practice',
-  keywords: ['DSA practice', 'coding problems', 'algorithms', 'data structures', 'interview preparation'],
+  keywords: [
+    'CoderHaveli practice',
+    'CoderHaveli DSA',
+    'Code Tapasya',
+    'DSA practice',
+    'coding problems',
+    'algorithms',
+    'data structures',
+    'interview preparation',
+  ],
 });
 
 export const revalidate = 60; // ISR 60s
