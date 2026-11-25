@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, createContext, useContext } from 'react';
-import toast from 'react-hot-toast';
+import toast from '@/components/common/CoderHaveliToast';
 
 export function useDisclosure(initialState = false) {
   const [isOpen, setIsOpen] = useState(initialState);

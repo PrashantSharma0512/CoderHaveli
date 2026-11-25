@@ -8,7 +8,7 @@ import TestimonialSection from '../components/cards/Testomonial';
 import FAQSection from '../components/utils/FAQ';
 import axiosInstance from '../components/helper/axiosInstance';
 import { useSelector } from 'react-redux';
-import toast from 'react-hot-toast';
+import toast from '@/components/common/CoderHaveliToast';
 
 const faqs = [
     { question: "What is CoderHaveli?", answer: "CoderHaveli is an online platform that helps developers enhance their coding skills through structured courses, tutorials, and projects." },

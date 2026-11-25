@@ -8,6 +8,8 @@ import AnalyticsContent from './AnalyticsContent';
 import UploadContent from './UploadContent';
 import ApproachesContent from './ApproachesContent'; // Add this import
 import AnalyticsTraffic from './AnalyticsTraffic';
+import HaveliCoinsContent from './HaveliCoinsContent';
+import PrivacyPolicyContent from './PrivacyPolicyContent';
 
 const ContentContainer = ({
   activeTab,
@@ -55,6 +57,8 @@ const ContentContainer = ({
         setApproaches={setApproaches}
       />,
       AnalyticsTraffic: () => <AnalyticsTraffic />,
+      coins: () => <HaveliCoinsContent />,
+      privacy: () => <PrivacyPolicyContent />,
     };
 
     return components[activeTab] ? components[activeTab]() : components.dashboard();

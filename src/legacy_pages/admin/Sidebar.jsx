@@ -13,7 +13,9 @@ import {
   Menu,
   X,
   TrendingUp,
-  Trophy
+  Trophy,
+  Coins,
+  ShieldCheck
 } from 'lucide-react';
 
 const Sidebar = ({ activeTab, setActiveTab, mobileMenuOpen, user }) => {
@@ -24,6 +26,18 @@ const Sidebar = ({ activeTab, setActiveTab, mobileMenuOpen, user }) => {
         label: 'Dashboard',
         icon: <LayoutDashboard className="w-5 h-5" />,
         color: 'text-blue-400'
+      },
+      {
+        id: 'coins',
+        label: 'Haveli Coins',
+        icon: <Coins className="w-5 h-5" />,
+        color: 'text-amber-500'
+      },
+      {
+        id: 'privacy',
+        label: 'Privacy Policy',
+        icon: <ShieldCheck className="w-5 h-5" />,
+        color: 'text-emerald-500'
       },
       {
         id: 'contests',

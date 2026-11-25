@@ -12,7 +12,7 @@ import {
   RefreshCw,
   Award
 } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '@/components/common/CoderHaveliToast';
 import axiosInstance from '../../../components/helper/axiosInstance';
 
 export default function AdminContestParticipants() {

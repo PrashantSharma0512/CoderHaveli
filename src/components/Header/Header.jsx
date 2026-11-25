@@ -7,6 +7,7 @@ import { Link, NavLink, useNavigate } from 'react-router';
 import ServerStarter from '../helper/ServerStarter';
 import Logout from '../auth/Logout';
 import { FaUser, FaSignOutAlt, FaLaptopCode, FaShoppingCart } from "react-icons/fa";
+import HaveliCoinIcon from "../common/HaveliCoinIcon";
 import { useDispatch, useSelector } from 'react-redux';
 import axiosInstance from '../helper/axiosInstance';
 import { userAvatar, userDetails } from '../../store/slice/authSlice';
@@ -26,6 +27,7 @@ const Header = () => {
     avatar: "https://th.bing.com/th/id/OIP.18ygnwZ7ZIBpWdtoy6cG1QHaHk?o=7rm=3&rs=1&pid=ImgDetMain&cb=idpwebpc2" // null if no avatar
   });
   const [cartCount, setCartCount] = useState(0);
+  const [haveliCoins, setHaveliCoins] = useState(0);
 
   const navItems = [
     { name: 'Home', slug: '/' },
@@ -42,6 +44,7 @@ const Header = () => {
     const fetchUser = async () => {
       const response = await axiosInstance.get(`/api/get-profile?id=${userId}`)
       setUser(response.data.user)
+      setHaveliCoins(response.data.user?.haveliCoins ?? 0)
       dispatch(userDetails(response.data.user))
       dispatch(userAvatar(response.data.user.avatar))
     }
@@ -53,10 +56,31 @@ const Header = () => {
         console.error("Error fetching cart count:", error);
       }
     };
+    const fetchCoins = async () => {
+      try {
+        const res = await axiosInstance.get('/api/daily/coins');
+        if (res.data?.success && res.data?.data) {
+          setHaveliCoins(res.data.data.haveliCoins ?? 0);
+        }
+      } catch (err) {
+        // fallback to profile value
+      }
+    };
     if (userId) {
       fetchUser();
       fetchCartCount();
+      fetchCoins();
     }
+
+    const handleCoinsUpdated = (e) => {
+      if (e?.detail?.balance !== undefined && e?.detail?.balance !== null) {
+        setHaveliCoins(e.detail.balance);
+      } else if (userId) {
+        fetchCoins();
+      }
+    };
+    window.addEventListener('haveli-coins-updated', handleCoinsUpdated);
+    return () => window.removeEventListener('haveli-coins-updated', handleCoinsUpdated);
   }, [userId])
 
   return (
@@ -106,6 +130,17 @@ const Header = () => {
             >
               <IoMdNotificationsOutline size={26} />
             </button>
+
+            {isAuthenticated && (
+              <Link
+                to="/profile#coins"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-300/80 dark:border-amber-700/60 text-xs font-bold hover:scale-105 transition-transform shadow-xs"
+                title="Your Haveli Coins Wallet"
+              >
+                <HaveliCoinIcon size={18} />
+                <span>{haveliCoins}</span>
+              </Link>
+            )}
 
             <div className="flex items-center space-x-4 " onClick={() => navigate('/addtocart')}>
               <button className="p-2 rounded-full bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 relative cursor-pointer">

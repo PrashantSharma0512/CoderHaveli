@@ -86,8 +86,8 @@ function MyCourse() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {userCourse && userCourse?.map((course) => (
-                                <div key={course._id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-xs dark:shadow-none overflow-hidden hover:border-amber-400 dark:hover:border-amber-500/50">
+                            {userCourse && userCourse?.map((course, idx) => (
+                                <div key={`${course?._id || course?.courseDetails?._id || 'course'}-${idx}`} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-xs dark:shadow-none overflow-hidden hover:border-amber-400 dark:hover:border-amber-500/50">
                                     <div className="relative">
                                         <img
                                             src={course.courseImage?.url || '/course-placeholder.jpg'}
@@ -103,20 +103,20 @@ function MyCourse() {
 
                                     <div className="p-5">
                                         <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-2 line-clamp-2">
-                                            {course.courseDetails.title}
+                                            {course?.courseDetails?.title || course?.title || 'Untitled Course'}
                                         </h3>
                                         <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
-                                            {course.courseDetails.description}
+                                            {course?.courseDetails?.description || course?.description || 'Course content'}
                                         </p>
 
                                         <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">
                                             <div className="flex items-center">
                                                 <FiUser className="mr-1" />
-                                                <span>{course.instructor?.name || 'Unknown Instructor'}</span>
+                                                <span>{course?.instructor?.name || 'Unknown Instructor'}</span>
                                             </div>
                                             <div className="flex items-center">
                                                 <FiClock className="mr-1" />
-                                                <span>{course.courseDetails.duration || '0'} hours</span>
+                                                <span>{course?.courseDetails?.duration || '0'} hours</span>
                                             </div>
                                         </div>
 
@@ -136,13 +136,20 @@ function MyCourse() {
                                                 </span>
                                             </div>
 
-                                            <Link
-                                                to={`/tutorial-page?id=${course.courseDetails._id}&type=tutorial`}
-                                                className="flex items-center text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 font-medium text-sm"
-                                            >
-                                                View Course
-                                                <FiArrowRight className="ml-1" />
-                                            </Link>
+                                            {(() => {
+                                                const targetId = course?.courseDetails?._id || course?.courseId || course?._id;
+                                                return targetId ? (
+                                                    <Link
+                                                        to={`/tutorial-page?id=${targetId}&type=tutorial`}
+                                                        className="flex items-center text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 font-medium text-sm"
+                                                    >
+                                                        View Course
+                                                        <FiArrowRight className="ml-1" />
+                                                    </Link>
+                                                ) : (
+                                                    <span className="text-xs text-gray-400">Unavailable</span>
+                                                );
+                                            })()}
                                         </div>
                                     </div>
 

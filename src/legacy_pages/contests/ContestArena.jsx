@@ -26,7 +26,7 @@ import {
   Code2
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
-import toast from 'react-hot-toast';
+import toast from '@/components/common/CoderHaveliToast';
 import Confetti from 'react-confetti';
 import axiosInstance from '../../components/helper/axiosInstance';
 

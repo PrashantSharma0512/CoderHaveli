@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { Provider, useDispatch } from 'react-redux';
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from '@/components/common/CoderHaveliToast';
 import store from '../store/store';
 import { checkAuth } from '../store/slice/authSlice';
 import ThemeToggle from './theme/themeToggler';

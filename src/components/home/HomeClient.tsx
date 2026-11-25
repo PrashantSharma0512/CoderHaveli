@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Flame } from 'lucide-react';
+import { ArrowRight, Flame, Trophy } from 'lucide-react';
 import Carousel from '@/components/utils/Carousel';
 import InteractiveHero from '@/components/home/InteractiveHero';
 import TutorialCard from '@/components/cards/TutorialCard';
@@ -130,13 +130,22 @@ export default function HomeClient({
               Build an unstoppable coding habit. Solve today&apos;s challenge and maintain your streak.
             </p>
           </div>
-          <Link
-            href="/practice"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 font-bold text-sm border border-amber-300/80 dark:border-amber-800/60 transition-all group shrink-0"
-          >
-            <span>Explore Practice Page & Calendar</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <Link
+              href="/leaderboard"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 font-bold text-sm border border-purple-300/80 dark:border-purple-700/60 transition-all shrink-0"
+            >
+              <Trophy className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+              <span>Tapasya Ranks</span>
+            </Link>
+            <Link
+              href="/practice"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 font-bold text-sm border border-amber-300/80 dark:border-amber-800/60 transition-all group shrink-0"
+            >
+              <span>Explore Practice Page & Calendar</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
         </div>
 
         <AajKaSawalCard userId={userId} />

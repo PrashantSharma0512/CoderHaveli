@@ -17,7 +17,7 @@ import {
 import axios from "axios";
 import axiosInstance from '../components/helper/axiosInstance';
 import { useSelector } from "react-redux";
-import toast from "react-hot-toast";
+import toast from '@/components/common/CoderHaveliToast';
 
 function Checkout() {
   const [loading, setLoading] = useState(false);

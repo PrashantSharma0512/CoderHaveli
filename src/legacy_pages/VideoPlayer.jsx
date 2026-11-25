@@ -31,7 +31,7 @@ import {
   FiShare2,
   FiAward
 } from 'react-icons/fi';
-import toast from 'react-hot-toast';
+import toast from '@/components/common/CoderHaveliToast';
 import axiosInstance from '../components/helper/axiosInstance';
 import {
   setPlaybackSession,

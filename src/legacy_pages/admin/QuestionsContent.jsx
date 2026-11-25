@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import QuestionsTable from './QuestionsTable';
 import QuestionModal from './QuestionModal';
-import toast from 'react-hot-toast';
+import toast from '@/components/common/CoderHaveliToast';
 import axiosInstance from '../../components/helper/axiosInstance';
 
 const QuestionsContent = ({ questions, setQuestions }) => {

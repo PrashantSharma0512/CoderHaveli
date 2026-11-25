@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router';
+import { useLocation, useNavigate, useParams, Link } from 'react-router';
 import {
   FiClock,
   FiUser,
@@ -25,13 +25,16 @@ import {
 } from 'react-icons/fi';
 import axiosInstance from '../components/helper/axiosInstance';
 import { useDispatch, useSelector } from 'react-redux';
-import toast from 'react-hot-toast';
+import toast from '@/components/common/CoderHaveliToast';
 import { setPlaybackSession } from '../store/slice/videoSlice';
 
 const CourseDetail = () => {
   const location = useLocation();
+  const params = useParams();
   const queryParams = new URLSearchParams(location.search);
-  const urlId = queryParams.get('id');
+  const slugParam = Array.isArray(params?.slug) ? params.slug[0] : params?.slug;
+  const rawUrlId = queryParams.get('id') || slugParam;
+  const urlId = rawUrlId && rawUrlId !== 'undefined' && rawUrlId !== 'null' ? rawUrlId : null;
   const urlType = queryParams.get('type') || 'tutorial';
 
   const [course, setCourse] = useState(null);
@@ -67,14 +70,16 @@ const CourseDetail = () => {
           setIsCheckingEnrollment(false);
         }
       } catch (error) {
-        console.error('Error fetching course:', error);
+        console.warn('Error fetching course:', error?.response?.data?.message || error?.message);
         setIsCheckingEnrollment(false);
         toast.error('Failed to load course details');
       }
     };
 
-    if (urlId) {
+    if (urlId && /^[a-f\d]{24}$/i.test(urlId)) {
       fetchDetailedCourse();
+    } else {
+      setIsCheckingEnrollment(false);
     }
   }, [urlId, urlType, userId]);
 

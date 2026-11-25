@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import hljs from "highlight.js";
 import "highlight.js/styles/monokai.css";
 import { FaRegCopy, FaCheck } from "react-icons/fa6";
-import toast from "react-hot-toast";
+import toast from '@/components/common/CoderHaveliToast';
 
 const LANGUAGE_LABELS = {
   javascript: "JavaScript",

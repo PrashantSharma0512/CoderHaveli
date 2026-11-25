@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from "react";
+import toast from '@/components/common/CoderHaveliToast';
 import AceEditor from "react-ace";
 import { CgFormatLeft } from "react-icons/cg";
 import { LuFullscreen, LuMinimize2 } from "react-icons/lu";
@@ -157,7 +158,10 @@ function Compiler({ testcase, quesId, starterCodes }) {
   const fontSizes = [12, 14, 16, 18, 20, 22, 24, 26, 28, 30];
 
   const [editorInstance, setEditorInstance] = useState(null);
+  const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
   const containerRef = useRef(null);
+  const autosaveTimerRef = useRef(null);
+  const isHydratingCodeRef = useRef(false);
 
   useEffect(() => {
     if (!containerRef.current || !editorInstance) return;
@@ -322,6 +326,24 @@ function Compiler({ testcase, quesId, starterCodes }) {
 
       setOutput(response.data);
       setLoading(false);
+      setSaveStatus('saved');
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent("coderhaveli-submission-saved", {
+          detail: { quesId, isFullyPassed: !!response.data?.isFullyPassed }
+        }));
+      }
+      const ds = response.data?.dailyStreak;
+      if (ds?.isDailyProblem && ds?.isNewSolve) {
+        if (ds.newCoinBalance !== null && ds.newCoinBalance !== undefined) {
+          window.dispatchEvent(new CustomEvent("haveli-coins-updated", { detail: { balance: ds.newCoinBalance } }));
+        }
+        const totalCoins = (ds.coinsEarned || 0) + (ds.bonusCoinsEarned || 0);
+        if (totalCoins > 0) {
+          toast.success(`AajKaSawal Solved! +${totalCoins} Haveli Coin${totalCoins === 1 ? '' : 's'} earned!`, { duration: 5000 });
+        } else {
+          toast.success(`AajKaSawal Solved! ${ds.currentStreak} Day Streak!`, { duration: 4000 });
+        }
+      }
     } catch (error) {
       console.error(error);
       setLoading(false);
@@ -337,40 +359,175 @@ function Compiler({ testcase, quesId, starterCodes }) {
   useEffect(() => {
     if (!quesId) return;
 
-    // Fast path: Use embedded starter code immediately (0ms latency, 0 network requests)
-    const langKey = selectedLang?.toLowerCase();
-    if (starterCodes && starterCodes[langKey]) {
-      setCode(starterCodes[langKey]);
-      setIsEditorLoading(false);
-      return;
+    const langKey = (selectedLang || 'javascript').toLowerCase();
+    const draftKey = `coderhaveli_code_${userId || 'guest'}_${quesId}_${langKey}`;
+    let isCancelled = false;
+    isHydratingCodeRef.current = true;
+
+    // 1. Check localStorage draft immediately (0ms)
+    let localDraft = null;
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed.code === 'string') {
+          localDraft = parsed;
+        }
+      }
+    } catch {
+      // ignore corrupted local draft
     }
 
-    let isCancelled = false;
-    const fetchStarterCode = async () => {
-      setIsEditorLoading(true);
+    const starterFallback = starterCodes?.[langKey] || null;
+    if (localDraft) {
+      setCode(localDraft.code);
+      setSaveStatus('saved');
+      setIsEditorLoading(false);
+    } else if (starterFallback) {
+      setCode(starterFallback);
+      setSaveStatus('idle');
+      setIsEditorLoading(false);
+    }
+
+    // 2. Sync with cloud saved code (if logged in) and/or fetch starter code
+    const loadSavedOrStarter = async () => {
+      if (!localDraft && !starterFallback) {
+        setIsEditorLoading(true);
+      }
       try {
-        const response = await axiosInstance.get(
-          `/api/problem/get-starter-code?quesId=${quesId}&language=${selectedLang}`
-        );
-        if (!isCancelled) {
-          setCode(response.data.code || "");
+        if (userId) {
+          const savedRes = await axiosInstance
+            .get(`/api/problem/code/${quesId}?language=${langKey}`)
+            .catch(() => null);
+          const cloudCode = savedRes?.data?.code;
+          const cloudTime = savedRes?.data?.modifiedAt ? new Date(savedRes.data.modifiedAt).getTime() : 0;
+
+          if (!isCancelled && typeof cloudCode === 'string') {
+            if (!localDraft || cloudTime > (localDraft.updatedAt || 0)) {
+              setCode(cloudCode);
+              setSaveStatus('saved');
+              try {
+                localStorage.setItem(draftKey, JSON.stringify({ code: cloudCode, updatedAt: cloudTime || Date.now() }));
+              } catch {
+                // ignore storage quota errors
+              }
+              isHydratingCodeRef.current = false;
+              setIsEditorLoading(false);
+              return;
+            }
+          }
+        }
+
+        if (!localDraft && !starterFallback) {
+          const response = await axiosInstance.get(
+            `/api/problem/get-starter-code?quesId=${quesId}&language=${selectedLang}`
+          );
+          if (!isCancelled) {
+            setCode(response.data.code || "");
+          }
         }
       } catch (error) {
-        console.error("Error in Fetching Starter Code", error);
-        if (!isCancelled) {
+        console.error("Error loading saved/starter code:", error);
+        if (!isCancelled && !localDraft && !starterFallback) {
           setCode("");
         }
       } finally {
         if (!isCancelled) {
+          isHydratingCodeRef.current = false;
           setIsEditorLoading(false);
         }
       }
     };
-    fetchStarterCode();
+
+    loadSavedOrStarter();
     return () => {
       isCancelled = true;
+      if (autosaveTimerRef.current) {
+        clearTimeout(autosaveTimerRef.current);
+      }
     };
-  }, [quesId, selectedLang, starterCodes]);
+  }, [quesId, selectedLang, starterCodes, userId]);
+
+  // Listen for submission restore events from Submission tab
+  useEffect(() => {
+    const handleLoadSubmissionCode = (e) => {
+      const { quesId: targetQuesId, language, sourceCode } = e.detail || {};
+      if (String(targetQuesId) !== String(quesId) || typeof sourceCode !== 'string') return;
+      const langKey = (language || selectedLang).toLowerCase();
+      if (langKey !== selectedLang.toLowerCase()) {
+        setSelectedLang(langKey);
+      }
+      setCode(sourceCode);
+      setSaveStatus('saved');
+      try {
+        const draftKey = `coderhaveli_code_${userId || 'guest'}_${quesId}_${langKey}`;
+        localStorage.setItem(draftKey, JSON.stringify({ code: sourceCode, updatedAt: Date.now() }));
+      } catch {
+        // ignore
+      }
+      toast.success('Loaded submitted code into editor');
+    };
+    window.addEventListener('coderhaveli-load-code', handleLoadSubmissionCode);
+    return () => window.removeEventListener('coderhaveli-load-code', handleLoadSubmissionCode);
+  }, [quesId, selectedLang, userId]);
+
+  const persistCodeToCloud = async (codeToSave, langToSave) => {
+    if (!userId || !quesId) return;
+    try {
+      setSaveStatus('saving');
+      await axiosInstance.post('/api/problem/save-code', {
+        quesId,
+        language: langToSave,
+        code: codeToSave
+      });
+      setSaveStatus('saved');
+    } catch {
+      setSaveStatus('error');
+    }
+  };
+
+  const handleCodeChange = (newValue) => {
+    setCode(newValue);
+    if (isHydratingCodeRef.current || !quesId) return;
+
+    const langKey = (selectedLang || 'javascript').toLowerCase();
+    const draftKey = `coderhaveli_code_${userId || 'guest'}_${quesId}_${langKey}`;
+    try {
+      localStorage.setItem(draftKey, JSON.stringify({ code: newValue, updatedAt: Date.now() }));
+    } catch {
+      // ignore storage quota errors
+    }
+
+    if (userId) {
+      setSaveStatus('saving');
+      if (autosaveTimerRef.current) {
+        clearTimeout(autosaveTimerRef.current);
+      }
+      autosaveTimerRef.current = setTimeout(() => {
+        persistCodeToCloud(newValue, langKey);
+      }, 1500);
+    } else {
+      setSaveStatus('saved');
+    }
+  };
+
+  const handleResetToStarter = () => {
+    const langKey = (selectedLang || 'javascript').toLowerCase();
+    const draftKey = `coderhaveli_code_${userId || 'guest'}_${quesId}_${langKey}`;
+    const starter = starterCodes?.[langKey] || '';
+    try {
+      localStorage.removeItem(draftKey);
+    } catch {
+      // ignore
+    }
+    setCode(starter);
+    if (userId) {
+      persistCodeToCloud(starter, langKey);
+    } else {
+      setSaveStatus('idle');
+    }
+    toast.success('Reset to starter code');
+  };
 
   const confettiColors = useColorModeValue(
     ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722'],
@@ -762,6 +919,32 @@ function Compiler({ testcase, quesId, starterCodes }) {
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Autosave Status Indicator */}
+            {saveStatus !== 'idle' && (
+              <span
+                className={`hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold ${
+                  saveStatus === 'saving'
+                    ? 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40'
+                    : saveStatus === 'error'
+                      ? 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40'
+                      : 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40'
+                }`}
+                title="Code is automatically saved locally and to your account"
+              >
+                {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'error' ? 'Local Draft' : 'Saved'}
+              </span>
+            )}
+
+            {/* Reset to Starter Code */}
+            <button
+              type="button"
+              onClick={handleResetToStarter}
+              className="p-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 text-xs text-gray-700 dark:text-gray-300 cursor-pointer"
+              title="Reset to starter code"
+            >
+              Reset
+            </button>
+
             {/* Word Wrap Toggle */}
             <button
               type="button"
@@ -819,7 +1002,7 @@ function Compiler({ testcase, quesId, starterCodes }) {
                 mode={selectedLang === "cpp" ? "c_cpp" : selectedLang}
                 theme={selectedTheme || "monokai"}
                 value={code || ""}
-                onChange={(newValue) => setCode(newValue)}
+                onChange={handleCodeChange}
                 fontSize={selectedFont}
                 width="100%"
                 height={isFullScreen ? "100%" : "min(52vh, 460px)"}

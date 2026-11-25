@@ -6,7 +6,7 @@ import {
   ChevronUp, ChevronDown, Eye, EyeOff, Search,
   Video, Clock, HardDrive
 } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '@/components/common/CoderHaveliToast';
 
 const languageOptions = [
   { value: 'javascript', label: 'JavaScript', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' },

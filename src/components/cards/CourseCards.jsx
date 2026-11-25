@@ -5,7 +5,7 @@ import { FiShoppingCart, FiStar, FiClock, FiShoppingBag } from "react-icons/fi";
 import { Link } from "react-router";
 import axiosInstance from "../helper/axiosInstance";
 import { useSelector, useDispatch } from "react-redux";
-import toast from "react-hot-toast";
+import toast from '@/components/common/CoderHaveliToast';
 import { addItem } from "../../store/slice/cartSlice";
 
 export default function CourseCard({ imageUrl, title, price, category, duration, rating = 4.0, _id, cart, setCart, description, ...props }) {

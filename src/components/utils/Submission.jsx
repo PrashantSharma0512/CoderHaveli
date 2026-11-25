@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axiosInstance from '../helper/axiosInstance';
 import { useSelector } from 'react-redux';
 
@@ -8,25 +8,50 @@ function Submission({ quesId }) {
     const [error, setError] = useState(null);
     const userId = useSelector((state) => state.login.userId);
 
-    useEffect(() => {
-        const fetchSubmission = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-                const response = await axiosInstance.get(`/api/problem/get-submission/${userId}/${quesId}`);
-                setSubmission(response.data);
-            } catch (error) {
-                console.error("Error fetching submission data", error);
-                setError("Failed to load submissions. Please try again.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (userId && quesId) {
-            fetchSubmission();
+    const fetchSubmission = useCallback(async () => {
+        if (!userId || !quesId) {
+            setLoading(false);
+            return;
+        }
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await axiosInstance.get(`/api/problem/get-submission/${userId}/${quesId}`);
+            setSubmission(Array.isArray(response.data) ? response.data : []);
+        } catch (err) {
+            console.error("Error fetching submission data", err);
+            setError("Failed to load submissions. Please try again.");
+        } finally {
+            setLoading(false);
         }
     }, [userId, quesId]);
+
+    useEffect(() => {
+        fetchSubmission();
+    }, [fetchSubmission]);
+
+    useEffect(() => {
+        const handleRefresh = (e) => {
+            if (!e?.detail?.quesId || String(e.detail.quesId) === String(quesId)) {
+                fetchSubmission();
+            }
+        };
+        window.addEventListener('coderhaveli-submission-saved', handleRefresh);
+        return () => window.removeEventListener('coderhaveli-submission-saved', handleRefresh);
+    }, [quesId, fetchSubmission]);
+
+    const handleLoadCode = (row) => {
+        if (!row?.sourceCode) return;
+        window.dispatchEvent(
+            new CustomEvent('coderhaveli-load-code', {
+                detail: {
+                    quesId,
+                    language: row.Language,
+                    sourceCode: row.sourceCode
+                }
+            })
+        );
+    };
 
     const getStatusBadge = (status) => {
         const statusClass = {
@@ -86,47 +111,56 @@ function Submission({ quesId }) {
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead className="bg-gray-100 dark:bg-gray-700">
                             <tr>
-                                {submission.length > 0 &&
-                                    Object.keys(submission[0]).map((key, index) => (
-                                        <th
-                                            key={index}
-                                            className="px-3 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-300"
-                                        >
-                                            <div className="whitespace-nowrap">
-                                                {key.replace('_', ' ')}
-                                            </div>
-                                        </th>
-                                    ))
-                                }
+                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-300">
+                                    Language
+                                </th>
+                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-300">
+                                    Status
+                                </th>
+                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-300">
+                                    Execution Time
+                                </th>
+                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-300">
+                                    Submission Time
+                                </th>
+                                <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-300">
+                                    Code
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                             {submission.map((data, index) => (
-                                <tr key={index} className={index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-800'}>
-                                    {Object.entries(data).map(([key, value], i) => (
-                                        <td key={i} className="px-3 sm:px-6 py-6 whitespace-nowrap capitalize font-semibold text-sm text-gray-700 dark:text-gray-300">
-                                            <div className="flex items-center">
-                                                {key === 'Status' ? (
-                                                    getStatusBadge(value)
-                                                ) : key === 'Submission Time' ? (
-                                                    <span className="whitespace-nowrap">{formatDate(value)}</span>
-                                                ) : key === 'Execution Time' ? (
-                                                    `${value} ms`
-                                                ) : (
-                                                    value
-                                                )}
-                                            </div>
-                                        </td>
-                                    ))}
+                                <tr key={data._id || index} className={index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-800'}>
+                                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap capitalize font-semibold text-sm text-gray-700 dark:text-gray-300">
+                                        {data.Language}
+                                    </td>
+                                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm">
+                                        {getStatusBadge(data.Status)}
+                                    </td>
+                                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        {data['Execution Time']} ms
+                                    </td>
+                                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                                        {formatDate(data['Submission Time'])}
+                                    </td>
+                                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-right text-sm">
+                                        {data.sourceCode ? (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleLoadCode(data)}
+                                                className="px-3 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400 text-xs font-bold cursor-pointer"
+                                            >
+                                                Load Code
+                                            </button>
+                                        ) : (
+                                            <span className="text-xs text-gray-400">—</span>
+                                        )}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
-            </div>
-
-            <div className="mt-3 text-sm text-gray-600 dark:text-gray-400">
-                <p>Showing {submission.length} submission{submission.length !== 1 ? 's' : ''}</p>
             </div>
         </div>
     );

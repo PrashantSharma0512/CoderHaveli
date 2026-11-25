@@ -5,7 +5,7 @@ import { FaTrash, FaPlus, FaMinus, FaArrowLeft, FaShoppingCart, FaLock } from 'r
 import { Link } from 'react-router';
 import axiosInstance from '../components/helper/axiosInstance';
 import { useSelector } from 'react-redux';
-import toast from 'react-hot-toast';
+import toast from '@/components/common/CoderHaveliToast';
 
 const AddToCartPage = () => {
     const [cartItems, setCartItems] = useState([]);

@@ -24,6 +24,23 @@ const Register = () => {
   const [cooldown, setCooldown] = useState(0);
   const navigate = useNavigate();
 
+  // Pre-fill email & show notice if redirected from Newsletter Subscribe
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const preEmail = params.get('email');
+    const fromNewsletter = params.get('newsletter') === '1';
+    if (preEmail) {
+      setForm((prev) => ({ ...prev, email: preEmail }));
+    }
+    if (fromNewsletter) {
+      setMessage({
+        text: 'Please register your account first to subscribe to the CoderHaveli newsletter!',
+        type: 'success'
+      });
+    }
+  }, []);
+
   // Handle cooldown timer
   useEffect(() => {
     if (cooldown > 0) {

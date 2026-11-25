@@ -4,6 +4,7 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import Header from '../Header/Header';
 import Footer from '../footer/Footer';
+import PrivacyPolicyModal from '../common/PrivacyPolicyModal';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '';
@@ -27,6 +28,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </React.Suspense>
       </main>
       {!hideFooter && <Footer />}
+      <PrivacyPolicyModal />
     </div>
   );
 }

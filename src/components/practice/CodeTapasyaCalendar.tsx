@@ -134,7 +134,7 @@ export default function CodeTapasyaCalendar({
   const startingDayOffset = (firstDayOfMonth.getDay() + 6) % 7; // Monday-first
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-  const todayStr = calendarData?.todayDate || new Date().toISOString().split('T')[0];
+  const todayStr = calendarData?.todayDate || new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
   const solvedSet = new Set(calendarData?.solvedDates || []);
 
   // Helper to get problem info for a specific date

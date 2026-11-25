@@ -195,10 +195,31 @@ function Practice() {
     };
   }, [isDragging, isMobile]);
 
-  if (loading) return <Loading />;
-
   const problem = problemList[0] || {};
   const sortedEditorial = editorialData;
+
+  useEffect(() => {
+    if (!userId || !problem?.quesId) return;
+    axiosInstance
+      .get('/api/problem/user-stats')
+      .then((res) => {
+        const ids = res.data?.data?.solvedQuesIds || [];
+        if (ids.map(String).includes(String(problem.quesId))) {
+          setSolved(true);
+        }
+      })
+      .catch(() => {});
+
+    const onSubSaved = (e) => {
+      if (String(e?.detail?.quesId) === String(problem.quesId) && e?.detail?.isFullyPassed) {
+        setSolved(true);
+      }
+    };
+    window.addEventListener('coderhaveli-submission-saved', onSubSaved);
+    return () => window.removeEventListener('coderhaveli-submission-saved', onSubSaved);
+  }, [userId, problem?.quesId]);
+
+  if (loading) return <Loading />;
 
   const renderMathJax = (content) => {
     if (!content) return null;
@@ -516,7 +537,7 @@ function ProblemDescriptionPanel({ problem, solved, sortedEditorial, renderMathJ
 
         {/* Submissions Tab */}
         <TabPanel className='p-0'>
-          <Submission quesId={quesId} />
+          <Submission quesId={problem.quesId} />
         </TabPanel>
 
         {/* Comments Tab */}

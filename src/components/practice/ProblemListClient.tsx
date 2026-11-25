@@ -12,6 +12,8 @@ import {
   SlidersHorizontal,
   RotateCcw,
   Check,
+  CheckCircle2,
+  Clock,
   ChevronDown
 } from 'lucide-react';
 import axiosInstance from '@/components/helper/axiosInstance';
@@ -57,6 +59,8 @@ export default function ProblemListClient({
 
   const [loading, setLoading] = useState<boolean>(initialQuestions.length === 0);
   const [isFetching, setIsFetching] = useState<boolean>(false);
+  const [solvedQuesIds, setSolvedQuesIds] = useState<Set<string>>(new Set());
+  const [attemptedQuesIds, setAttemptedQuesIds] = useState<Set<string>>(new Set());
   const [topicDropdownOpen, setTopicDropdownOpen] = useState(false);
   const [topicSearchInput, setTopicSearchInput] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -98,6 +102,25 @@ export default function ProblemListClient({
     };
     fetchTopicsAndCounts();
   }, []);
+
+  // Fetch user's solved/attempted problem IDs for checkmarks
+  useEffect(() => {
+    if (!userId) {
+      setSolvedQuesIds(new Set());
+      setAttemptedQuesIds(new Set());
+      return;
+    }
+    axiosInstance
+      .get('/api/problem/user-stats')
+      .then((res) => {
+        const d = res.data?.data;
+        if (d) {
+          setSolvedQuesIds(new Set((d.solvedQuesIds || []).map(String)));
+          setAttemptedQuesIds(new Set((d.attemptedQuesIds || []).map(String)));
+        }
+      })
+      .catch(() => {});
+  }, [userId]);
 
   // Fetch from backend whenever filters or debounced search changes
   const isInitialMount = useRef(true);
@@ -554,21 +577,45 @@ export default function ProblemListClient({
                   </tr>
                 ))
               ) : (
-                displayedQuestions.map((q, idx) => (
+                displayedQuestions.map((q, idx) => {
+                const isSolved = solvedQuesIds.has(String(q.quesId));
+                const isAttempted = !isSolved && attemptedQuesIds.has(String(q.quesId));
+                return (
                 <tr
                   key={q._id || idx}
                   className="hover:bg-slate-50/70 dark:hover:bg-gray-800/40 transition-colors group"
                 >
                   <td className="px-6 py-4 font-mono text-xs text-gray-400">
-                    {q.quesId || (currentPage - 1) * pageSize + idx + 1}
+                    <div className="flex items-center gap-2">
+                      {isSolved ? (
+                        <span title="Solved" className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 shrink-0">
+                          <CheckCircle2 className="w-4 h-4" />
+                        </span>
+                      ) : isAttempted ? (
+                        <span title="Attempted" className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 shrink-0">
+                          <Clock className="w-3.5 h-3.5" />
+                        </span>
+                      ) : (
+                        <span className="w-5 h-5 shrink-0 inline-block" />
+                      )}
+                      <span>{q.quesId || (currentPage - 1) * pageSize + idx + 1}</span>
+                    </div>
                   </td>
                   <td className="px-6 py-4">
-                    <Link
-                      href={`/problem/${q._id}`}
-                      className="font-bold text-gray-900 dark:text-white hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
-                    >
-                      {q.quesName || q.title}
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/problem/${q._id}`}
+                        className="font-bold text-gray-900 dark:text-white hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                      >
+                        {q.quesName || q.title}
+                      </Link>
+                      {isSolved && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+                          <Check className="w-3 h-3 stroke-[3]" />
+                          Solved
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <span
@@ -607,14 +654,19 @@ export default function ProblemListClient({
                   <td className="px-6 py-4 text-right">
                     <Link
                       href={`/problem/${q._id}`}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-white transition-all group-hover:shadow-xs"
+                      className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all group-hover:shadow-xs ${
+                        isSolved
+                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white'
+                          : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-white'
+                      }`}
                     >
-                      <span>Solve</span>
+                      <span>{isSolved ? 'Solved' : 'Solve'}</span>
                       <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
                   </td>
                 </tr>
-              )))}
+                );
+              }))}
             </tbody>
           </table>
         </div>

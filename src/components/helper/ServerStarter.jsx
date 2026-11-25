@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { MdOutlineRestartAlt } from "react-icons/md";
 import { FaCheckCircle } from 'react-icons/fa';
-import toast from 'react-hot-toast';
+import toast from '@/components/common/CoderHaveliToast';
 
 function ServerStarter() {
     const [loading, setLoading] = useState(false);
